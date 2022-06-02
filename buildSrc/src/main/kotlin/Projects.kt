@@ -35,6 +35,7 @@ object Deps {
         const val version = "2.4.1"
         const val viewModelCompose = "androidx.lifecycle:lifecycle-viewmodel-compose:$version"
         const val viewModelKtx = "androidx.lifecycle:lifecycle-viewmodel-ktx:$version"
+        const val runtimeKtx = "androidx.lifecycle:lifecycle-runtime-ktx:$version"
     }
 
     object Navigation {
