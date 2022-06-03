@@ -4,6 +4,7 @@ import android.graphics.SurfaceTexture
 import android.opengl.GLES20.*
 import android.opengl.GLSurfaceView
 import android.opengl.Matrix
+import top.gochiusa.glplayer.opengl.base.ProgramData
 import top.gochiusa.glplayer.opengl.objects.EntireScreen
 import top.gochiusa.glplayer.opengl.programs.VideoShaderProgram
 import top.gochiusa.glplayer.util.ShaderHelper
@@ -30,8 +31,11 @@ class ProgramsRenderer(
     /**
      * 绘制数据实体
      */
-    private lateinit var entireScreen: EntireScreen
+    private lateinit var entireScreen: ProgramData<VideoShaderProgram>
 
+    /**
+     * 投影矩阵
+     */
     private var matrix: FloatArray = FloatArray(16)
 
     private var frameAvailable: AtomicBoolean = AtomicBoolean(false)
@@ -95,6 +99,7 @@ class ProgramsRenderer(
             (videoWidth.toFloat()) / (videoHeight.toFloat())
         }
 
+        // 这种计算方式假定了虚拟坐标为1，如果虚拟坐标修改，则投影矩阵的计算方式也需要修改
         if (videoRatio > screenRatio) {
             val r = videoRatio / screenRatio
             Matrix.orthoM(matrix, 0, -1F, 1F, -r, r, -1F, 1F)

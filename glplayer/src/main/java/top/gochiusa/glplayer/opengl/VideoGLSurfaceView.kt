@@ -59,7 +59,7 @@ class VideoGLSurfaceView
         }
     }
 
-    fun onSurfaceTextureAvailable(newSurfaceTexture: SurfaceTexture) {
+    internal fun onSurfaceTextureAvailable(newSurfaceTexture: SurfaceTexture) {
         mainHandler.post {
             val oldSurfaceTexture = surfaceTexture
             val oldSurface = surface

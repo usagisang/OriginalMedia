@@ -6,6 +6,9 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.FloatBuffer
 
+/**
+ * 对顶点数据的简单封装类
+ */
 class VertexArray(
     vertexData: FloatArray
 ) {

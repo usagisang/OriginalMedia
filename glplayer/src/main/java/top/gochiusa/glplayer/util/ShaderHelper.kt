@@ -22,6 +22,10 @@ object ShaderHelper {
     fun compileFragmentShader(shaderCode: String) = compileShader(GL_FRAGMENT_SHADER, shaderCode)
 
 
+    /**
+     * 编译着色器代码
+     * @param type 表示着色器类型的常量，可以是[GL_FRAGMENT_SHADER]或[GL_VERTEX_SHADER]
+     */
     fun compileShader(type: Int, shaderCode: String): Int {
         // 创建着色器
         val shaderObjectId = glCreateShader(type)
@@ -48,6 +52,9 @@ object ShaderHelper {
         return shaderObjectId
     }
 
+    /**
+     * 将顶点着色器与片元着色器链接在一起构成完整的 OpenGL ES 程序
+     */
     fun linkProgram(vertexShaderId: Int, fragmentShaderId: Int): Int {
         val programObjectId = glCreateProgram()
         if (programObjectId == 0) {
@@ -71,6 +78,9 @@ object ShaderHelper {
         return programObjectId
     }
 
+    /**
+     * 验证程序是否有效，并输出日志
+     */
     fun validateProgram(programObjectId: Int): Boolean {
         glValidateProgram(programObjectId)
         val validateStatus = IntArray(1)

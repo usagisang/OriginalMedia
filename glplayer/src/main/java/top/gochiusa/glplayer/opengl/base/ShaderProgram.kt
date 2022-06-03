@@ -6,7 +6,9 @@ import androidx.annotation.RawRes
 import top.gochiusa.glplayer.util.ShaderHelper
 import top.gochiusa.glplayer.util.readStringFromRaw
 
-
+/**
+ * 代表着色器程序的类，简单从raw资源文件夹中读取着色器代码
+ */
 abstract class ShaderProgram(
     context: Context,
     @RawRes vertexShaderResId: Int,
