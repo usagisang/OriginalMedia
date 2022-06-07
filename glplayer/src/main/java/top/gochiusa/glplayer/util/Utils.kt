@@ -11,7 +11,7 @@ import java.io.InputStreamReader
 /**
  * 从资源文件中加载字符串
  */
-fun Context.readStringFromRaw(@RawRes resId: Int): String {
+internal fun Context.readStringFromRaw(@RawRes resId: Int): String {
     return runCatching {
         val builder = StringBuilder()
         val reader = BufferedReader(InputStreamReader(resources.openRawResource(resId)))
@@ -38,7 +38,7 @@ fun Context.readStringFromRaw(@RawRes resId: Int): String {
 /**
  * 判断是否为debug版本
  */
-fun Context.isDebugVersion(): Boolean =
+internal fun Context.isDebugVersion(): Boolean =
     runCatching {
         (applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
     }.getOrDefault(false)

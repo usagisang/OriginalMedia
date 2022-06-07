@@ -2,7 +2,7 @@ package top.gochiusa.glplayer.util
 
 import android.util.Log
 
-object PlayerLog {
+internal object PlayerLog {
     const val TAG = "GLPlayer"
     var show = true
 

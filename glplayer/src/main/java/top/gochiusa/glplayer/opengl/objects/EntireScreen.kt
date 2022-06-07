@@ -8,7 +8,7 @@ import top.gochiusa.glplayer.opengl.programs.VideoShaderProgram
 import top.gochiusa.glplayer.util.Constants
 
 
-class EntireScreen: ProgramData<VideoShaderProgram> {
+internal class EntireScreen: ProgramData<VideoShaderProgram> {
 
     private val vertexArray: VertexArray = VertexArray(vertexData)
 

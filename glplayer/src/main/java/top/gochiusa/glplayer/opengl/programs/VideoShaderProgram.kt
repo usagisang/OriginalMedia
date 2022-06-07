@@ -5,7 +5,7 @@ import android.opengl.GLES20.*
 import top.gochiusa.glplayer.R
 import top.gochiusa.glplayer.opengl.base.ShaderProgram
 
-class VideoShaderProgram(
+internal class VideoShaderProgram(
     context: Context
 ): ShaderProgram(context, R.raw.video_vertex_shader, R.raw.video_fragment_shader) {
 

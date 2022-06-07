@@ -10,7 +10,9 @@ import android.view.Surface
 
 class VideoGLSurfaceView
 @JvmOverloads constructor(
-    context: Context, attrs: AttributeSet? = null
+    context: Context,
+    attrs: AttributeSet? = null,
+    var onVideoSurfaceListener: VideoSurfaceListener? = null
 ): GLSurfaceView(context, attrs) {
 
     /**
@@ -35,7 +37,6 @@ class VideoGLSurfaceView
     var surface: Surface? = null
         private set
 
-    var onVideoSurfaceListener: VideoSurfaceListener? = null
 
     private val renderer: ProgramsRenderer
 
