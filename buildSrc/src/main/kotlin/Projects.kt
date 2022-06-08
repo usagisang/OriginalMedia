@@ -98,6 +98,11 @@ object Deps {
         const val compose = "androidx.paging:paging-compose:1.0.0-alpha14"
     }
 
+    // CameraX
+    object CameraX {
+        const val cameraCore = "androidx.camera:camera-core:1.0.2"
+    }
+
     const val appCompat = "androidx.appcompat:appcompat:1.4.1"
     const val constraintLayout = "androidx.constraintlayout:constraintlayout:2.1.4"
     const val material = "com.google.android.material:material:1.6.0"
