@@ -15,3 +15,4 @@ dependencyResolutionManagement {
 rootProject.name = "OriginalMedia"
 include(":app")
 include(":dependencies")
+include(":glplayer")
