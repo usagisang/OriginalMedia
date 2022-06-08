@@ -4,11 +4,11 @@ import android.app.Application
 import android.content.Context
 import android.util.Log
 
-private const val TAG = "Carver"
-
 class Carver private constructor() {
 
     companion object {
+        private const val TAG = "Carver"
+
         @Suppress("StaticFieldLeak")
         private lateinit var mContext: Context
 
@@ -26,6 +26,10 @@ class Carver private constructor() {
          * */
         fun get() = INSTANCE
     }
+
+    private val mRecorder = MediaRecorderImpl()
+
+    private val mCapture = CameraXCaptureImpl()
 
     private val mListeners = mutableListOf<CarverListener>()
 
