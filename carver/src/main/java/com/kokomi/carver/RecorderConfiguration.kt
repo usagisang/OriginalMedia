@@ -11,7 +11,7 @@ class RecorderConfiguration private constructor(
         internal const val DEFAULT = Int.MIN_VALUE
     }
 
-    class Build {
+    class Builder {
 
         private var mVideoFrameRate = DEFAULT
 
@@ -28,7 +28,7 @@ class RecorderConfiguration private constructor(
             mAudioBitRate
         )
 
-        fun setVideoFrameRate(videoFrameRate: Int) {
+        fun setVideoFrameRate(videoFrameRate: Int) = apply {
             if (videoFrameRate > 0) {
                 mVideoFrameRate = videoFrameRate
             } else {
@@ -36,7 +36,7 @@ class RecorderConfiguration private constructor(
             }
         }
 
-        fun setVideoBitRate(videoBitRate: Int) {
+        fun setVideoBitRate(videoBitRate: Int) = apply {
             if (videoBitRate > 0) {
                 mVideoFrameRate = videoBitRate
             } else {
@@ -44,11 +44,11 @@ class RecorderConfiguration private constructor(
             }
         }
 
-        fun setVideoIFrameInterval(interval: Int) {
+        fun setVideoIFrameInterval(interval: Int) = apply {
             mVideoFrameInterval = interval
         }
 
-        fun setAudioBitRate(audioBitRate: Int) {
+        fun setAudioBitRate(audioBitRate: Int) = apply {
             if (audioBitRate > 0) {
                 mAudioBitRate = audioBitRate
             } else {
