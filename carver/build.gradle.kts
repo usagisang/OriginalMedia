@@ -12,6 +12,9 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
+        vectorDrawables {
+            useSupportLibrary = true
+        }
     }
 
     buildTypes {
@@ -30,11 +33,20 @@ android {
     kotlinOptions {
         jvmTarget = "1.8"
     }
+    packagingOptions {
+        resources {
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+        }
+    }
 }
 
 dependencies {
     implementation(project(":dependencies"))
-    implementation(Deps.CameraX.cameraCore)
+    implementation(Deps.CameraX.camera2)
+    implementation(Deps.CameraX.core)
+    implementation(Deps.CameraX.lifeCycle)
+    implementation(Deps.CameraX.view)
+    implementation(Deps.CameraX.video)
 
     testImplementation(TestDeps.Local.junit)
     androidTestImplementation(TestDeps.Instrumentation.espresso)

@@ -100,7 +100,13 @@ object Deps {
 
     // CameraX
     object CameraX {
-        const val cameraCore = "androidx.camera:camera-core:1.0.2"
+        private const val version = "1.1.0-rc01"
+
+        const val camera2 = "androidx.camera:camera-camera2:$version"
+        const val core = "androidx.camera:camera-core:$version"
+        const val lifeCycle = "androidx.camera:camera-lifecycle:$version"
+        const val view = "androidx.camera:camera-view:$version"
+        const val video = "androidx.camera:camera-video:$version"
     }
 
     const val appCompat = "androidx.appcompat:appcompat:1.4.1"

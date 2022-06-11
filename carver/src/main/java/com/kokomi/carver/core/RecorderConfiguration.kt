@@ -1,9 +1,9 @@
-package com.kokomi.carver
+package com.kokomi.carver.core
 
 class RecorderConfiguration private constructor(
     internal val mVideoFrameRate: Int,
     internal val mVideoBitRate: Int,
-    internal var mVideoFrameInterval: Int,
+    internal var mVideoIFrameInterval: Int,
     internal var mAudioBitRate: Int
 ) {
 
@@ -17,14 +17,14 @@ class RecorderConfiguration private constructor(
 
         private var mVideoBitRate = DEFAULT
 
-        private var mVideoFrameInterval = DEFAULT
+        private var mVideoIFrameInterval = DEFAULT
 
         private var mAudioBitRate = DEFAULT
 
         fun build() = RecorderConfiguration(
             mVideoFrameRate,
             mVideoBitRate,
-            mVideoFrameInterval,
+            mVideoIFrameInterval,
             mAudioBitRate
         )
 
@@ -45,7 +45,7 @@ class RecorderConfiguration private constructor(
         }
 
         fun setVideoIFrameInterval(interval: Int) = apply {
-            mVideoFrameInterval = interval
+            mVideoIFrameInterval = interval
         }
 
         fun setAudioBitRate(audioBitRate: Int) = apply {

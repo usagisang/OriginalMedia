@@ -1,37 +1,35 @@
-package com.kokomi.carver
+package com.kokomi.carver.core
 
-import android.app.Application
-import android.content.Context
 import android.util.Log
 
-class Carver private constructor() {
+private const val TAG = "Carver"
 
-    companion object {
-        private const val TAG = "Carver"
+class Carver<P>(captor: Captor<P>) {
 
-        @Suppress("StaticFieldLeak")
-        private lateinit var mContext: Context
-
-        private val INSTANCE by lazy { Carver() }
-
-        /**
-         * 初始化 [Carver]
-         * */
-        fun init(application: Application) {
-            mContext = application.applicationContext
-        }
-
-        /**
-         * 获取 [Carver] 单例
-         * */
-        fun get() = INSTANCE
-    }
-
-    private val mRecorder = MediaRecorderImpl()
-
-    private val mCapture = CameraXCaptureImpl()
+    private var mCaptor = captor
 
     private val mListeners = mutableListOf<CarverListener>()
+
+    fun shutdown() = mCaptor.shutdown()
+
+    /**
+     * 更新录制的配置
+     *
+     * @param configuration 要更新的配置
+     * */
+    fun configure(configuration: RecorderConfiguration) = mCaptor.configure(configuration)
+
+    fun reset() = mCaptor.reset()
+
+    fun setPreview(preview: P) = mCaptor.setPreview(preview)
+
+    fun prepare() = mCaptor.prepare()
+
+    fun start() = mCaptor.start()
+
+    fun pause() = mCaptor.pause()
+
+    fun resume() = mCaptor.resume()
 
     /**
      * 注册一个尚未存在的监听者，请确保该监听者失去作用时进行注销，否则可能造成不必要的内存泄漏
