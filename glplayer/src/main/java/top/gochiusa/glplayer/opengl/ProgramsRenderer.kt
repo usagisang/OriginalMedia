@@ -8,7 +8,6 @@ import top.gochiusa.glplayer.opengl.base.ProgramData
 import top.gochiusa.glplayer.opengl.objects.EntireScreen
 import top.gochiusa.glplayer.opengl.programs.VideoShaderProgram
 import top.gochiusa.glplayer.util.ShaderHelper
-import java.util.concurrent.atomic.AtomicBoolean
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 
@@ -38,9 +37,6 @@ class ProgramsRenderer(
      */
     private var matrix: FloatArray = FloatArray(16)
 
-    private var frameAvailable: AtomicBoolean = AtomicBoolean(false)
-
-    // TODO 获取Video宽高
     private var videoWidth: Int = -1
     private var videoHeight: Int = -1
 
@@ -66,10 +62,6 @@ class ProgramsRenderer(
     override fun onDrawFrame(gl: GL10?) {
         glClear(GL_COLOR_BUFFER_BIT)
 
-        if (frameAvailable.compareAndSet(true, false)) {
-            surfaceTexture.updateTexImage()
-        }
-
         videoShaderProgram.useProgram()
         videoShaderProgram.setUniforms(matrix, textureId)
 
@@ -77,13 +69,17 @@ class ProgramsRenderer(
         entireScreen.draw()
     }
 
+    fun setVideoSize(width: Int, height: Int) {
+        if (width > 0 && height > 0) {
+            videoWidth = width
+            videoHeight = height
+        }
+        refreshMatrix()
+    }
+
     private fun init(): SurfaceTexture {
         textureId = ShaderHelper.createOESTextureId()
-
         surfaceTexture = SurfaceTexture(textureId)
-        surfaceTexture.setOnFrameAvailableListener {
-            frameAvailable.set(true)
-        }
         return surfaceTexture
     }
 
