@@ -1,6 +1,7 @@
 package top.gochiusa.glplayer.opengl.programs
 
 import android.content.Context
+import android.opengl.GLES11Ext
 import android.opengl.GLES20.*
 import top.gochiusa.glplayer.R
 import top.gochiusa.glplayer.opengl.base.ShaderProgram
@@ -20,7 +21,7 @@ internal class VideoShaderProgram(
         glUniformMatrix4fv(uMatrixLocation, 1, false, matrix, 0)
         // 设置活动的纹理单元
         glActiveTexture(GL_TEXTURE0)
-        glBindTexture(GL_TEXTURE_2D, textureId)
+        glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, textureId)
         glUniform1i(uTextureLocation, 0)
     }
 
