@@ -7,36 +7,29 @@ import android.os.Handler
 import android.os.Looper
 import android.util.AttributeSet
 import android.view.Surface
+import top.gochiusa.glplayer.base.SurfaceProvider
+import top.gochiusa.glplayer.entity.Format
+import top.gochiusa.glplayer.listener.VideoMetadataListener
+import top.gochiusa.glplayer.listener.VideoSurfaceListener
 
 class VideoGLSurfaceView
 @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
-    var onVideoSurfaceListener: VideoSurfaceListener? = null
-): GLSurfaceView(context, attrs) {
-
-    /**
-     * 可以监听Surface相关事件的Listener
-     */
-    interface VideoSurfaceListener {
-        /**
-         * 当[surface]被创建并与[VideoGLSurfaceView]相关联时，该函数被回调
-         */
-        fun onVideoSurfaceCreated(surface: Surface)
-
-        /**
-         * 当[surface]与[VideoGLSurfaceView]不再关联并被释放前，该函数被回调
-         */
-        fun onVideoSurfaceDestroyed(surface: Surface)
-    }
+    private var onVideoSurfaceListener: VideoSurfaceListener? = null
+): GLSurfaceView(context, attrs), VideoMetadataListener, SurfaceProvider,
+    SurfaceTexture.OnFrameAvailableListener {
 
     private val mainHandler: Handler = Handler(Looper.myLooper()!!)
 
     private var surfaceTexture: SurfaceTexture? = null
 
-    var surface: Surface? = null
+    override var surface: Surface? = null
         private set
 
+    override fun setOnVideoSurfaceListener(listener: VideoSurfaceListener?) {
+        onVideoSurfaceListener = listener
+    }
 
     private val renderer: ProgramsRenderer
 
@@ -44,6 +37,8 @@ class VideoGLSurfaceView
         setEGLContextClientVersion(2)
         renderer = ProgramsRenderer(this)
         setRenderer(renderer)
+        // 设置为DIRTY时才渲染
+        renderMode = RENDERMODE_WHEN_DIRTY
     }
 
 
@@ -70,6 +65,8 @@ class VideoGLSurfaceView
             surface = newSurface
             surfaceTexture = newSurfaceTexture
 
+            newSurfaceTexture.setOnFrameAvailableListener(this)
+
             onVideoSurfaceListener?.onVideoSurfaceCreated(newSurface)
 
             releaseSurface(oldSurfaceTexture, oldSurface)
@@ -77,7 +74,23 @@ class VideoGLSurfaceView
     }
 
     private fun releaseSurface(surfaceTexture: SurfaceTexture?, surface: Surface?) {
-        surfaceTexture?.release()
+        surfaceTexture?.let {
+            it.setOnFrameAvailableListener(null)
+            it.release()
+        }
         surface?.release()
+    }
+
+    override fun onVideoMetadataChanged(format: Format) {
+        renderer.setVideoSize(format.width, format.height)
+    }
+
+    override fun onFrameAvailable(surfaceTexture: SurfaceTexture?) {
+        queueEvent {
+            surfaceTexture?.updateTexImage()
+            if (surfaceTexture != null) {
+                requestRender()
+            }
+        }
     }
 }
