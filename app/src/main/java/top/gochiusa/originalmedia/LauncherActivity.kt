@@ -8,5 +8,7 @@ import com.kokomi.carver.ui.CarverActivity
 class LauncherActivity: AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        startActivity(Intent(this, CarverActivity::class.java))
     }
 }

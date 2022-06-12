@@ -1,12 +1,13 @@
-package com.kokomi.carver.core
+package com.kokomi.carver.core.recorder
 
 import android.content.Context
 import android.media.MediaRecorder
 import android.os.Build
 import android.view.TextureView
 import androidx.annotation.RequiresApi
+import com.kokomi.carver.core.Captor
 
-abstract class MediaCaptorImpl(mContext: Context) : Captor<TextureView>() {
+abstract class MediaRecorderImpl(mContext: Context) : Captor<TextureView, RecorderConfiguration>() {
 
     private val mMediaRecorder by lazy {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -21,7 +22,7 @@ abstract class MediaCaptorImpl(mContext: Context) : Captor<TextureView>() {
         mMediaRecorder.release()
     }
 
-    override fun configure(configuration: RecorderConfiguration) {
+    fun configure(configuration: RecorderConfiguration) {
         mMediaRecorder.reset()
         mMediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA)
         mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC)
@@ -37,7 +38,7 @@ abstract class MediaCaptorImpl(mContext: Context) : Captor<TextureView>() {
         mMediaRecorder.prepare()
     }
 
-    override fun reset() {
+    fun reset() {
         mMediaRecorder.reset()
     }
 

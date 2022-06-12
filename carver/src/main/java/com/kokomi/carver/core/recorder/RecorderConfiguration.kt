@@ -1,4 +1,4 @@
-package com.kokomi.carver.core
+package com.kokomi.carver.core.recorder
 
 class RecorderConfiguration private constructor(
     internal val mVideoFrameRate: Int,

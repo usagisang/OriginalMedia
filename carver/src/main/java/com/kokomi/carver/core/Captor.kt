@@ -1,23 +1,64 @@
 package com.kokomi.carver.core
 
-abstract class Captor<P> {
+/**
+ * 捕获者抽象类，提供实现录制模块的接口
+ *
+ * @param P 预览视图的类型
+ * @param C 配置的类型
+ * */
+abstract class Captor<P, C> {
 
-    internal abstract fun shutdown()
+    private lateinit var mCarver: Carver<P>
 
-    internal abstract fun configure(configuration: RecorderConfiguration)
+    internal fun attachTo(carver: Carver<P>) {
+        mCarver = carver
+    }
 
-    internal abstract fun setPreview(preview: P)
+    /**
+     * 调用此方法通知绑定的 [Carver] 状态更新
+     * */
+    fun changeStatus(status: CarverStatus) {
+        mCarver.onStatusChanged(status)
+    }
 
-    internal abstract fun prepare()
+    /**
+     * 结束当前捕获者
+     * */
+    abstract fun shutdown()
 
-    internal abstract fun reset()
+    /**
+     * 配置更新
+     * */
+    abstract fun onConfigurationChanged(newConfig: C)
 
-    internal abstract fun start()
+    /**
+     * 绑定预览视图
+     * */
+    abstract fun bindPreview(preview: P)
 
-    internal abstract fun stop()
+    /**
+     * 录制前的准备
+     * */
+    abstract fun prepare()
 
-    internal abstract fun pause()
+    /**
+     * 录制开始
+     * */
+    abstract fun start()
 
-    internal abstract fun resume()
+    /**
+     * 录制结束
+     * */
+    abstract fun stop()
+
+    /**
+     * 录制停止
+     * */
+    abstract fun pause()
+
+    /**
+     * 录制继续
+     * */
+    abstract fun resume()
 
 }
