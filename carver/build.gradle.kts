@@ -47,6 +47,7 @@ dependencies {
     implementation(Deps.CameraX.lifeCycle)
     implementation(Deps.CameraX.view)
     implementation(Deps.CameraX.video)
+    implementation(Deps.Coroutines.coroutinesAndroid)
 
     testImplementation(TestDeps.Local.junit)
     androidTestImplementation(TestDeps.Instrumentation.espresso)

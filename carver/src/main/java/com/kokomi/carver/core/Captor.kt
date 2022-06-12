@@ -8,16 +8,16 @@ package com.kokomi.carver.core
  * */
 abstract class Captor<P, C> {
 
-    private lateinit var mCarver: Carver<P>
+    private lateinit var mCarver: Carver<P, C>
 
-    internal fun attachTo(carver: Carver<P>) {
+    internal fun attachTo(carver: Carver<P, C>) {
         mCarver = carver
     }
 
     /**
      * 调用此方法通知绑定的 [Carver] 状态更新
      * */
-    fun changeStatus(status: CarverStatus) {
+    protected fun changeStatus(status: CarverStatus) {
         mCarver.onStatusChanged(status)
     }
 
