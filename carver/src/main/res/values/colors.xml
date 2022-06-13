@@ -2,5 +2,6 @@
 <resources>
     <color name="app_soft_black">#FF212121</color>
     <color name="app_soft_white">#FFF5F5F5</color>
-    <color name="app_red">#FFFF0000</color>
+    <color name="app_red">#F50000</color>
+    <color name="app_translucent">#66F5F5F5</color>
 </resources>

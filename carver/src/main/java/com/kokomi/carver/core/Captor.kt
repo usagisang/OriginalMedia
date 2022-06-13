@@ -8,6 +8,8 @@ package com.kokomi.carver.core
  * */
 abstract class Captor<P, C> {
 
+    protected abstract var config: C
+
     private lateinit var mCarver: Carver<P, C>
 
     internal fun attachTo(carver: Carver<P, C>) {
@@ -20,6 +22,8 @@ abstract class Captor<P, C> {
     protected fun changeStatus(status: CarverStatus) {
         mCarver.onStatusChanged(status)
     }
+
+    internal fun getConfig() = config
 
     /**
      * 结束当前捕获者
@@ -60,5 +64,7 @@ abstract class Captor<P, C> {
      * 录制继续
      * */
     abstract fun resume()
+
+    abstract fun zoom(zoom: Float)
 
 }

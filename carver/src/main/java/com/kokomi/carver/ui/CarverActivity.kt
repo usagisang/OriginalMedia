@@ -2,9 +2,10 @@ package com.kokomi.carver.ui
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.camera.core.CameraSelector
 import androidx.camera.video.OutputResults
 import androidx.camera.video.RecordingStats
 import androidx.camera.view.PreviewView
@@ -18,6 +19,7 @@ import com.kokomi.carver.core.camerax.CameraXCaptorImpl
 import com.kokomi.carver.core.camerax.CameraXConfiguration
 import com.kokomi.carver.formatRecordingTime
 import com.kokomi.carver.setStatusBarTextColor
+import com.kokomi.carver.weight.ZoomGestureView
 import kotlinx.coroutines.launch
 
 class CarverActivity : AppCompatActivity() {
@@ -29,7 +31,10 @@ class CarverActivity : AppCompatActivity() {
     private lateinit var statusBar: TextView
     private lateinit var timeText: TextView
     private lateinit var previewView: PreviewView
+    private lateinit var blurEffect: ImageView
+    private lateinit var zoomGesture: ZoomGestureView
     private lateinit var control: CardView
+    private lateinit var changeCamera: CardView
 
     private lateinit var vm: CarverViewModel
 
@@ -64,12 +69,22 @@ class CarverActivity : AppCompatActivity() {
 
         timeText = findViewById(R.id.tv_carver_time)
         previewView = findViewById(R.id.pv_carver_preview)
+        blurEffect = findViewById(R.id.iv_carver_blur_effect)
+        zoomGesture = findViewById(R.id.zgv_carver_zoom_gesture)
         control = findViewById(R.id.cv_carver_control)
+        changeCamera = findViewById(R.id.cv_carver_change_camera)
 
         carver = vm.createCarver(CameraXCaptorImpl(this))
 
         carver.bindPreview(previewView)
         carver.prepare()
+
+        zoomGesture.setZoomChangedListener {
+            val status = vm.carverStatus.value
+            if (!(status is CarverStatus.Initial || status is CarverStatus.Error || status is CarverStatus.Shutdown)) {
+                carver.setZoom(it)
+            }
+        }
 
         control.setOnClickListener {
             if (saving) {
@@ -102,11 +117,27 @@ class CarverActivity : AppCompatActivity() {
             true
         }
 
+        changeCamera.setOnClickListener {
+            val status = vm.carverStatus.value
+            if (!(status is CarverStatus.Prepared || status is CarverStatus.Finalize<*>))
+                return@setOnClickListener
+            val lensFacing = if (carver.getConfig().lensFacing == CameraSelector.LENS_FACING_BACK) {
+                CameraSelector.LENS_FACING_FRONT
+            } else {
+                CameraSelector.LENS_FACING_BACK
+            }
+            carver.newConfig(carver.getConfig().copy(lensFacing = lensFacing))
+        }
+
         lifecycleScope.launch {
             vm.carverStatus.collect { status ->
                 when (status) {
-                    is CarverStatus.Initial -> {}
-                    is CarverStatus.Prepared -> {}
+                    is CarverStatus.Initial -> {
+                        val b = previewView.bitmap ?: return@collect
+                        PreviewViewBlurEffect(this@CarverActivity, b, blurEffect).startAnim()
+                    }
+                    is CarverStatus.Prepared -> {
+                    }
                     is CarverStatus.Start -> {
                         toast("开始")
                     }

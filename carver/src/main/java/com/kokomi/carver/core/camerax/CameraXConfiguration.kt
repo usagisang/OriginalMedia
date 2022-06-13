@@ -13,10 +13,10 @@ fun getSupportedQualities(): Set<Quality> {
 }
 
 data class CameraXConfiguration internal constructor(
-    internal val lensFacing: Int = CameraSelector.LENS_FACING_BACK,
-    internal val quality: Quality = Quality.LOWEST,
-    internal val outputDirectory: File,
-    internal val outputFile: () -> File = {
+    val lensFacing: Int = CameraSelector.LENS_FACING_BACK,
+    val quality: Quality = Quality.LOWEST,
+    val outputDirectory: File,
+    val outputFile: () -> File = {
         File(
             outputDirectory,
             "${System.currentTimeMillis()}.mp4"

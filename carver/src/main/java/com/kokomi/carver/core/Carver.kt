@@ -20,6 +20,14 @@ class Carver<P, C>(
         captor.shutdown()
     }
 
+    fun newConfig(config: C) {
+        captor.onConfigurationChanged(config)
+    }
+
+    fun getConfig(): C {
+        return captor.getConfig()
+    }
+
     fun bindPreview(preview: P) {
         captor.bindPreview(preview)
     }
@@ -42,6 +50,10 @@ class Carver<P, C>(
 
     fun resume() {
         captor.resume()
+    }
+
+    fun setZoom(zoom: Float) {
+        captor.zoom(zoom)
     }
 
     internal fun onStatusChanged(status: CarverStatus) {

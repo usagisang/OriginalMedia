@@ -2,6 +2,7 @@ package com.kokomi.carver.core.camerax
 
 import android.util.Log
 import androidx.activity.ComponentActivity
+import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
@@ -17,7 +18,7 @@ import java.util.concurrent.locks.ReentrantLock
 @Suppress("RestrictedApi", "MissingPermission")
 class CameraXCaptorImpl(
     private val activity: ComponentActivity,
-    private var config: CameraXConfiguration =
+    override var config: CameraXConfiguration =
         CameraXConfiguration(outputDirectory = activity.defaultOutputDirectory())
 ) : Captor<PreviewView, CameraXConfiguration>() {
 
@@ -28,6 +29,8 @@ class CameraXCaptorImpl(
     private var previewView: PreviewView? = null
 
     private var cameraProvider: ProcessCameraProvider? = null
+
+    private var camera: Camera? = null
 
     private lateinit var videoCapture: VideoCapture<Recorder>
 
@@ -108,8 +111,8 @@ class CameraXCaptorImpl(
 
     private fun prepareInternal() {
         prepareLock.lock()
-        changeStatus(CarverStatus.Initial())
         cameraProvider?.unbindAll()
+        changeStatus(CarverStatus.Initial())
         val cameraProviderFuture = ProcessCameraProvider.getInstance(activity)
         cameraProviderFuture.addListener(
             {
@@ -129,13 +132,14 @@ class CameraXCaptorImpl(
                     )
                     // 通过相机提供者获取相机实例，并把相机的信息绑定到预览视图和视频捕获者
                     cameraProvider = cameraProviderFuture.get()
-                    val camera = cameraProvider!!.bindToLifecycle(
+                    camera = cameraProvider!!.bindToLifecycle(
                         activity, cameraSelector, preview, videoCapture
-                    )
-                    // 将相机支持的分辨率记录到配置类中
-                    supportedQualitySet.apply {
-                        clear()
-                        addAll(QualitySelector.getSupportedQualities(camera.cameraInfo))
+                    ).apply {
+                        // 将相机支持的分辨率记录到配置类中
+                        supportedQualitySet.apply {
+                            clear()
+                            addAll(QualitySelector.getSupportedQualities(cameraInfo))
+                        }
                     }
                     // 设置预览界面
                     previewView?.run {
@@ -150,6 +154,12 @@ class CameraXCaptorImpl(
                 }
             }, ContextCompat.getMainExecutor(activity)
         )
+    }
+
+    override fun zoom(zoom: Float) {
+        camera?.run {
+            cameraControl.setLinearZoom(zoom)
+        }
     }
 
 }
