@@ -8,7 +8,7 @@ sealed class CarverStatus(code: Int) {
 
     class Start : CarverStatus(2)
 
-    class Stop : CarverStatus(4)
+    class Finalize<I>(val info: I) : CarverStatus(4)
 
     class Recording<I>(val info: I) : CarverStatus(8)
 
@@ -18,33 +18,6 @@ sealed class CarverStatus(code: Int) {
 
     class Shutdown : CarverStatus(64)
 
-    class Error(t: Throwable) : CarverStatus(128)
+    class Error(val t: Throwable) : CarverStatus(128)
 
 }
-
-//@Target(AnnotationTarget.VALUE_PARAMETER)
-//@Retention(AnnotationRetention.SOURCE)
-//@IntDef(value = [Status.Initial, Status.Prepare, Status.Start, Status.Stop, Status.Pause, Status.Resume, Status.Shutdown])
-//annotation class CarverStatus
-//
-//interface Status {
-//
-//    companion object {
-//
-//        const val Initial = 0
-//
-//        const val Prepare = 1
-//
-//        const val Start = 2
-//
-//        const val Stop = 4
-//
-//        const val Pause = 8
-//
-//        const val Resume = 16
-//
-//        const val Shutdown = 32
-//
-//    }
-//
-//}

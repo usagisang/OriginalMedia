@@ -3,79 +3,53 @@ package com.kokomi.carver.core
 import android.os.Handler
 import android.os.Looper
 
-
-class Carver<P, C> private constructor(
-    captor: Captor<P, C>,
-    listener: CarverListener?
+class Carver<P, C>(
+    private val captor: Captor<P, C>,
+    private val listener: (CarverStatus) -> Unit
 ) {
 
     companion object {
         private const val TAG = "Carver"
     }
 
-    private var mCaptor = captor
-
-    private val mListener = listener
-
     init {
-        mCaptor.attachTo(this)
+        captor.attachTo(this)
     }
 
     fun shutdown() {
-        mCaptor.shutdown()
+        captor.shutdown()
     }
 
     fun bindPreview(preview: P) {
-        mCaptor.bindPreview(preview)
+        captor.bindPreview(preview)
     }
 
     fun prepare() {
-        mCaptor.prepare()
+        captor.prepare()
     }
 
     fun start() {
-        mCaptor.start()
+        captor.start()
     }
 
     fun stop() {
-        mCaptor.pause()
+        captor.stop()
     }
 
     fun pause() {
-        mCaptor.pause()
+        captor.pause()
     }
 
     fun resume() {
-        mCaptor.resume()
+        captor.resume()
     }
 
     internal fun onStatusChanged(status: CarverStatus) {
         if (Looper.getMainLooper() == Looper.myLooper()) {
-            mListener?.onStatusChanged(status)
+            listener(status)
         } else {
             Handler(Looper.getMainLooper()).post {
-                mListener?.onStatusChanged(status)
-            }
-        }
-    }
-
-    class Builder<P, C>(captor: Captor<P, C>) {
-
-        private val mCaptor = captor
-
-        private var mListener: CarverListener? = null
-
-        fun build(): Carver<P, C> {
-            return Carver(mCaptor, mListener)
-        }
-
-        fun setListener(listener: CarverListener) = apply {
-            mListener = listener
-        }
-
-        fun setListener(listener: (CarverStatus) -> Unit) = apply {
-            mListener = object : CarverListener {
-                override fun onStatusChanged(status: CarverStatus) = listener(status)
+                listener(status)
             }
         }
     }

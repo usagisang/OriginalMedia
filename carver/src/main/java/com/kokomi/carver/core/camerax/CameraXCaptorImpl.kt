@@ -1,5 +1,6 @@
 package com.kokomi.carver.core.camerax
 
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.Preview
@@ -9,15 +10,20 @@ import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import com.kokomi.carver.core.Captor
 import com.kokomi.carver.core.CarverStatus
-import com.kokomi.carver.core.checkMainThread
-import java.io.File
+import com.kokomi.carver.checkMainThread
+import com.kokomi.carver.defaultOutputDirectory
 import java.util.concurrent.locks.ReentrantLock
 
 @Suppress("RestrictedApi", "MissingPermission")
 class CameraXCaptorImpl(
     private val activity: ComponentActivity,
-    private var config: CameraXConfiguration? = null
+    private var config: CameraXConfiguration =
+        CameraXConfiguration(outputDirectory = activity.defaultOutputDirectory())
 ) : Captor<PreviewView, CameraXConfiguration>() {
+
+    companion object {
+        private const val TAG = "CameraXCaptorImpl"
+    }
 
     private var previewView: PreviewView? = null
 
@@ -26,8 +32,6 @@ class CameraXCaptorImpl(
     private lateinit var videoCapture: VideoCapture<Recorder>
 
     private lateinit var recording: Recording
-
-    private val outputDirectory = getOutputDirectory()
 
     private val prepareLock = ReentrantLock()
 
@@ -58,10 +62,7 @@ class CameraXCaptorImpl(
     override fun start() {
         checkMainThread()
         // 保存路径
-        val videoFile = File(
-            outputDirectory,
-            "${System.currentTimeMillis()}.mp4"
-        )
+        val videoFile = config.outputFile()
         // 输出控制
         val outputOptions = FileOutputOptions.Builder(videoFile).build()
         // 准备开始录制
@@ -74,7 +75,7 @@ class CameraXCaptorImpl(
                         changeStatus(CarverStatus.Start())
                     }
                     is VideoRecordEvent.Finalize -> {
-                        changeStatus(CarverStatus.Stop())
+                        changeStatus(CarverStatus.Finalize(event.outputResults))
                     }
                     is VideoRecordEvent.Status -> {
                         // 返回信息中包含录制信息
@@ -116,17 +117,13 @@ class CameraXCaptorImpl(
                     val preview = Preview.Builder().build()
                     // 获取相机选择器
                     val cameraSelector = CameraSelector.Builder()
-                        .requireLensFacing(
-                            config?.mLensFacing ?: CameraSelector.LENS_FACING_BACK
-                        )
+                        .requireLensFacing(config.lensFacing)
                         .build()
                     // 获取视频捕获者
                     videoCapture = VideoCapture.withOutput(
                         Recorder.Builder()
                             .setQualitySelector(
-                                QualitySelector.from(
-                                    config?.mQuality ?: Quality.LOWEST
-                                )
+                                QualitySelector.from(config.quality)
                             )
                             .build()
                     )
@@ -136,7 +133,7 @@ class CameraXCaptorImpl(
                         activity, cameraSelector, preview, videoCapture
                     )
                     // 将相机支持的分辨率记录到配置类中
-                    CameraXConfiguration.supportedQualitySet.apply {
+                    supportedQualitySet.apply {
                         clear()
                         addAll(QualitySelector.getSupportedQualities(camera.cameraInfo))
                     }
@@ -146,20 +143,13 @@ class CameraXCaptorImpl(
                     }
                     changeStatus(CarverStatus.Prepared())
                 } catch (t: Throwable) {
+                    Log.e(TAG, "[ERROR]", t)
                     changeStatus(CarverStatus.Error(t))
                 } finally {
                     prepareLock.unlock()
                 }
             }, ContextCompat.getMainExecutor(activity)
         )
-    }
-
-    private fun getOutputDirectory(): File {
-        val mediaDir = activity.externalMediaDirs.firstOrNull()?.let {
-            File(it, activity.packageName).apply { mkdir() }
-        }
-        return if (mediaDir != null && mediaDir.exists())
-            mediaDir else activity.filesDir
     }
 
 }

@@ -2,25 +2,27 @@ package com.kokomi.carver.ui
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.widget.TextView
 import android.widget.Toast
+import androidx.camera.video.OutputResults
 import androidx.camera.video.RecordingStats
 import androidx.camera.view.PreviewView
 import androidx.cardview.widget.CardView
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import com.kokomi.carver.R
+import com.kokomi.carver.*
+import com.kokomi.carver.clearSystemWindows
 import com.kokomi.carver.core.*
 import com.kokomi.carver.core.camerax.CameraXCaptorImpl
 import com.kokomi.carver.core.camerax.CameraXConfiguration
-import com.kokomi.carver.core.clearSystemWindows
-import com.kokomi.carver.core.setStatusBarTextColor
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.flow.collect
+import com.kokomi.carver.formatRecordingTime
+import com.kokomi.carver.setStatusBarTextColor
 import kotlinx.coroutines.launch
 
 class CarverActivity : AppCompatActivity() {
+
+    private var saving = false
 
     private lateinit var carver: Carver<PreviewView, CameraXConfiguration>
 
@@ -69,33 +71,91 @@ class CarverActivity : AppCompatActivity() {
         carver.bindPreview(previewView)
         carver.prepare()
 
-        lifecycleScope.launch {
-            vm.carverStatus.collect { status ->
-                when (status) {
-                    is CarverStatus.Recording<*> -> {
-                        @Suppress("UNCHECKED_CAST")
-                        status as CarverStatus.Recording<RecordingStats>
-                        status.info.recordedDurationNanos
-                    }
-                    is CarverStatus.Initial -> {}
-                    is CarverStatus.Prepared -> {
-                        carver.start()
-                    }
-                    is CarverStatus.Start -> {}
-                    is CarverStatus.Stop -> {}
-                    is CarverStatus.Pause -> {}
-                    is CarverStatus.Resume -> {}
-                    is CarverStatus.Shutdown -> {}
-                    is CarverStatus.Error -> {}
+        control.setOnClickListener {
+            if (saving) {
+                toast("正在保存，请稍后")
+                return@setOnClickListener
+            }
+            when (vm.carverStatus.value) {
+                is CarverStatus.Finalize<*>, is CarverStatus.Prepared -> {
+                    carver.start()
+                }
+                is CarverStatus.Start, is CarverStatus.Resume -> {
+                    carver.pause()
+                }
+                is CarverStatus.Pause -> {
+                    carver.resume()
+                }
+                else -> {
+                    /* Nothing to do. */
                 }
             }
         }
+
+        control.setOnLongClickListener {
+            val status = vm.carverStatus.value
+            if (status is CarverStatus.Start || status is CarverStatus.Resume) {
+                saving = true
+                toast("正在保存")
+                carver.stop()
+            }
+            true
+        }
+
+        lifecycleScope.launch {
+            vm.carverStatus.collect { status ->
+                when (status) {
+                    is CarverStatus.Initial -> {}
+                    is CarverStatus.Prepared -> {}
+                    is CarverStatus.Start -> {
+                        toast("开始")
+                    }
+                    is CarverStatus.Finalize<*> -> {
+                        @Suppress("UNCHECKED_CAST")
+                        status as CarverStatus.Finalize<OutputResults>
+                        with(status.info) {
+                            toast("录像已保存至:${outputUri.path ?: "保存错误"}")
+                        }
+                        timeText.text = "--:--"
+                        saving = false
+                    }
+                    is CarverStatus.Pause -> {
+                        toast("已暂停")
+                    }
+                    is CarverStatus.Resume -> {
+                        toast("继续")
+                    }
+                    is CarverStatus.Shutdown -> {}
+                    is CarverStatus.Error -> {
+                        toast("发生错误")
+                    }
+                    else -> {}
+                }
+            }
+        }
+
+        lifecycleScope.launch {
+            vm.recordingStatus.collect { status ->
+                status ?: return@collect
+                @Suppress("UNCHECKED_CAST")
+                status as CarverStatus.Recording<RecordingStats>
+                with(status.info) {
+                    timeText.text = formatRecordingTime(recordedDurationNanos)
+                }
+            }
+        }
+
     }
 
     override fun onResume() {
         super.onResume()
         clearSystemWindows(statusBar)
         setStatusBarTextColor(true)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        carver.shutdown()
     }
 
 }
