@@ -24,7 +24,7 @@ abstract class MediaCodecRenderer(
         private set
     private val bufferInfo = MediaCodec.BufferInfo()
 
-    private var outputBufferIndex: Int = -1
+    private var pendingBuffer: PendingBuffer? = null
 
 
     final override fun render(positionUs: Long, elapsedRealtimeMs: Long) {
@@ -126,7 +126,7 @@ abstract class MediaCodecRenderer(
 
     internal fun flushCodec() {
         val codec = codec
-        outputBufferIndex = -1
+        pendingBuffer = null
         codec?.flush()
     }
 
@@ -171,21 +171,19 @@ abstract class MediaCodecRenderer(
 
     private fun drainOutputBuffer(positionUs: Long, elapsedRealtimeUs: Long): Boolean {
         val mediaCodec = codec ?: return false
-        var index = mediaCodec.dequeueOutputBuffer(bufferInfo, 0)
+        val (index, info) = pendingBuffer ?: mediaCodec.nextOutputBuffer()
+        pendingBuffer = null
 
         if (index == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
             return true
-        } else if (index == MediaCodec.INFO_TRY_AGAIN_LATER && outputBufferIndex >= 0) {
-            // 取出上次未处理的帧
-            index = outputBufferIndex
-        } else if (index < 0) {
+        }  else if (index < 0) {
             return false
         }
 
         val outputBuffer = mediaCodec.getOutputBuffer(index)
         outputBuffer?.let {
-            it.position(bufferInfo.offset)
-            it.limit(bufferInfo.offset + bufferInfo.size)
+            it.position(info.offset)
+            it.limit(info.offset + info.size)
         }
 
         val processOutput = processOutputBuffer(
@@ -194,31 +192,46 @@ abstract class MediaCodecRenderer(
             mediaCodec,
             outputBuffer,
             index,
-            bufferInfo.flags,
-            bufferInfo.size,
-            bufferInfo.presentationTimeUs
+            info.flags,
+            info.size,
+            info.presentationTimeUs
         )
         if (processOutput) {
-            lastPositionUs = bufferInfo.presentationTimeUs
-            // reset 缓存信息
-            outputBufferIndex = -1
+            lastPositionUs = info.presentationTimeUs
 
-            val endOfStream = (bufferInfo.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0
+            val endOfStream = (info.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0
             if (!endOfStream) {
                 return true
             }
         } else {
             // 一个可被输出的帧没有被处理，对此帧进行缓存
             if (index >= 0) {
-                outputBufferIndex = index
+                pendingBuffer = PendingBuffer(index, info.copy())
             }
         }
         return false
     }
 
+    private fun MediaCodec.nextOutputBuffer(timeoutUs: Long = 0L): PendingBuffer {
+        val index = dequeueOutputBuffer(bufferInfo, timeoutUs)
+        return PendingBuffer(index, bufferInfo)
+    }
+
+    private fun MediaCodec.BufferInfo.copy(): MediaCodec.BufferInfo {
+        return MediaCodec.BufferInfo().let {
+            it.set(offset, size, presentationTimeUs, flags)
+            it
+        }
+    }
+
     companion object {
         const val LIMIT_NOT_SET = -1L
         const val DEFAULT_AUDIO_SYNC_LIMIT = 80000L
-        const val DEFAULT_VIDEO_SYNC_LIMIT = 80000L
+        const val DEFAULT_VIDEO_SYNC_LIMIT = 50000L
     }
+
+    data class PendingBuffer(
+        val index: Int,
+        val info: MediaCodec.BufferInfo
+    )
 }
