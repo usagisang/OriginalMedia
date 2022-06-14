@@ -31,9 +31,10 @@ abstract class BaseRenderer(
     final override fun replaceSender(format: List<Format>, sender: Sender?,
                                      startPositionUs: Long) {
         sampleFormats = format
+        val oldSender = this.sender
         this.sender = sender
 
-        onSenderChanged(format, sender, startPositionUs)
+        onSenderChanged(format, oldSender, sender, startPositionUs)
     }
 
     final override fun disable() {
@@ -50,7 +51,8 @@ abstract class BaseRenderer(
 
     abstract fun onEnable()
 
-    abstract fun onSenderChanged(format: List<Format>, sender: Sender?, startPositionUs: Long)
+    abstract fun onSenderChanged(format: List<Format>, oldSender: Sender?,
+                                 newSender: Sender?, startPositionUs: Long)
 
     abstract fun onDisabled(oldSender: Sender?)
 }

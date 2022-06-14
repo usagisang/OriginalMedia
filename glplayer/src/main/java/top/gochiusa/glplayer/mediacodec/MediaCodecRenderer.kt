@@ -60,7 +60,12 @@ abstract class MediaCodecRenderer(
         flushCodec()
     }
 
-    override fun onSenderChanged(format: List<Format>, sender: Sender?, startPositionUs: Long) {
+    override fun onSenderChanged(
+        format: List<Format>,
+        oldSender: Sender?,
+        newSender: Sender?,
+        startPositionUs: Long
+    ) {
         lastPositionUs = startPositionUs
         flushCodec()
     }

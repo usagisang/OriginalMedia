@@ -29,19 +29,23 @@ class MediaCodecVideoRenderer(
 
     override fun onSenderChanged(
         format: List<Format>,
-        sender: Sender?,
+        oldSender: Sender?,
+        newSender: Sender?,
         startPositionUs: Long
     ) {
-        super.onSenderChanged(format, sender, startPositionUs)
+        super.onSenderChanged(format, oldSender, newSender, startPositionUs)
+
         frameLossCount = 0
-        if (videoFormat != null) {
+
+        videoFormat?.let {
+            oldSender?.unbindTrack(it, this)
             releaseCodec()
             videoFormat = null
         }
         for (f in sampleFormats) {
             if (f.isVideo()) {
                 videoFormat = f
-                sender?.bindTrack(f, this)
+                newSender?.bindTrack(f, this)
                 videoMetadataListener?.onVideoMetadataChanged(f)
                 return
             }
@@ -126,6 +130,13 @@ class MediaCodecVideoRenderer(
         setOutput(null)
     }
 
+    override fun onDisabled(oldSender: Sender?) {
+        super.onDisabled(oldSender)
+        val f = videoFormat
+        if (f != null) {
+            oldSender?.unbindTrack(f, this)
+        }
+    }
 
     private fun setOutput(output: Surface?) {
         if (output == surface) {
