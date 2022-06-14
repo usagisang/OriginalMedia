@@ -21,8 +21,6 @@ class MediaCodecAudioRenderer(
 
     private var audioFormat: Format? = null
 
-    //override fun mayRendererOnceTime(): Boolean = true
-
     override fun onSenderChanged(
         format: List<Format>,
         sender: Sender?,
@@ -156,7 +154,7 @@ class MediaCodecAudioRenderer(
                 .build()
 
             audioTrack = AudioTrack(
-                attribute, audioFormat, minSize,
+                attribute, audioFormat, minSize * 2,
                 AudioTrack.MODE_STREAM, AudioManager.AUDIO_SESSION_ID_GENERATE
             )
         }
