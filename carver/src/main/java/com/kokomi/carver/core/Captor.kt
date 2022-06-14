@@ -65,6 +65,8 @@ abstract class Captor<P, C> {
      * */
     abstract fun resume()
 
+    abstract fun changeLensFacing()
+
     abstract fun zoom(zoom: Float)
 
 }

@@ -4,11 +4,11 @@ import androidx.camera.core.CameraSelector
 import androidx.camera.video.Quality
 import java.io.File
 
-internal val supportedQualitySet = mutableSetOf<Quality>()
+internal val supportedQualityList = mutableListOf<Quality>()
 
-fun getSupportedQualities(): Set<Quality> {
-    return mutableSetOf<Quality>().apply {
-        addAll(supportedQualitySet)
+fun getSupportedQualities(): List<Quality> {
+    return mutableListOf<Quality>().apply {
+        addAll(supportedQualityList)
     }
 }
 
@@ -23,3 +23,16 @@ data class CameraXConfiguration internal constructor(
         )
     }
 )
+
+fun qualityFormatter(quality: Quality) =
+    when (quality) {
+        Quality.LOWEST -> "最低"
+        Quality.SD -> "SD, 480P"
+        Quality.HD -> "HD, 720P"
+        Quality.FHD -> "FHD, 1080P"
+        Quality.UHD -> "UHD, 2160P"
+        Quality.HIGHEST -> "最高"
+        else -> {
+            "未知分辨率"
+        }
+    }

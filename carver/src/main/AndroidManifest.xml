@@ -9,7 +9,10 @@
 
     <application>
         <activity
-            android:name=".ui.CarverActivity"
+            android:name=".ui.setting.SettingActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.capture.CarverActivity"
             android:exported="false" />
     </application>
 

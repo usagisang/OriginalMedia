@@ -11,8 +11,8 @@ object Build {
 
 object Deps {
     object Compose {
-        const val dependentiesVersion = "1.1.1"
-        const val compilerVersion = "1.1.1"
+        const val dependentiesVersion = "1.1.0"
+        const val compilerVersion = "1.0.5"
 
         const val composeUi = "androidx.compose.ui:ui:$dependentiesVersion"
         const val composeMaterial = "androidx.compose.material:material:$dependentiesVersion"

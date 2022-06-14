@@ -52,6 +52,10 @@ class Carver<P, C>(
         captor.resume()
     }
 
+    fun changeLensFacing() {
+        captor.changeLensFacing()
+    }
+
     fun setZoom(zoom: Float) {
         captor.zoom(zoom)
     }

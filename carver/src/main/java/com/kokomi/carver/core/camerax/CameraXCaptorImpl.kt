@@ -19,7 +19,10 @@ import java.util.concurrent.locks.ReentrantLock
 class CameraXCaptorImpl(
     private val activity: ComponentActivity,
     override var config: CameraXConfiguration =
-        CameraXConfiguration(outputDirectory = activity.defaultOutputDirectory())
+        CameraXConfiguration(
+            quality = Quality.HIGHEST,
+            outputDirectory = activity.defaultOutputDirectory()
+        )
 ) : Captor<PreviewView, CameraXConfiguration>() {
 
     companion object {
@@ -136,9 +139,14 @@ class CameraXCaptorImpl(
                         activity, cameraSelector, preview, videoCapture
                     ).apply {
                         // 将相机支持的分辨率记录到配置类中
-                        supportedQualitySet.apply {
+                        supportedQualityList.apply {
                             clear()
-                            addAll(QualitySelector.getSupportedQualities(cameraInfo))
+                            val qualities = QualitySelector.getSupportedQualities(cameraInfo)
+                            add(Quality.LOWEST)
+                            for (i in qualities.size - 1 downTo 0) {
+                                add(qualities[i])
+                            }
+                            add(Quality.HIGHEST)
                         }
                     }
                     // 设置预览界面
@@ -154,6 +162,16 @@ class CameraXCaptorImpl(
                 }
             }, ContextCompat.getMainExecutor(activity)
         )
+    }
+
+    override fun changeLensFacing() {
+        val facing = if (config.lensFacing == CameraSelector.LENS_FACING_BACK) {
+            CameraSelector.LENS_FACING_FRONT
+        } else {
+            CameraSelector.LENS_FACING_BACK
+        }
+        config = config.copy(lensFacing = facing)
+        onConfigurationChanged(config)
     }
 
     override fun zoom(zoom: Float) {

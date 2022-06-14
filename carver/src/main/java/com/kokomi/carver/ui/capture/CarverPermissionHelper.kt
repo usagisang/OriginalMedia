@@ -1,4 +1,4 @@
-package com.kokomi.carver.ui
+package com.kokomi.carver.ui.capture
 
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts

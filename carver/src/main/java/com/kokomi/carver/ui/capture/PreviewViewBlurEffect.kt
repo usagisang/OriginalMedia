@@ -1,4 +1,4 @@
-package com.kokomi.carver.ui
+package com.kokomi.carver.ui.capture
 
 import android.animation.ObjectAnimator
 import android.content.Context
