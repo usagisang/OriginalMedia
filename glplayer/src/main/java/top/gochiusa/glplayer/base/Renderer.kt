@@ -17,6 +17,11 @@ interface Renderer: Receiver {
      */
     fun getMediaClock(): MediaClock
 
+    /**
+     * 根据当前播放位置[positionUs]，进行渲染操作
+     * @param positionUs 当前播放位置
+     * @param elapsedRealtimeMs 渲染开始的基准时间，单位为ms
+     */
     fun render(positionUs: Long, elapsedRealtimeMs: Long)
 
     /**
