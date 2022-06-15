@@ -11,8 +11,8 @@ object Build {
 
 object Deps {
     object Compose {
-        const val dependentiesVersion = "1.1.1"
-        const val compilerVersion = "1.1.1"
+        const val dependentiesVersion = "1.1.0"
+        const val compilerVersion = "1.0.5"
 
         const val composeUi = "androidx.compose.ui:ui:$dependentiesVersion"
         const val composeMaterial = "androidx.compose.material:material:$dependentiesVersion"
@@ -96,6 +96,17 @@ object Deps {
     object Paging {
         const val runtime = "androidx.paging:paging-runtime-ktx:3.1.1"
         const val compose = "androidx.paging:paging-compose:1.0.0-alpha14"
+    }
+
+    // CameraX
+    object CameraX {
+        private const val version = "1.1.0-rc01"
+
+        const val camera2 = "androidx.camera:camera-camera2:$version"
+        const val core = "androidx.camera:camera-core:$version"
+        const val lifeCycle = "androidx.camera:camera-lifecycle:$version"
+        const val view = "androidx.camera:camera-view:$version"
+        const val video = "androidx.camera:camera-video:$version"
     }
 
     const val appCompat = "androidx.appcompat:appcompat:1.4.1"
