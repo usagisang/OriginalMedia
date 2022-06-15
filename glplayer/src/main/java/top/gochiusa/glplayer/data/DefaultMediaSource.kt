@@ -18,7 +18,6 @@ class DefaultMediaSource(
     // TODO 视频断流与恢复
     // TODO 视频缓冲
     private val mediaExtractor: MediaExtractor = MediaExtractor()
-    //private val audioTimeQueue: Deque<Long> = ArrayDeque()
 
     private val _formats: MutableList<Format> = mutableListOf()
     override val format: List<Format> = _formats
@@ -77,7 +76,6 @@ class DefaultMediaSource(
         requestHeaders: Map<String, String>?
     ) {
         this.mediaItem = mediaItem
-        //audioTimeQueue.clear()
 
         // may block
         mediaItem.uri?.let {
@@ -90,23 +88,11 @@ class DefaultMediaSource(
         parseFormats()
     }
 
-    private fun getNextScheduleUs(): Long {
-        /*val next = audioTimeQueue.pollFirst()
-            ?: if (hasNext) {
-                -1L
-            } else {
-                _durationUs
-            }
-        return next*/
-        return -1L
-    }
-
     override fun release() {
         mediaExtractor.release()
     }
 
     override fun seekTo(positionUs: Long, seekMode: SeekMode): Long {
-        //audioTimeQueue.clear()
         mediaExtractor.seekTo(positionUs, seekMode.mode)
         hasNext = true
         var cacheUs = mediaExtractor.cachedDuration
@@ -145,9 +131,6 @@ class DefaultMediaSource(
 
             val sampleSize = mediaExtractor.readSampleData(byteBuffer, 0)
 
-            /*if (format.isAudio()) {
-                audioTimeQueue.offerLast(sampleTime)
-            }*/
             // TODO 根据情况来确定是否到达end
             return SampleData(sampleSize, sampleTime, sampleFlags, false)
         }

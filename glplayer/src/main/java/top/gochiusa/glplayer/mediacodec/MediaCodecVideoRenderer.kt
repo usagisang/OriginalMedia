@@ -29,19 +29,23 @@ class MediaCodecVideoRenderer(
 
     override fun onSenderChanged(
         format: List<Format>,
-        sender: Sender?,
+        oldSender: Sender?,
+        newSender: Sender?,
         startPositionUs: Long
     ) {
-        super.onSenderChanged(format, sender, startPositionUs)
+        super.onSenderChanged(format, oldSender, newSender, startPositionUs)
+
         frameLossCount = 0
-        if (videoFormat != null) {
+
+        videoFormat?.let {
+            oldSender?.unbindTrack(it, this)
             releaseCodec()
             videoFormat = null
         }
         for (f in sampleFormats) {
             if (f.isVideo()) {
                 videoFormat = f
-                sender?.bindTrack(f, this)
+                newSender?.bindTrack(f, this)
                 videoMetadataListener?.onVideoMetadataChanged(f)
                 return
             }
@@ -64,6 +68,7 @@ class MediaCodecVideoRenderer(
         bufferSize: Int,
         bufferPresentationTimeUs: Long
     ): Boolean {
+        //PlayerLog.d(message = "video position $positionUs bufferTime $bufferPresentationTimeUs")
         if (surface == null || bufferSize <= 0) {
             buffer?.clear()
             codec.releaseOutputBuffer(bufferIndex, false)
@@ -75,6 +80,7 @@ class MediaCodecVideoRenderer(
                 + syncLimit)
         // 当前播放位置处于可同步的范围内(不超出此帧的PTS前后syncLimitMs内)
         return if (positionUs in syncRange) {
+            //PlayerLog.d(message = "Frame in syncRange")
             try {
                 codec.releaseOutputBuffer(bufferIndex, true)
                 frameLossCount = maxOf(frameLossCount - 3, 0)
@@ -88,7 +94,7 @@ class MediaCodecVideoRenderer(
             // 此帧超前，但不超过leadingLimitMs指定的最大限度
             false
         } else {
-            //PlayerLog.d(message = "Frame loss. At Time $positionUs bufferTime $bufferPresentationTimeUs")
+            //PlayerLog.d(message = "Frame loss.")
             frameLossCount++
             codec.releaseOutputBuffer(bufferIndex, false)
             true
@@ -126,6 +132,13 @@ class MediaCodecVideoRenderer(
         setOutput(null)
     }
 
+    override fun onDisabled(oldSender: Sender?) {
+        super.onDisabled(oldSender)
+        val f = videoFormat
+        if (f != null) {
+            oldSender?.unbindTrack(f, this)
+        }
+    }
 
     private fun setOutput(output: Surface?) {
         if (output == surface) {

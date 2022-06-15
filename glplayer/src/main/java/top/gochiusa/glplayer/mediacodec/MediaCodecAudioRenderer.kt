@@ -21,17 +21,17 @@ class MediaCodecAudioRenderer(
 
     private var audioFormat: Format? = null
 
-    //override fun mayRendererOnceTime(): Boolean = true
-
     override fun onSenderChanged(
         format: List<Format>,
-        sender: Sender?,
+        oldSender: Sender?,
+        newSender: Sender?,
         startPositionUs: Long
     ) {
-        super.onSenderChanged(format, sender, startPositionUs)
+        super.onSenderChanged(format, oldSender, newSender, startPositionUs)
         val cacheFormat = audioFormat
         var newFormat: Format?
         if (cacheFormat != null) {
+            oldSender?.unbindTrack(cacheFormat, this)
             releaseCodec()
             newFormat = format.firstOrNull {
                 it.isAudio() && it.sampleMimeType == cacheFormat.sampleMimeType
@@ -45,7 +45,7 @@ class MediaCodecAudioRenderer(
             } else {
                 // 如果该轨道的音频数据与之前的音频数据关于AudioTrack的参数一致，不需要release
                 // 启用相关数据的读取
-                sender?.bindTrack(newFormat, this)
+                newSender?.bindTrack(newFormat, this)
                 return
             }
         }
@@ -60,7 +60,7 @@ class MediaCodecAudioRenderer(
         } else {
             audioFormat = newFormat
             // 启用相关数据的读取
-            sender?.bindTrack(newFormat, this)
+            newSender?.bindTrack(newFormat, this)
             createAudioTrack(newFormat)
         }
     }
@@ -129,6 +129,14 @@ class MediaCodecAudioRenderer(
         return audioClock
     }
 
+    override fun onDisabled(oldSender: Sender?) {
+        super.onDisabled(oldSender)
+        val f = audioFormat
+        if (f != null) {
+            oldSender?.unbindTrack(f, this)
+        }
+    }
+
     private fun releaseAudioTrack() {
         audioTrack?.release()
         audioTrack = null
@@ -156,7 +164,7 @@ class MediaCodecAudioRenderer(
                 .build()
 
             audioTrack = AudioTrack(
-                attribute, audioFormat, minSize,
+                attribute, audioFormat, minSize * 2,
                 AudioTrack.MODE_STREAM, AudioManager.AUDIO_SESSION_ID_GENERATE
             )
         }

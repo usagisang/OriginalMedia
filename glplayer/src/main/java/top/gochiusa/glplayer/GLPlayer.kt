@@ -108,7 +108,7 @@ private constructor(
     override fun seekTo(positionMs: Long) {
         Assert.verifyMainThread()
 
-        if (positionMs > durationMs) {
+        if (positionMs > durationMs || positionMs == currentPositionMs) {
             return
         }
         if (state == Player.STATE_PLAYING || state == Player.STATE_PAUSE) {
@@ -204,19 +204,11 @@ private constructor(
                 true
             }
             MSG_PLAY -> {
-                eventHandler.removeMessages(MSG_PLAY)
-                startRenderTimeMs = SystemClock.elapsedRealtime() - _currentPositionUs / 1000
-                eventHandler.sendEmptyMessage(MSG_RENDER)
-                mainHandler.post {
-                    changeStateUncheck(Player.STATE_PLAYING)
-                }
+                playInternal()
                 true
             }
             MSG_PAUSE -> {
-                eventHandler.removeMessages(MSG_RENDER)
-                mainHandler.post {
-                    changeStateUncheck(Player.STATE_PAUSE)
-                }
+                pauseInternal()
                 true
             }
             MSG_SEEK_TO -> {
@@ -321,7 +313,9 @@ private constructor(
     }
 
     private fun renderInternal(loop: Boolean) {
+        //val loopStart = SystemClock.elapsedRealtime()
         loopSendData()
+        //PlayerLog.d(message = "loopSendData spend time ${SystemClock.elapsedRealtime() - loopStart}")
 
         val startTimeMs: Long = SystemClock.elapsedRealtime()
         renderers.forEach {
@@ -336,13 +330,9 @@ private constructor(
                 PlayerLog.e(message = e)
             }
         }
-        // 计算渲染所使用的时间
-        val spendTimeMs = (SystemClock.elapsedRealtime() - startTimeMs)
-
-        // TODO 音频首次渲染不稳定
+        
         //val delayTimeMs = (5L - spendTimeMs).coerceAtLeast(0)
 
-        // PlayerLog.d(message = "spend time $spendTimeMs")
         if (currentPositionMs >= durationMs) {
             mainHandler.post {
                 changeStateUncheck(Player.STATE_STOP)
@@ -363,7 +353,6 @@ private constructor(
     }
 
     private fun renderVideoFrame(positionUs: Long) {
-        // TODO 渲染可能失败(pending)
         val startRenderTime = SystemClock.elapsedRealtime()
         renderers.forEach {
             if (it.getTrackType() == Constants.TRACK_TYPE_VIDEO) {
@@ -388,22 +377,41 @@ private constructor(
             it.onSeekTo()
         }
         val syncTime = mediaSource.seekTo(positionUs, SeekMode.CLOSEST_SYNC)
-        _currentPositionUs = if (syncTime < 0) positionUs else syncTime
+        //_currentPositionUs = if (syncTime < 0) positionUs else syncTime
 
         loopSendData()
 
         var delayTime = DELAY_FOR_DECODE_TIME
         if (oldState == Player.STATE_PAUSE) {
             delay(delayTime)
-            delayTime -= delayTime
-            renderVideoFrame(_currentPositionUs)
+            delayTime = 0
+            renderVideoFrame(syncTime)
         }
+        // 更新播放位置
+        _currentPositionUs = positionUs
 
         mainHandler.post {
             changeStateUncheck(oldState)
         }
         if (oldState == Player.STATE_PLAYING) {
             eventHandler.sendEmptyMessageDelayed(MSG_PLAY, delayTime)
+        }
+    }
+
+    private fun playInternal() {
+        eventHandler.removeMessages(MSG_RENDER)
+        eventHandler.removeMessages(MSG_PLAY)
+        startRenderTimeMs = SystemClock.elapsedRealtime() - _currentPositionUs / 1000
+        eventHandler.sendEmptyMessage(MSG_RENDER)
+        mainHandler.post {
+            changeStateUncheck(Player.STATE_PLAYING)
+        }
+    }
+
+    private fun pauseInternal() {
+        eventHandler.removeMessages(MSG_RENDER)
+        mainHandler.post {
+            changeStateUncheck(Player.STATE_PAUSE)
         }
     }
 
@@ -418,6 +426,8 @@ private constructor(
 
         eventHandler.sendEmptyMessageDelayed(MSG_PLAY, DELAY_FOR_DECODE_TIME)
     }
+
+
 
     private fun loopSendData() {
         var sendData = true
