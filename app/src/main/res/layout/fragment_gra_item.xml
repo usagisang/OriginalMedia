@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/black_back"
+    tools:context=".explore.fragment.GraItemFragment">
+
+    <TextView
+        android:id="@+id/tv_graphic_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:text="@string/hello_blank_fragment"
+        android:textSize="34sp"
+        android:textColor="@color/white_back"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/iv_graphic"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:layout_margin="20dp"
+        android:src="@drawable/shape_oral"
+        app:layout_constraintTop_toBottomOf="@+id/tv_graphic_title" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/iv_graphic"
+        android:layout_margin="20dp"
+        android:textColor="@color/white_back"
+        android:text="今天我 为啊阿斯顿阿斯顿安康九十年代看书纪念卡是你的萨克你的看我九年卡位卡瓦尼的昂科威你我对你阿斯顿阿萨的fmg no 是你的可能阿斯顿喀什空间那可就能看见才能                      氨基酸可能的看看就是你可能吗，查询可能卡农挖煤                                                       老师的妇女爱着你拿到阿萨阿萨大三大撒 阿斯顿阿萨大苏打阿三的去"
+        android:id="@+id/tv_graphic"/>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

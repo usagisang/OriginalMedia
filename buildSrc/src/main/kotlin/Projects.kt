@@ -10,6 +10,13 @@ object Build {
 }
 
 object Deps {
+    object ImmersionBar{
+        const val version = "3.2.2"
+        const val baseBag = "com.geyifeng.immersionbar:immersionbar:$version"
+        const val baseKTX = "com.geyifeng.immersionbar:immersionbar-ktx:$version"
+        const val fragmentDie = "com.geyifeng.immersionbar:immersionbar-components:$version"
+    }
+
     object Compose {
         const val dependentiesVersion = "1.1.1"
         const val compilerVersion = "1.1.1"
@@ -33,6 +40,7 @@ object Deps {
 
     object Lifecycle {
         const val version = "2.4.1"
+        const val livedata ="androidx.lifecycle:lifecycle-livedata-ktx:$version"
         const val viewModelCompose = "androidx.lifecycle:lifecycle-viewmodel-compose:$version"
         const val viewModelKtx = "androidx.lifecycle:lifecycle-viewmodel-ktx:$version"
         const val runtimeKtx = "androidx.lifecycle:lifecycle-runtime-ktx:$version"
@@ -43,6 +51,8 @@ object Deps {
         const val fragmentKtx = "androidx.navigation:navigation-fragment-ktx:$version"
         const val navigationUiKtx = "androidx.navigation:navigation-ui-ktx:$version"
         const val compose = "androidx.navigation:navigation-compose:$version"
+        const val fragment = "androidx.navigation:navigation-fragment:$version"
+        const val navigationUI = "androidx.navigation:navigation-ui:$version"
     }
 
     object Ktx {

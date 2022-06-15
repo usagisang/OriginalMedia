@@ -1,9 +1,13 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id("kotlin-android-extensions")
+
 }
 
 android {
+
+
     compileSdk = Build.compileSdkVersion
 
     defaultConfig {
@@ -15,11 +19,19 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
+    buildFeatures {
+        dataBinding = true
+        viewBinding = true
+
+    }
 
     buildTypes {
         release {
             isMinifyEnabled = false
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
     compileOptions {
@@ -36,12 +48,23 @@ android {
         }
     }
 
+
 }
 
 dependencies {
     implementation(project(":dependencies"))
+    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
 
     testImplementation(TestDeps.Local.junit)
     androidTestImplementation(TestDeps.Instrumentation.espresso)
     androidTestImplementation(TestDeps.Instrumentation.junitExtension)
+    api(Deps.ImmersionBar.baseBag)
+    api(Deps.ImmersionBar.baseKTX)
+    api(Deps.ImmersionBar.fragmentDie)
+    api(Deps.retrofit)
+    api(Deps.retrofitGsonConverter)
+    api(Deps.Lifecycle.livedata)
+    api(Deps.Navigation.navigationUI)
+    api(Deps.Navigation.fragment)
+
 }
