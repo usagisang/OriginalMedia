@@ -10,19 +10,16 @@ import androidx.compose.material.Surface
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModelProvider
 import com.kokomi.carver.setStatusBarTextColor
+import com.kokomi.carver.ui.capture.CAMERAX_IMPL
+import com.kokomi.carver.ui.capture.IMPL_LIST
 
 class SettingActivity : ComponentActivity() {
 
     private lateinit var vm: SettingViewModel
 
-    private var initResolvingPower: Int = -1
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        vm = ViewModelProvider(this)[SettingViewModel::class.java]
-        vm.impl.value = intent.getStringExtra("impl")!!
-        initResolvingPower = vm.supportedQuality.indexOf(intent.getStringExtra("resolving_power"))
-        vm.selectedResolvingPower.value = initResolvingPower
+        initParams()
         setContent {
             CarverTheme {
                 Surface(
@@ -33,6 +30,19 @@ class SettingActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    private fun initParams() {
+        vm = ViewModelProvider(this)[SettingViewModel::class.java]
+        vm.impl.value = intent.getStringExtra(IMPL) ?: CAMERAX_IMPL
+        vm.selectedImpl.value = IMPL_LIST.indexOf(vm.impl.value)
+        vm.selectedQuality.value = vm.supportedQuality.indexOf(intent.getStringExtra(QUALITY) ?: 0)
+        vm.videoFrameRate.value = intent.getIntExtra(VIDEO_FRAME_RATE, -1)
+        vm.bitRate.value = intent.getIntExtra(BIT_RATE, -1)
+        vm.iFrameInterval.value = intent.getIntExtra(I_FRAME_INTERVAL, -1)
+        vm.audioSampleRate.value = intent.getIntExtra(AUDIO_SAMPLE_RATE, -1)
+        vm.audioBitRate.value = intent.getIntExtra(AUDIO_BIT_RATE, -1)
+        vm.audioChannelCount.value = intent.getIntExtra(AUDIO_CHANNEL_COUNT, -1)
     }
 
     override fun onResume() {
@@ -51,13 +61,16 @@ class SettingActivity : ComponentActivity() {
     }
 
     private fun finishInternal() {
-        val selectedResolvingPower = vm.selectedResolvingPower.value
-        if (selectedResolvingPower != initResolvingPower) {
-            intent.putExtra("resolving_power", selectedResolvingPower)
-            setResult(RESULT_OK, intent)
-        } else {
-            setResult(RESULT_CANCELED, intent)
-        }
+        vm.impl.value = IMPL_LIST[vm.selectedImpl.value]
+        intent.putExtra(IMPL, vm.impl.value)
+        intent.putExtra(QUALITY, vm.selectedQuality.value)
+        intent.putExtra(VIDEO_FRAME_RATE, vm.videoFrameRate.value)
+        intent.putExtra(BIT_RATE, vm.bitRate.value)
+        intent.putExtra(I_FRAME_INTERVAL, vm.iFrameInterval.value)
+        intent.putExtra(AUDIO_SAMPLE_RATE, vm.audioSampleRate.value)
+        intent.putExtra(AUDIO_BIT_RATE, vm.audioBitRate.value)
+        intent.putExtra(AUDIO_CHANNEL_COUNT, vm.audioChannelCount.value)
+        setResult(RESULT_OK, intent)
         finish()
     }
 

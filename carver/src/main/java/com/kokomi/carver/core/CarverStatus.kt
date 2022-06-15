@@ -1,5 +1,7 @@
 package com.kokomi.carver.core
 
+import android.net.Uri
+
 sealed class CarverStatus(code: Int) {
 
     class Initial : CarverStatus(0)
@@ -8,9 +10,9 @@ sealed class CarverStatus(code: Int) {
 
     class Start : CarverStatus(2)
 
-    class Finalize<I>(val info: I) : CarverStatus(4)
+    class Finalize(val info: Uri) : CarverStatus(4)
 
-    class Recording<I>(val info: I) : CarverStatus(8)
+    class Recording(val info: Long) : CarverStatus(8)
 
     class Pause : CarverStatus(16)
 

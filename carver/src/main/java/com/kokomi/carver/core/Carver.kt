@@ -8,10 +8,6 @@ class Carver<P, C>(
     private val listener: (CarverStatus) -> Unit
 ) {
 
-    companion object {
-        private const val TAG = "Carver"
-    }
-
     init {
         captor.attachTo(this)
     }

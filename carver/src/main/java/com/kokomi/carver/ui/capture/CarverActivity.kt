@@ -1,15 +1,14 @@
 package com.kokomi.carver.ui.capture
 
+import android.animation.ObjectAnimator
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.camera.video.OutputResults
-import androidx.camera.video.Quality
-import androidx.camera.video.RecordingStats
 import androidx.camera.view.PreviewView
 import androidx.cardview.widget.CardView
 import androidx.lifecycle.ViewModelProvider
@@ -22,19 +21,47 @@ import com.kokomi.carver.core.camerax.getSupportedQualities
 import com.kokomi.carver.core.camerax.qualityFormatter
 import com.kokomi.carver.formatRecordingTime
 import com.kokomi.carver.setStatusBarTextColor
-import com.kokomi.carver.ui.setting.SettingActivity
+import com.kokomi.carver.ui.setting.*
+import com.kokomi.carver.ui.setting.BIT_RATE
+import com.kokomi.carver.ui.setting.I_FRAME_INTERVAL
+import com.kokomi.carver.ui.setting.QUALITY
+import com.kokomi.carver.ui.setting.VIDEO_FRAME_RATE
 import com.kokomi.carver.weight.ZoomGestureView
 import kotlinx.coroutines.launch
 
 class CarverActivity : AppCompatActivity() {
 
+    companion object {
+        private const val TAG = "CarverActivity"
+    }
+
     private val resultFromSettingActivity =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
             if (it.resultCode == RESULT_OK) {
-                it.data?.getIntExtra("resolving_power", 0)?.let { quality ->
-                    val supportedQualities = getSupportedQualities()
+                it.data?.run {
+                    vm.updateCarver(
+                        getStringExtra(IMPL) ?: CAMERAX_IMPL,
+                        this@CarverActivity,
+                        previewView
+                    )
+                    val config = vm.carver.getConfig()
+                    val qualityIndex = getIntExtra(QUALITY, -1)
+                    val videoFrameRate = getIntExtra(VIDEO_FRAME_RATE, -1)
+                    val bitRate = getIntExtra(BIT_RATE, -1)
+                    val iFrameInterval = getIntExtra(I_FRAME_INTERVAL, -1)
+                    val audioSampleRate = getIntExtra(AUDIO_SAMPLE_RATE, -1)
+                    val audioBitRate = getIntExtra(AUDIO_BIT_RATE, -1)
+                    val audioChannelCount = getIntExtra(AUDIO_CHANNEL_COUNT, -1)
                     vm.carver.newConfig(
-                        vm.carver.getConfig().copy(quality = supportedQualities[quality])
+                        config.copy(
+                            quality = if (qualityIndex != -1) getSupportedQualities()[qualityIndex] else config.quality,
+                            videoFrameRate = videoFrameRate,
+                            bitRate = bitRate,
+                            iFrameInterval = iFrameInterval,
+                            audioSampleRate = audioSampleRate,
+                            audioBitRate = audioBitRate,
+                            audioChannelCount = audioChannelCount
+                        )
                     )
                 }
             }
@@ -43,6 +70,7 @@ class CarverActivity : AppCompatActivity() {
     private var saving = false
 
     private lateinit var statusBar: TextView
+    private lateinit var rec: TextView
     private lateinit var timeText: TextView
     private lateinit var setting: ImageView
     private lateinit var previewView: PreviewView
@@ -83,8 +111,8 @@ class CarverActivity : AppCompatActivity() {
 
     private fun init() {
         vm = ViewModelProvider(this)[CarverViewModel::class.java]
-        vm.createCarver(CameraXCaptorImpl(this))
 
+        rec = findViewById(R.id.tv_carver_rec)
         timeText = findViewById(R.id.tv_carver_time)
         setting = findViewById(R.id.iv_carver_setting)
         previewView = findViewById(R.id.pv_carver_preview)
@@ -93,14 +121,20 @@ class CarverActivity : AppCompatActivity() {
         control = findViewById(R.id.cv_carver_control)
         changeCamera = findViewById(R.id.cv_carver_change_camera)
 
-        vm.carver.bindPreview(previewView)
-        vm.carver.prepare()
+        vm.createCarver(CameraXCaptorImpl(this), previewView)
 
         setting.setOnClickListener {
             resultFromSettingActivity.launch(
                 Intent(this, SettingActivity::class.java).apply {
-                    putExtra("impl", "camerax")
-                    putExtra("resolving_power", qualityFormatter(vm.carver.getConfig().quality))
+                    val config = vm.carver.getConfig()
+                    putExtra(IMPL, vm.impl.value)
+                    putExtra(QUALITY, qualityFormatter(vm.carver.getConfig().quality))
+                    putExtra(VIDEO_FRAME_RATE, config.videoFrameRate)
+                    putExtra(BIT_RATE, config.bitRate)
+                    putExtra(I_FRAME_INTERVAL, config.iFrameInterval)
+                    putExtra(AUDIO_SAMPLE_RATE, config.audioSampleRate)
+                    putExtra(AUDIO_BIT_RATE, config.audioBitRate)
+                    putExtra(AUDIO_CHANNEL_COUNT, config.audioChannelCount)
                 })
         }
 
@@ -117,7 +151,7 @@ class CarverActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
             when (this.vm.carverStatus.value) {
-                is CarverStatus.Finalize<*>, is CarverStatus.Prepared -> {
+                is CarverStatus.Finalize, is CarverStatus.Prepared -> {
                     vm.carver.start()
                 }
                 is CarverStatus.Start, is CarverStatus.Resume -> {
@@ -144,7 +178,7 @@ class CarverActivity : AppCompatActivity() {
 
         changeCamera.setOnClickListener {
             val status = this.vm.carverStatus.value
-            if (!(status is CarverStatus.Prepared || status is CarverStatus.Finalize<*>))
+            if (!(status is CarverStatus.Prepared || status is CarverStatus.Finalize))
                 return@setOnClickListener
             vm.carver.changeLensFacing()
         }
@@ -155,30 +189,40 @@ class CarverActivity : AppCompatActivity() {
                     is CarverStatus.Initial -> {
                         val b = previewView.bitmap ?: return@collect
                         PreviewViewBlurEffect(this@CarverActivity, b, blurEffect).startAnim()
+                        rec.text = "Initial"
                     }
                     is CarverStatus.Prepared -> {
+                        rec.text = "Prepared"
                     }
                     is CarverStatus.Start -> {
-                        toast("开始")
+                        startRecBreath()
+                        rec.text = "REC"
                     }
-                    is CarverStatus.Finalize<*> -> {
-                        @Suppress("UNCHECKED_CAST")
-                        status as CarverStatus.Finalize<OutputResults>
+                    is CarverStatus.Finalize -> {
+                        stopRecBreath()
                         with(status.info) {
-                            toast("录像已保存至:${outputUri.path ?: "保存错误"}")
+                            intent.putExtra("video_file", path)
+                            setResult(RESULT_OK, intent)
+                            toast("录像已保存至:${path ?: "保存错误"}")
                         }
                         timeText.text = "--:--"
                         saving = false
+                        rec.text = "Finalize"
                     }
                     is CarverStatus.Pause -> {
-                        toast("已暂停")
+                        stopRecBreath()
+                        rec.text = "Pause"
                     }
                     is CarverStatus.Resume -> {
-                        toast("继续")
+                        startRecBreath()
+                        rec.text = "REC"
                     }
-                    is CarverStatus.Shutdown -> {}
+                    is CarverStatus.Shutdown -> {
+                        rec.text = "Shutdown"
+                    }
                     is CarverStatus.Error -> {
-                        toast("发生错误")
+                        rec.text = "ERROR"
+                        Log.e(TAG, "[ERROR]", status.t)
                     }
                     else -> {}
                 }
@@ -188,13 +232,10 @@ class CarverActivity : AppCompatActivity() {
         lifecycleScope.launch {
             vm.recordingStatus.collect { status ->
                 status ?: return@collect
-                @Suppress("UNCHECKED_CAST")
-                status as CarverStatus.Recording<RecordingStats>
-                with(status.info) {
-                    timeText.text = formatRecordingTime(recordedDurationNanos)
-                }
+                timeText.text = formatRecordingTime(status.info)
             }
         }
+
     }
 
     override fun onResume() {
@@ -206,6 +247,32 @@ class CarverActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         vm.carver.shutdown()
+    }
+
+    private fun startRecBreath() {
+        ObjectAnimator.ofFloat(
+            rec,
+            "alpha",
+            1f,
+            0f,
+            1f
+        ).apply {
+            setAutoCancel(true)
+            duration = 2000L
+            repeatCount = ObjectAnimator.INFINITE
+        }.start()
+    }
+
+    private fun stopRecBreath() {
+        ObjectAnimator.ofFloat(
+            rec,
+            "alpha",
+            rec.alpha,
+            1f
+        ).apply {
+            setAutoCancel(true)
+            duration = 100L
+        }.start()
     }
 
 }

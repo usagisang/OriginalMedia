@@ -1,5 +1,6 @@
 package com.kokomi.carver.core.recorder
 
+@Deprecated(message = "Incomplete API")
 class RecorderConfiguration private constructor(
     internal val mVideoFrameRate: Int,
     internal val mVideoBitRate: Int,

@@ -15,6 +15,12 @@ fun getSupportedQualities(): List<Quality> {
 data class CameraXConfiguration internal constructor(
     val lensFacing: Int = CameraSelector.LENS_FACING_BACK,
     val quality: Quality = Quality.LOWEST,
+    val videoFrameRate: Int = -1,
+    val bitRate: Int = -1,
+    val iFrameInterval: Int = -1,
+    val audioSampleRate: Int = -1,
+    val audioBitRate: Int = -1,
+    val audioChannelCount: Int = -1,
     val outputDirectory: File,
     val outputFile: () -> File = {
         File(

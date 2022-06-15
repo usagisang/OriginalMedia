@@ -7,7 +7,9 @@ import android.view.View
 import kotlin.math.pow
 import kotlin.math.sqrt
 
-@Suppress("AppCompatCustomView")
+/**
+ * 用于监听双指放大手势的 View
+ * */
 class ZoomGestureView : View {
 
     constructor (context: Context)

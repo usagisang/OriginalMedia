@@ -1,3 +1,6 @@
+// Android 12 以下要用以前的方法来实现高斯模糊
+@file:Suppress("DEPRECATION")
+
 package com.kokomi.carver.ui.capture
 
 import android.animation.ObjectAnimator
@@ -23,7 +26,8 @@ class PreviewViewBlurEffect(
     private val scriptIntrinsicBlur =
         ScriptIntrinsicBlur.create(renderScript, Element.U8_4(renderScript))
 
-    fun setBlur(radius: Float) {
+    @Suppress("UNUSED")
+    private fun setBlur(radius: Float) {
         val result = Bitmap.createBitmap(bitmap)
         val input = Allocation.createFromBitmap(renderScript, bitmap)
         val output = Allocation.createTyped(renderScript, input.type)

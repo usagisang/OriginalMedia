@@ -7,6 +7,7 @@ import android.view.TextureView
 import androidx.annotation.RequiresApi
 import com.kokomi.carver.core.Captor
 
+@Deprecated(message = "Incomplete API", level = DeprecationLevel.ERROR)
 abstract class MediaRecorderImpl(mContext: Context) : Captor<TextureView, RecorderConfiguration>() {
 
     private val mMediaRecorder by lazy {
