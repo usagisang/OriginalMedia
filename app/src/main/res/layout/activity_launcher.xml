@@ -18,6 +18,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
+            android:background="@color/black_back"
             app:itemTextColor="@color/gray"
             app:itemRippleColor="@color/white_back"
             app:menu="@menu/nav_bottom" />

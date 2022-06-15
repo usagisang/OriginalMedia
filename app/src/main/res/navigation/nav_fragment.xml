@@ -10,7 +10,7 @@
 
     <fragment
         android:id="@+id/fragment_creation"
-        android:name="top.gochiusa.originalmedia.creation.CreationFragment" />
+        android:name="top.gochiusa.originalmedia.creation.fragment.CreationFragment" />
 
     <fragment
         android:id="@+id/fragment_account"

@@ -36,15 +36,15 @@
             app:layout_constraintVertical_weight="1"
             app:tabIndicatorHeight="0dp"
             app:tabMode="fixed"
-            app:tabSelectedTextColor="@color/while_milk"
+            android:textSize="28sp"
+            app:tabSelectedTextColor="@color/white_back"
             app:tabTextAppearance="@style/TabLayoutTextUnSelected"
-            app:tabTextColor="@color/white_back">
+            app:tabTextColor="@color/gray">
 
             <com.google.android.material.tabs.TabItem
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/graphic"
-
                 />
 
             <com.google.android.material.tabs.TabItem

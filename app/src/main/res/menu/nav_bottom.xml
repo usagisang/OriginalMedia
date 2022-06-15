@@ -2,12 +2,15 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/fragment_explore"
-        android:title="探索" />
+        android:icon="@drawable/bottom_explore"
+        android:title="" />
 
     <item
         android:id="@+id/fragment_creation"
-        android:title="创作" />
+        android:icon="@drawable/bottom_record"
+        android:title="" />
     <item
         android:id="@+id/fragment_account"
-        android:title="用户" />
+        android:icon="@drawable/bottom_personal"
+        android:title="" />
 </menu>
