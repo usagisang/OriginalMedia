@@ -3,8 +3,6 @@ plugins {
     id("org.jetbrains.kotlin.android")
 }
 
-val compose_version = "1.2.0-beta02"
-
 android {
     compileSdk = Build.targetSdkVersion
 
@@ -44,7 +42,7 @@ android {
         compose = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = compose_version
+        kotlinCompilerExtensionVersion = Deps.Compose.compilerVersion
     }
 }
 
@@ -55,17 +53,19 @@ dependencies {
     implementation(Deps.CameraX.lifeCycle)
     implementation(Deps.CameraX.view)
     implementation(Deps.CameraX.video)
+
     implementation(Deps.Coroutines.coroutinesAndroid)
-    implementation("androidx.compose.ui:ui:$compose_version")
-    implementation("androidx.compose.material:material:$compose_version")
-    implementation("androidx.compose.ui:ui-tooling-preview:$compose_version")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.3.1")
-    implementation("androidx.activity:activity-compose:1.4.0")
+
+    implementation(Deps.Compose.ui)
+    implementation(Deps.Compose.material)
+    implementation(Deps.Compose.uiToolingPreview)
+    implementation(Deps.Compose.composeActivity)
 
     testImplementation(TestDeps.Local.junit)
     androidTestImplementation(TestDeps.Instrumentation.espresso)
     androidTestImplementation(TestDeps.Instrumentation.junitExtension)
-    androidTestImplementation("androidx.compose.ui:ui-test-junit4:$compose_version")
-    debugImplementation("androidx.compose.ui:ui-tooling:$compose_version")
-    debugImplementation("androidx.compose.ui:ui-test-manifest:$compose_version")
+
+    androidTestImplementation(Deps.Compose.junitTest)
+    debugImplementation(Deps.Compose.uiDebugTool)
+    debugImplementation(Deps.Compose.testManifest)
 }
