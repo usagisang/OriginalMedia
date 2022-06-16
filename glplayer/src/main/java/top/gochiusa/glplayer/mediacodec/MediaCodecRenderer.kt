@@ -132,7 +132,11 @@ abstract class MediaCodecRenderer(
     internal fun flushCodec() {
         val codec = codec
         pendingBuffer = null
-        codec?.flush()
+        try {
+            codec?.flush()
+        } catch (e: IllegalStateException) {
+            releaseCodec()
+        }
     }
 
     internal fun releaseCodec() {
@@ -231,7 +235,7 @@ abstract class MediaCodecRenderer(
 
     companion object {
         const val LIMIT_NOT_SET = -1L
-        const val DEFAULT_AUDIO_SYNC_LIMIT = 80000L
+        const val DEFAULT_AUDIO_SYNC_LIMIT = 30000L
         const val DEFAULT_VIDEO_SYNC_LIMIT = 50000L
     }
 
