@@ -3,16 +3,6 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
-        <entry key="..\:/AndroidProject/OriginalMedia/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.1575" />
-        <entry key="..\:/AndroidProject/OriginalMedia/carver/src/main/res/drawable/ic_camera.xml" value="0.1575" />
-        <entry key="..\:/AndroidProject/OriginalMedia/carver/src/main/res/drawable/ic_change_camera.xml" value="0.134" />
-        <entry key="..\:/AndroidProject/OriginalMedia/carver/src/main/res/drawable/ic_launcher.xml" value="0.1575" />
-        <entry key="..\:/AndroidProject/OriginalMedia/carver/src/main/res/drawable/ic_launcher_background.xml" value="0.1575" />
-        <entry key="..\:/AndroidProject/OriginalMedia/carver/src/main/res/drawable/ic_launcher_foreground.xml" value="0.1575" />
-        <entry key="..\:/AndroidProject/OriginalMedia/carver/src/main/res/drawable/ic_settings.xml" value="0.134" />
-        <entry key="..\:/AndroidProject/OriginalMedia/carver/src/main/res/layout/activity_carver.xml" value="0.20208333333333334" />
-        <entry key="..\:/AndroidProject/OriginalMedia/carver/src/main/res/layout/activity_setting.xml" value="0.21666666666666667" />
-        <entry key="..\:/AndroidProject/OriginalMedia/carver/src/main/res/layout/weight_setting.xml" value="0.21666666666666667" />
       </map>
     </option>
   </component>
