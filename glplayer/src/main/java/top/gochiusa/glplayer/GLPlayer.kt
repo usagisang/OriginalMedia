@@ -46,8 +46,7 @@ private constructor(
     private var startRenderTimeMs: Long = -1L
 
     private val mayRenderFirstFrame: Boolean
-    private lateinit var mediaSource: MediaSource
-    private val mediaSourceFactory: MediaSourceFactory
+    private val mediaSource: MediaSource
     private val renderers: Array<Renderer>
     private val requestHeaders: Map<String, String>?
 
@@ -71,7 +70,7 @@ private constructor(
         componentListener = ComponentListener()
 
         mayRenderFirstFrame = builder.renderFirstFrame
-        mediaSourceFactory = builder.sourceFactory
+        mediaSource = builder.sourceFactory.createMediaSource(applicationContext)
         renderers = (builder.rendererFactory ?: CodecRendererFactory()).createRenders(
             eventHandler, componentListener)
         requestHeaders = builder.requestHeader
@@ -111,7 +110,8 @@ private constructor(
         if (positionMs > durationMs || positionMs == currentPositionMs) {
             return
         }
-        if (state == Player.STATE_PLAYING || state == Player.STATE_PAUSE) {
+        if (state == Player.STATE_PLAYING || state == Player.STATE_PAUSE
+            || state == Player.STATE_STOP) {
             eventHandler.sendMessage(Message.obtain().apply {
                 what = MSG_SEEK_TO
                 obj = positionMs
@@ -126,11 +126,11 @@ private constructor(
             state = Player.STATE_RELEASE
             eventHandler.removeCallbacksAndMessages(null)
             playbackThread.quit()
-            mediaSource.release()
             renderers.forEach {
                 it.disable()
                 it.release()
             }
+            mediaSource.release()
             videoOutput = null
             eventListenerSet.forEach {
                 it.onPlaybackStateChanged(state)
@@ -257,10 +257,9 @@ private constructor(
                 it.disable()
             }
         }
-        if (this::mediaSource.isInitialized) {
-            mediaSource.release()
-        }
-        mediaSource = mediaSourceFactory.createMediaSource(applicationContext)
+        // 重置播放位置
+        _currentPositionUs = 0L
+
         runCatching {
             mediaSource.setDataSource(mediaItem, requestHeaders)
         }.onFailure {
@@ -281,13 +280,9 @@ private constructor(
                 if (mayRenderFirstFrame) {
                     delay(DELAY_FOR_DECODE_TIME)
                     renderVideoFrame(0L)
-                    mainHandler.post {
-                        changeStateUncheck(Player.STATE_READY)
-                    }
-                } else {
-                    mainHandler.post {
-                        changeStateUncheck(Player.STATE_READY)
-                    }
+                }
+                mainHandler.post {
+                    changeStateUncheck(Player.STATE_READY)
                 }
             }
         }
@@ -331,7 +326,7 @@ private constructor(
             }
         }
         
-        //val delayTimeMs = (5L - spendTimeMs).coerceAtLeast(0)
+        //val delayTimeMs = (5L - SystemClock.elapsedRealtime() + loopStart).coerceAtLeast(0)
 
         if (currentPositionMs >= durationMs) {
             mainHandler.post {
@@ -347,7 +342,7 @@ private constructor(
 
         //PlayerLog.d(message = "delay time $delayTimeMs")
         if (loop) {
-            // eventHandler.sendEmptyMessageDelayed(MSG_RENDER, delayTimeMs)
+            //eventHandler.sendEmptyMessageDelayed(MSG_RENDER, delayTimeMs)
             eventHandler.sendEmptyMessage(MSG_RENDER)
         }
     }
@@ -390,11 +385,15 @@ private constructor(
         // 更新播放位置
         _currentPositionUs = positionUs
 
-        mainHandler.post {
-            changeStateUncheck(oldState)
+        if (oldState != Player.STATE_STOP) {
+            mainHandler.post {
+                changeStateUncheck(oldState)
+            }
         }
-        if (oldState == Player.STATE_PLAYING) {
-            eventHandler.sendEmptyMessageDelayed(MSG_PLAY, delayTime)
+        when(oldState) {
+            Player.STATE_PLAYING, Player.STATE_STOP -> {
+                eventHandler.sendEmptyMessageDelayed(MSG_PLAY, delayTime)
+            }
         }
     }
 
@@ -465,9 +464,11 @@ private constructor(
         internal var rendererFactory: RendererFactory? = null
         internal var requestHeader: Map<String, String>? = null
         internal var sourceFactory: MediaSourceFactory = DefaultMediaSourceFactory()
+        // TODO loop无限循环
 
         /**
-         * 设置是否在媒体数据首次加载完成后自动播放
+         * 设置是否在媒体数据首次加载完成后自动播放，如果为true，则播放器将从[Player.STATE_LOADING]直接
+         * 转入[Player.STATE_PLAYING]状态
          */
         fun setPlayAfterLoading(enable: Boolean): Builder {
             playAfterLoading = enable
@@ -514,6 +515,13 @@ private constructor(
 
     private inner class ComponentListener : VideoSurfaceListener, VideoMetadataListener {
         var internalVideoMetadataListener: VideoMetadataListener? = null
+            set(value) {
+                field = value
+                if (::cacheFormat.isInitialized) {
+                    value?.onVideoMetadataChanged(cacheFormat)
+                }
+            }
+        lateinit var cacheFormat: Format
 
         override fun onVideoSurfaceCreated(surface: Surface) {
             setVideoOutputInternal(surface)
@@ -525,6 +533,8 @@ private constructor(
 
         override fun onVideoMetadataChanged(format: Format) {
             internalVideoMetadataListener?.onVideoMetadataChanged(format)
+
+            cacheFormat = format
         }
 
     }
