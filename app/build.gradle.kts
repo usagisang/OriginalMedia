@@ -2,12 +2,9 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("kotlin-android-extensions")
-
 }
 
 android {
-
-
     compileSdk = Build.compileSdkVersion
 
     defaultConfig {
@@ -22,7 +19,6 @@ android {
     buildFeatures {
         dataBinding = true
         viewBinding = true
-
     }
 
     buildTypes {
@@ -47,26 +43,24 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
-
-
 }
 
 dependencies {
     implementation(project(":dependencies"))
     implementation(project(":carver"))
+    implementation(project(":glplayer"))
 
+    implementation(Deps.ImmersionBar.baseBag)
+    implementation(Deps.ImmersionBar.baseKTX)
+    implementation(Deps.ImmersionBar.fragmentDie)
+    implementation(Deps.retrofit)
+    implementation(Deps.retrofitGsonConverter)
+
+    implementation(Deps.Navigation.navigationUI)
+    implementation(Deps.Navigation.fragment)
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
-    
+
     testImplementation(TestDeps.Local.junit)
     androidTestImplementation(TestDeps.Instrumentation.espresso)
     androidTestImplementation(TestDeps.Instrumentation.junitExtension)
-    api(Deps.ImmersionBar.baseBag)
-    api(Deps.ImmersionBar.baseKTX)
-    api(Deps.ImmersionBar.fragmentDie)
-    api(Deps.retrofit)
-    api(Deps.retrofitGsonConverter)
-    api(Deps.Lifecycle.livedata)
-    api(Deps.Navigation.navigationUI)
-    api(Deps.Navigation.fragment)
-
 }

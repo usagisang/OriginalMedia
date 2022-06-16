@@ -18,21 +18,23 @@ object Deps {
     }
 
     object Compose {
-        const val dependentiesVersion = "1.1.0"
-        const val compilerVersion = "1.0.5"
+        const val dependentiesVersion = "1.2.0-beta02"
+        const val compilerVersion = "1.2.0-beta02"
 
-        const val composeUi = "androidx.compose.ui:ui:$dependentiesVersion"
-        const val composeMaterial = "androidx.compose.material:material:$dependentiesVersion"
-        const val composeUiToolingPreview =
+        const val ui = "androidx.compose.ui:ui:$dependentiesVersion"
+        const val material = "androidx.compose.material:material:$dependentiesVersion"
+        const val uiToolingPreview =
             "androidx.compose.ui:ui-tooling-preview:$dependentiesVersion"
         const val livedataRuntime =
             "androidx.compose.runtime:runtime-livedata:$dependentiesVersion"
         const val composeActivity = "androidx.activity:activity-compose:1.4.0"
-        const val composeViewBinding = "androidx.compose.ui:ui-viewbinding:$dependentiesVersion"
+        const val viewBinding = "androidx.compose.ui:ui-viewbinding:$dependentiesVersion"
 
-        const val composeRuntime = "androidx.compose.runtime:runtime:$dependentiesVersion"
+        const val runtime = "androidx.compose.runtime:runtime:$dependentiesVersion"
         const val uiDebugTool = "androidx.compose.ui:ui-tooling:$dependentiesVersion"
         const val junitTest = "androidx.compose.ui:ui-test-junit4:$dependentiesVersion"
+
+        const val testManifest = "androidx.compose.ui:ui-test-manifest:$dependentiesVersion"
 
         const val constraintLayoutDSL =
             "androidx.constraintlayout:constraintlayout-compose:1.0.1"
