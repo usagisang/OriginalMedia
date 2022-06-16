@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/dl_carver_drawer"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.capture.CarverActivity">
+
+    <TextView
+        android:id="@+id/tv_carver_status_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <androidx.camera.view.PreviewView
+        android:id="@+id/pv_carver_preview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:scaleType="fitCenter" />
+
+    <ImageView
+        android:id="@+id/iv_carver_blur_effect"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#000000"
+        android:scaleType="fitCenter"
+        android:visibility="gone" />
+
+    <com.kokomi.carver.weight.ZoomGestureView
+        android:id="@+id/zgv_carver_zoom_gesture"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clickable="true"
+        android:focusable="true"
+        android:scaleType="fitCenter" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/tv_carver_status_bar"
+        android:layout_marginTop="16dp"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/tv_carver_rec"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_margin="12dp"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="REC"
+            android:textColor="@color/app_red"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tv_carver_time"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_margin="12dp"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="--:--"
+            android:textColor="@color/app_soft_white"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <ImageView
+            android:id="@+id/iv_carver_setting"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_margin="8dp"
+            android:layout_weight="1"
+            android:src="@drawable/ic_settings" />
+
+    </LinearLayout>
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cv_carver_control"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="32dp"
+        android:clickable="true"
+        android:focusable="true"
+        app:cardBackgroundColor="@color/app_soft_black"
+        app:cardCornerRadius="40dp"
+        app:cardElevation="0dp">
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_gravity="center"
+            app:cardBackgroundColor="@color/app_red"
+            app:cardCornerRadius="32dp"
+            app:cardElevation="0dp" />
+
+    </androidx.cardview.widget.CardView>
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cv_carver_change_camera"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="48dp"
+        android:layout_marginBottom="47dp"
+        android:layout_toEndOf="@id/cv_carver_control"
+        android:clickable="true"
+        android:focusable="true"
+        app:cardBackgroundColor="@color/app_translucent"
+        app:cardCornerRadius="25dp">
+
+        <ImageView
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="center"
+            android:layout_weight="1"
+            android:src="@drawable/ic_change_camera" />
+
+    </androidx.cardview.widget.CardView>
+
+</RelativeLayout>

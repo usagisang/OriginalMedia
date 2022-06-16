@@ -53,8 +53,10 @@ android {
 
 dependencies {
     implementation(project(":dependencies"))
-    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
+    implementation(project(":carver"))
 
+    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
+    
     testImplementation(TestDeps.Local.junit)
     androidTestImplementation(TestDeps.Instrumentation.espresso)
     androidTestImplementation(TestDeps.Instrumentation.junitExtension)
