@@ -17,7 +17,7 @@ class DefaultMediaSource(
 
     // TODO 视频断流与恢复
     // TODO 视频缓冲
-    private val mediaExtractor: MediaExtractor = MediaExtractor()
+    private var mediaExtractor: MediaExtractor? = null
 
     private val _formats: MutableList<Format> = mutableListOf()
     override val format: List<Format> = _formats
@@ -29,14 +29,15 @@ class DefaultMediaSource(
 
 
     override fun bindTrack(format: Format, receiver: Receiver) {
-        mediaExtractor.selectTrack(format.trackIndex)
+        mediaExtractor?.selectTrack(format.trackIndex)
         receiverMap[format.trackIndex] = receiver
     }
 
     override fun sendData(): Boolean {
-        if (mediaExtractor.sampleTrackIndex < 0) {
+        val extractor = mediaExtractor ?: return false
+        if (extractor.sampleTrackIndex < 0) {
             return if (hasNext) {
-                hasNext = mediaExtractor.advance()
+                hasNext = extractor.advance()
                 true
             } else {
                 receiverMap.forEach {
@@ -45,20 +46,20 @@ class DefaultMediaSource(
                 false
             }
         }
-        val receiver = receiverMap[mediaExtractor.sampleTrackIndex]
+        val receiver = receiverMap[extractor.sampleTrackIndex]
         if (receiver == null) {
-            hasNext = mediaExtractor.advance()
+            hasNext = extractor.advance()
             return true
         }
         val consumed = receiver.receiveData(sample)
         if (consumed) {
-            hasNext = mediaExtractor.advance()
+            hasNext = extractor.advance()
         }
         return consumed
     }
 
     override fun unbindTrack(format: Format, receiver: Receiver) {
-        mediaExtractor.unselectTrack(format.trackIndex)
+        mediaExtractor?.unselectTrack(format.trackIndex)
         receiverMap.remove(format.trackIndex)
     }
 
@@ -67,7 +68,7 @@ class DefaultMediaSource(
         get() = _durationUs
 
     override val cacheDurationUs: Long
-        get() = mediaExtractor.cachedDuration
+        get() = mediaExtractor?.cachedDuration ?: 0L
 
     private lateinit var mediaItem: MediaItem
 
@@ -76,6 +77,7 @@ class DefaultMediaSource(
         requestHeaders: Map<String, String>?
     ) {
         this.mediaItem = mediaItem
+        val mediaExtractor = MediaExtractor()
 
         // may block
         mediaItem.uri?.let {
@@ -85,17 +87,19 @@ class DefaultMediaSource(
             mediaExtractor.setDataSource(mediaItem.url)
         }
         _formats.clear()
-        parseFormats()
+        parseFormats(mediaExtractor)
+        this.mediaExtractor = mediaExtractor
     }
 
     override fun release() {
-        mediaExtractor.release()
+        mediaExtractor?.release()
     }
 
     override fun seekTo(positionUs: Long, seekMode: SeekMode): Long {
-        mediaExtractor.seekTo(positionUs, seekMode.mode)
+        val extractor = mediaExtractor ?: return _durationUs
+        extractor.seekTo(positionUs, seekMode.mode)
         hasNext = true
-        var cacheUs = mediaExtractor.cachedDuration
+        var cacheUs = extractor.cachedDuration
         var count = 0
         while (cacheUs < 500000 && count < 10) {
             try {
@@ -104,12 +108,12 @@ class DefaultMediaSource(
                 PlayerLog.v(message = e)
             }
             count ++
-            cacheUs = mediaExtractor.cachedDuration
+            cacheUs = extractor.cachedDuration
         }
-        return mediaExtractor.sampleTime
+        return extractor.sampleTime
     }
 
-    private fun parseFormats() {
+    private fun parseFormats(mediaExtractor: MediaExtractor) {
         for (i in 0 until mediaExtractor.trackCount) {
             val format = Format(mediaExtractor.getTrackFormat(i), i)
             _formats.add(format)
@@ -125,16 +129,17 @@ class DefaultMediaSource(
             if (!hasNext) {
                 return SampleData(-1, _durationUs, 0, true)
             }
+            val extractor = mediaExtractor!!
 
-            val sampleTime = mediaExtractor.sampleTime
-            val sampleFlags = mediaExtractor.sampleFlags
+            val sampleTime = extractor.sampleTime
+            val sampleFlags = extractor.sampleFlags
 
-            val sampleSize = mediaExtractor.readSampleData(byteBuffer, 0)
+            // TODO ByteBuffer的总大小是否能够完全装载这个Sample？
+            val sampleSize = extractor.readSampleData(byteBuffer, 0)
 
             // TODO 根据情况来确定是否到达end
             return SampleData(sampleSize, sampleTime, sampleFlags, false)
         }
-
     }
 }
 

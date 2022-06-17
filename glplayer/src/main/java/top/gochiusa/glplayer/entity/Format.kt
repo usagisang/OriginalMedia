@@ -17,6 +17,8 @@ class Format(
 
     val frameRate: Float
 
+    val rotation: Int
+
     // Audio only.
     val channelCount: Int
     val sampleRate: Int
@@ -29,6 +31,7 @@ class Format(
             width = it.getIntOrDefault(MediaFormat.KEY_WIDTH, NO_VALUE)
             height = it.getIntOrDefault(MediaFormat.KEY_HEIGHT, NO_VALUE)
             frameRate = it.getFloatOrDefault(MediaFormat.KEY_FRAME_RATE, -1F)
+            rotation = it.getIntOrDefault(MediaFormat.KEY_ROTATION, 0)
 
             channelCount = it.getIntOrDefault(MediaFormat.KEY_CHANNEL_COUNT, NO_VALUE)
             sampleRate = it.getIntOrDefault(MediaFormat.KEY_SAMPLE_RATE, NO_VALUE)
@@ -59,7 +62,7 @@ class Format(
 
     override fun toString(): String {
         return "[sampleType: $sampleMimeType, duration :$duration, width: $width, height: $height" +
-                "frameRate: $frameRate, channelCount: $channelCount, sampleRate: $sampleRate]"
+                ", frameRate: $frameRate, channelCount: $channelCount, sampleRate: $sampleRate]"
     }
 
     companion object {

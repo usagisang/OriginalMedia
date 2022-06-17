@@ -76,6 +76,7 @@ class MediaCodecAudioRenderer(
         bufferPresentationTimeUs: Long
     ): Boolean {
         val audioOutput = audioTrack
+        //PlayerLog.d(message = "position $positionUs, bufferTime $bufferPresentationTimeUs")
         if (audioOutput == null || bufferSize < 0 || buffer == null) {
             buffer?.clear()
             codec.releaseOutputBuffer(bufferIndex, false)
