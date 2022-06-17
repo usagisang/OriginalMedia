@@ -45,7 +45,8 @@ private constructor(
     private var _currentPositionUs: Long = 0L
     private var startRenderTimeMs: Long = -1L
 
-    private val mayRenderFirstFrame: Boolean
+    private val mayRenderFirstFrame: Boolean = builder.renderFirstFrame
+    private val infiniteLoop: Boolean = builder.infiniteLoop
     private val mediaSource: MediaSource
     private val renderers: Array<Renderer>
     private val requestHeaders: Map<String, String>?
@@ -69,7 +70,6 @@ private constructor(
         eventHandler = Handler(playbackThread.looper, this)
         componentListener = ComponentListener()
 
-        mayRenderFirstFrame = builder.renderFirstFrame
         mediaSource = builder.sourceFactory.createMediaSource(applicationContext)
         renderers = (builder.rendererFactory ?: CodecRendererFactory()).createRenders(
             eventHandler, componentListener)
@@ -308,7 +308,7 @@ private constructor(
     }
 
     private fun renderInternal(loop: Boolean) {
-        //val loopStart = SystemClock.elapsedRealtime()
+        val loopStart = SystemClock.elapsedRealtime()
         loopSendData()
         //PlayerLog.d(message = "loopSendData spend time ${SystemClock.elapsedRealtime() - loopStart}")
 
@@ -325,25 +325,28 @@ private constructor(
                 PlayerLog.e(message = e)
             }
         }
-        
-        //val delayTimeMs = (5L - SystemClock.elapsedRealtime() + loopStart).coerceAtLeast(0)
 
         if (currentPositionMs >= durationMs) {
-            mainHandler.post {
-                changeStateUncheck(Player.STATE_STOP)
+            if (infiniteLoop) {
+                eventHandler.sendEmptyMessage(MSG_REPLAY)
+            } else {
+                mainHandler.post {
+                    changeStateUncheck(Player.STATE_STOP)
+                }
             }
             return
         }
 
-        /*_currentPositionUs = ((SystemClock.elapsedRealtime() - startRenderTimeMs) * 1000
-                + delayTimeMs).coerceAtMost(mediaSource.durationUs)*/
-        _currentPositionUs = ((SystemClock.elapsedRealtime() - startRenderTimeMs) * 1000)
-            .coerceAtMost(mediaSource.durationUs)
+        val delayTimeMs = (5L - SystemClock.elapsedRealtime() + loopStart).coerceAtLeast(1)
+        _currentPositionUs = ((SystemClock.elapsedRealtime() - startRenderTimeMs) * 1000
+                + delayTimeMs).coerceAtMost(mediaSource.durationUs)
+        /*_currentPositionUs = ((SystemClock.elapsedRealtime() - startRenderTimeMs) * 1000)
+            .coerceAtMost(mediaSource.durationUs)*/
 
         //PlayerLog.d(message = "delay time $delayTimeMs")
         if (loop) {
-            //eventHandler.sendEmptyMessageDelayed(MSG_RENDER, delayTimeMs)
-            eventHandler.sendEmptyMessage(MSG_RENDER)
+            eventHandler.sendEmptyMessageDelayed(MSG_RENDER, delayTimeMs)
+            //eventHandler.sendEmptyMessage(MSG_RENDER)
         }
     }
 
@@ -412,6 +415,9 @@ private constructor(
         mainHandler.post {
             changeStateUncheck(Player.STATE_PAUSE)
         }
+        renderers.forEach {
+            it.onPause()
+        }
     }
 
     private fun replayInternal() {
@@ -464,7 +470,7 @@ private constructor(
         internal var rendererFactory: RendererFactory? = null
         internal var requestHeader: Map<String, String>? = null
         internal var sourceFactory: MediaSourceFactory = DefaultMediaSourceFactory()
-        // TODO loop无限循环
+        internal var infiniteLoop: Boolean = false
 
         /**
          * 设置是否在媒体数据首次加载完成后自动播放，如果为true，则播放器将从[Player.STATE_LOADING]直接
@@ -504,6 +510,14 @@ private constructor(
          */
         fun setRenderFirstFrame(enable: Boolean): Builder {
             renderFirstFrame = enable
+            return this
+        }
+
+        /**
+         * 是否允许播放器无限循环播放媒体
+         */
+        fun setInfiniteLoop(enable: Boolean): Builder {
+            infiniteLoop = enable
             return this
         }
 
