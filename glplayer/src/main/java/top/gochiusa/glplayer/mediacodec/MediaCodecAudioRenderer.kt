@@ -136,14 +136,6 @@ class MediaCodecAudioRenderer(
         }
     }
 
-    override fun onDisabled(oldSender: Sender?) {
-        super.onDisabled(oldSender)
-        val f = audioFormat
-        if (f != null) {
-            oldSender?.unbindTrack(f, this)
-        }
-    }
-
     private fun releaseAudioTrack() {
         audioTrack?.release()
         audioTrack = null

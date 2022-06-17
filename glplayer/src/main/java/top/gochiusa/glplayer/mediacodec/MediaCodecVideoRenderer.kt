@@ -134,14 +134,6 @@ class MediaCodecVideoRenderer(
         setOutput(null)
     }
 
-    override fun onDisabled(oldSender: Sender?) {
-        super.onDisabled(oldSender)
-        val f = videoFormat
-        if (f != null) {
-            oldSender?.unbindTrack(f, this)
-        }
-    }
-
     private fun setOutput(output: Surface?) {
         if (output == surface) {
             return
