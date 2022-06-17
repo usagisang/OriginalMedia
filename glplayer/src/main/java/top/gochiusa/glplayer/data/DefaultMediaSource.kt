@@ -16,7 +16,6 @@ class DefaultMediaSource(
 ) : MediaSource {
 
     // TODO 视频断流与恢复
-    // TODO 视频缓冲
     private var mediaExtractor: MediaExtractor? = null
 
     private val _formats: MutableList<Format> = mutableListOf()
@@ -68,7 +67,7 @@ class DefaultMediaSource(
         get() = _durationUs
 
     override val cacheDurationUs: Long
-        get() = mediaExtractor?.cachedDuration ?: 0L
+        get() = mediaExtractor?.cachedDuration ?: -1L
 
     private lateinit var mediaItem: MediaItem
 
@@ -113,6 +112,10 @@ class DefaultMediaSource(
         return extractor.sampleTime
     }
 
+    override fun hasCacheReachedEndOfStream(): Boolean {
+        return mediaExtractor?.hasCacheReachedEndOfStream() ?: true
+    }
+
     private fun parseFormats(mediaExtractor: MediaExtractor) {
         for (i in 0 until mediaExtractor.trackCount) {
             val format = Format(mediaExtractor.getTrackFormat(i), i)
@@ -134,11 +137,10 @@ class DefaultMediaSource(
             val sampleTime = extractor.sampleTime
             val sampleFlags = extractor.sampleFlags
 
-            // TODO ByteBuffer的总大小是否能够完全装载这个Sample？
-            val sampleSize = extractor.readSampleData(byteBuffer, 0)
+            val readSize = extractor.readSampleData(byteBuffer, 0)
 
             // TODO 根据情况来确定是否到达end
-            return SampleData(sampleSize, sampleTime, sampleFlags, false)
+            return SampleData(readSize, sampleTime, sampleFlags, false)
         }
     }
 }
