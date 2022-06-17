@@ -124,6 +124,8 @@ class MediaCodecVideoRenderer(
         return videoClock
     }
 
+    override fun onPause() {}
+
     override fun onVideoSurfaceCreated(surface: Surface) {
         setOutput(surface)
     }
