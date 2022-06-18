@@ -3,7 +3,7 @@ package com.kokomi.carver.ui.setting
 import androidx.lifecycle.ViewModel
 import com.kokomi.carver.core.camerax.getSupportedQualities
 import com.kokomi.carver.core.camerax.qualityFormatter
-import com.kokomi.carver.ui.capture.CAMERAX_IMPL
+import com.kokomi.carver.ui.capture.CAMERAX_VIDEO_IMPL
 import kotlinx.coroutines.flow.MutableStateFlow
 
 internal const val IMPL = "impl"
@@ -17,7 +17,7 @@ internal const val AUDIO_CHANNEL_COUNT = "audio_channel_count"
 
 class SettingViewModel : ViewModel() {
 
-    val impl = MutableStateFlow(CAMERAX_IMPL)
+    val impl = MutableStateFlow(CAMERAX_VIDEO_IMPL)
 
     val selectedImpl = MutableStateFlow(-1)
 

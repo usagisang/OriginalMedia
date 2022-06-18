@@ -9,8 +9,10 @@
         <entry key="..\:/AndroidProject/OriginalMedia/carver/src/main/res/drawable/ic_launcher.xml" value="0.1575" />
         <entry key="..\:/AndroidProject/OriginalMedia/carver/src/main/res/drawable/ic_launcher_background.xml" value="0.1575" />
         <entry key="..\:/AndroidProject/OriginalMedia/carver/src/main/res/drawable/ic_launcher_foreground.xml" value="0.1575" />
+        <entry key="..\:/AndroidProject/OriginalMedia/carver/src/main/res/drawable/ic_pause.xml" value="0.112" />
+        <entry key="..\:/AndroidProject/OriginalMedia/carver/src/main/res/drawable/ic_resume.xml" value="0.112" />
         <entry key="..\:/AndroidProject/OriginalMedia/carver/src/main/res/drawable/ic_settings.xml" value="0.134" />
-        <entry key="..\:/AndroidProject/OriginalMedia/carver/src/main/res/layout/activity_carver.xml" value="0.20208333333333334" />
+        <entry key="..\:/AndroidProject/OriginalMedia/carver/src/main/res/layout/activity_carver.xml" value="0.1" />
         <entry key="..\:/AndroidProject/OriginalMedia/carver/src/main/res/layout/activity_setting.xml" value="0.21666666666666667" />
         <entry key="..\:/AndroidProject/OriginalMedia/carver/src/main/res/layout/weight_setting.xml" value="0.21666666666666667" />
       </map>

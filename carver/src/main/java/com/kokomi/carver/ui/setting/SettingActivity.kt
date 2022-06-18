@@ -10,7 +10,7 @@ import androidx.compose.material.Surface
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModelProvider
 import com.kokomi.carver.setStatusBarTextColor
-import com.kokomi.carver.ui.capture.CAMERAX_IMPL
+import com.kokomi.carver.ui.capture.CAMERAX_VIDEO_IMPL
 import com.kokomi.carver.ui.capture.IMPL_LIST
 
 class SettingActivity : ComponentActivity() {
@@ -34,7 +34,7 @@ class SettingActivity : ComponentActivity() {
 
     private fun initParams() {
         vm = ViewModelProvider(this)[SettingViewModel::class.java]
-        vm.impl.value = intent.getStringExtra(IMPL) ?: CAMERAX_IMPL
+        vm.impl.value = intent.getStringExtra(IMPL) ?: CAMERAX_VIDEO_IMPL
         vm.selectedImpl.value = IMPL_LIST.indexOf(vm.impl.value)
         vm.selectedQuality.value = vm.supportedQuality.indexOf(intent.getStringExtra(QUALITY) ?: 0)
         vm.videoFrameRate.value = intent.getIntExtra(VIDEO_FRAME_RATE, -1)

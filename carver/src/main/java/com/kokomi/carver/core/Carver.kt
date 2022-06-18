@@ -2,9 +2,11 @@ package com.kokomi.carver.core
 
 import android.os.Handler
 import android.os.Looper
+import androidx.camera.core.ZoomState
+import androidx.lifecycle.LiveData
 
-class Carver<P, C>(
-    private val captor: Captor<P, C>,
+class Carver<P, C, Z>(
+    private val captor: Captor<P, C, Z>,
     private val listener: (CarverStatus) -> Unit
 ) {
 
@@ -16,11 +18,11 @@ class Carver<P, C>(
         captor.shutdown()
     }
 
-    fun newConfig(config: C) {
+    fun config(config: C) {
         captor.onConfigurationChanged(config)
     }
 
-    fun getConfig(): C {
+    fun config(): C {
         return captor.getConfig()
     }
 
@@ -48,12 +50,24 @@ class Carver<P, C>(
         captor.resume()
     }
 
-    fun changeLensFacing() {
+    fun lensFacing() {
         captor.changeLensFacing()
     }
 
-    fun setZoom(zoom: Float) {
+    fun zoom(): LiveData<Z> {
+        return captor.zoom()
+    }
+
+    fun zoom(zoom: Float) {
         captor.zoom(zoom)
+    }
+
+    fun focus(x: Float, y: Float) {
+        captor.focus(x, y)
+    }
+
+    fun cancelFocus() {
+        captor.cancelFocus()
     }
 
     internal fun onStatusChanged(status: CarverStatus) {

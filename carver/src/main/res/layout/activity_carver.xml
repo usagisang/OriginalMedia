@@ -5,6 +5,7 @@
     android:id="@+id/dl_carver_drawer"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/app_black"
     tools:context=".ui.capture.CarverActivity">
 
     <TextView
@@ -15,8 +16,10 @@
     <androidx.camera.view.PreviewView
         android:id="@+id/pv_carver_preview"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:scaleType="fitCenter" />
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:hardwareAccelerated="true"
+        app:scaleType="fillCenter" />
 
     <ImageView
         android:id="@+id/iv_carver_blur_effect"
@@ -26,10 +29,12 @@
         android:scaleType="fitCenter"
         android:visibility="gone" />
 
-    <com.kokomi.carver.weight.ZoomGestureView
-        android:id="@+id/zgv_carver_zoom_gesture"
+    <com.kokomi.carver.weight.GestureView
+        android:id="@+id/zgv_carver_gesture"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_alignTop="@id/pv_carver_preview"
+        android:layout_alignBottom="@id/pv_carver_preview"
         android:clickable="true"
         android:focusable="true"
         android:scaleType="fitCenter" />
@@ -62,7 +67,7 @@
             android:layout_margin="12dp"
             android:layout_weight="1"
             android:gravity="center"
-            android:text="--:--"
+            android:text=""
             android:textColor="@color/app_soft_white"
             android:textSize="20sp"
             android:textStyle="bold" />
@@ -76,6 +81,39 @@
             android:src="@drawable/ic_settings" />
 
     </LinearLayout>
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:layout_above="@id/cv_carver_control"
+        android:layout_centerHorizontal="true"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="24dp"
+        app:cardBackgroundColor="@color/app_soft_black"
+        app:cardCornerRadius="40dp"
+        app:cardElevation="0dp">
+
+        <TextView
+            android:id="@+id/tv_carver_zoom"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:maxLines="1"
+            android:text="1.0X"
+            android:textColor="@color/app_soft_white"
+            android:textSize="14sp" />
+
+    </androidx.cardview.widget.CardView>
+
+    <com.kokomi.carver.weight.CircleProgressBar
+        android:id="@+id/cpb_carver_progress"
+        android:layout_width="88dp"
+        android:layout_height="88dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="28dp"
+        android:scaleX="0.8"
+        android:scaleY="0.8" />
 
     <androidx.cardview.widget.CardView
         android:id="@+id/cv_carver_control"
@@ -92,12 +130,37 @@
         app:cardElevation="0dp">
 
         <androidx.cardview.widget.CardView
-            android:layout_width="64dp"
-            android:layout_height="64dp"
+            android:id="@+id/cv_carver_control_point"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
             android:layout_gravity="center"
             app:cardBackgroundColor="@color/app_red"
             app:cardCornerRadius="32dp"
             app:cardElevation="0dp" />
+
+    </androidx.cardview.widget.CardView>
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cv_carver_pause_and_resume"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginEnd="48dp"
+        android:layout_marginBottom="47dp"
+        android:layout_toStartOf="@id/cv_carver_control"
+        android:alpha="0"
+        android:clickable="true"
+        android:focusable="true"
+        app:cardBackgroundColor="@color/app_soft_black"
+        app:cardCornerRadius="25dp">
+
+        <ImageView
+            android:id="@+id/iv_carver_pause_and_resume"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_gravity="center"
+            android:layout_weight="1"
+            android:src="@drawable/ic_pause" />
 
     </androidx.cardview.widget.CardView>
 
@@ -111,7 +174,7 @@
         android:layout_toEndOf="@id/cv_carver_control"
         android:clickable="true"
         android:focusable="true"
-        app:cardBackgroundColor="@color/app_translucent"
+        app:cardBackgroundColor="@color/app_soft_black"
         app:cardCornerRadius="25dp">
 
         <ImageView
