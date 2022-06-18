@@ -16,10 +16,19 @@ import com.kokomi.carver.core.Captor
  * */
 abstract class CameraXCaptor : Captor<PreviewView, CameraXConfiguration, ZoomState>() {
 
+    /**
+     * 预览界面 View
+     * */
     protected abstract var previewView: PreviewView?
 
+    /**
+     * 摄像头提供者
+     * */
     protected abstract var cameraProvider: ProcessCameraProvider?
 
+    /**
+     * 摄像头对象
+     * */
     protected abstract var camera: Camera?
 
     final override fun shutdown() {

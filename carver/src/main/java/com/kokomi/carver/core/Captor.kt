@@ -1,6 +1,5 @@
 package com.kokomi.carver.core
 
-import androidx.camera.core.ZoomState
 import androidx.lifecycle.LiveData
 
 /**
@@ -12,6 +11,9 @@ import androidx.lifecycle.LiveData
  * */
 abstract class Captor<P, C, Z> {
 
+    /**
+     * 参数配置
+     * */
     protected abstract var config: C
 
     private lateinit var mCarver: Carver<P, C, Z>
@@ -74,6 +76,9 @@ abstract class Captor<P, C, Z> {
      * */
     abstract fun changeLensFacing()
 
+    /**
+     * 获取存有变焦比信息的 [LiveData] 对象
+     * */
     abstract fun zoom(): LiveData<Z>
 
     /**
@@ -87,7 +92,7 @@ abstract class Captor<P, C, Z> {
     abstract fun focus(x: Float, y: Float)
 
     /**
-     * 取消获取焦点
+     * 取消聚焦
      * */
     abstract fun cancelFocus()
 

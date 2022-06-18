@@ -33,10 +33,27 @@ import com.kokomi.carver.weight.GestureView
 import kotlinx.coroutines.launch
 import kotlin.math.round
 
+/**
+ * 使用 [CarverActivity] 可进行视频录制
+ *
+ * <p>
+ *
+ * 当 [CarverActivity] 结束时，若用户已经录制了视频，则会调用 [setResult] 函数将返回码设为
+ * [AppCompatActivity.RESULT_OK] ，然后在返回的 Intent 中的 video 字段存放视频文件的保存路径
+ *
+ * <p>
+ *
+ * 若用户没有录制视频就退出了 [CarverActivity] ，则不会执行任何操作，直接结束 [CarverActivity]
+ *
+ * */
 class CarverActivity : AppCompatActivity() {
 
     companion object {
         private const val TAG = "CarverActivity"
+
+        /**
+         * 最大录制时间，单位：纳秒
+         * */
         private const val MAX_RECORDING_TIME = 60_000_000_000L
     }
 

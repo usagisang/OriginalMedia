@@ -16,7 +16,20 @@ import com.kokomi.carver.core.camerax.CameraXConfiguration
 import com.kokomi.carver.core.camerax.supportedQualityList
 import com.kokomi.carver.defaultOutputDirectory
 import java.util.concurrent.locks.ReentrantLock
+import com.kokomi.carver.core.camerax.core.CameraXCoreCaptorImpl
 
+/**
+ * CameraX Video 包下的 [VideoCapture] 的视频录制实现
+ *
+ * <p>
+ *
+ * 可以实现视频录制开始、停止、暂停、继续和输出文件功能，但可以调节的参数相比
+ * [CameraXCoreCaptorImpl] 少了很多，
+ * 仅支持视频质量在 [Quality.SD] 、[Quality.HD] 、[Quality.FHD] 、[Quality.UHD]
+ * 中进行切换选择
+ *
+ * @see CameraXCoreCaptorImpl
+ * */
 @Suppress("RestrictedApi", "MissingPermission")
 class CameraXVideoCaptorImpl(
     private val activity: ComponentActivity,

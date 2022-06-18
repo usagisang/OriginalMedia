@@ -21,7 +21,23 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.concurrent.locks.ReentrantLock
+import com.kokomi.carver.core.camerax.video.CameraXVideoCaptorImpl
 
+/**
+ * CameraX Core 包下的 [VideoCapture] 的视频录制实现
+ *
+ * <p>
+ *
+ * 可以实现视频录制开始、停止和输出文件功能，同时可以支持调节很多参数，
+ * 美中不足的是，无法暂停和继续录制
+ *
+ * <p>
+ *
+ * 如果希望能够暂停和继续录制，可以使用
+ * [CameraXVideoCaptorImpl]
+ *
+ * @see CameraXVideoCaptorImpl
+ * */
 @Suppress("RestrictedApi", "MissingPermission")
 class CameraXCoreCaptorImpl(
     private val activity: ComponentActivity,
@@ -107,7 +123,7 @@ class CameraXCoreCaptorImpl(
                     val cameraSelector = CameraSelector.Builder()
                         .requireLensFacing(config.lensFacing)
                         .build()
-                    // 获取视频捕获者
+                    // 获取视频捕获者，配置参数
                     videoCapture = VideoCapture.Builder().apply {
                         with(config) {
                             if (videoFrameRate > 0) setVideoFrameRate(videoFrameRate)
