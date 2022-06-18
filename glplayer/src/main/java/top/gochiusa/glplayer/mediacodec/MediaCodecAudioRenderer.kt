@@ -130,11 +130,9 @@ class MediaCodecAudioRenderer(
         return audioClock
     }
 
-    override fun onDisabled(oldSender: Sender?) {
-        super.onDisabled(oldSender)
-        val f = audioFormat
-        if (f != null) {
-            oldSender?.unbindTrack(f, this)
+    override fun onPause() {
+        runCatching {
+            audioTrack?.pause()
         }
     }
 

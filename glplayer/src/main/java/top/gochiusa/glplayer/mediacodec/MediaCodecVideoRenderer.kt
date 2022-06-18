@@ -124,20 +124,14 @@ class MediaCodecVideoRenderer(
         return videoClock
     }
 
+    override fun onPause() {}
+
     override fun onVideoSurfaceCreated(surface: Surface) {
         setOutput(surface)
     }
 
     override fun onVideoSurfaceDestroyed(surface: Surface?) {
         setOutput(null)
-    }
-
-    override fun onDisabled(oldSender: Sender?) {
-        super.onDisabled(oldSender)
-        val f = videoFormat
-        if (f != null) {
-            oldSender?.unbindTrack(f, this)
-        }
     }
 
     private fun setOutput(output: Surface?) {
