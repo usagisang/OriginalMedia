@@ -15,6 +15,9 @@ import android.view.animation.DecelerateInterpolator
 import android.widget.ImageView
 import kotlinx.coroutines.delay
 
+/**
+ * [PreviewViewBlurEffect] 用于实现切换镜头时，界面的高斯模糊效果
+ * */
 class PreviewViewBlurEffect(
     context: Context,
     private var bitmap: Bitmap,
@@ -39,6 +42,9 @@ class PreviewViewBlurEffect(
         imageView.setImageBitmap(result)
     }
 
+    /**
+     * 调用此函数，开启高斯模糊动画
+     * */
     suspend fun startAnim(start: Float = 0.1f, end: Float = 25f, d: Long = 300L) {
         imageView.visibility = View.VISIBLE
         ObjectAnimator.ofFloat(

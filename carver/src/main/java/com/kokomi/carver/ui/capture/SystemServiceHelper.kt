@@ -9,11 +9,17 @@ import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
 import kotlin.math.abs
 
+/**
+ * 录制要请求的权限列表
+ * */
 val carverPermissions = arrayOf(
     android.Manifest.permission.CAMERA,
     android.Manifest.permission.RECORD_AUDIO
 )
 
+/**
+ * 请求权限
+ * */
 fun ComponentActivity.requestCarverPermissions(listener: (Map<String, Boolean>) -> Unit) {
     registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { result ->
         listener(result)

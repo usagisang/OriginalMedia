@@ -19,17 +19,32 @@ internal val IMPL_LIST = listOf(CAMERAX_VIDEO_IMPL, CAMERAX_CORE_IMPL)
 
 class CarverViewModel : ViewModel() {
 
+    /**
+     * 录制的实现类型
+     */
     private val _impl = MutableStateFlow(CAMERAX_VIDEO_IMPL)
     val impl: StateFlow<String> = _impl
 
+    /**
+     * [Carver] 实例
+     * */
     internal lateinit var carver: Carver<PreviewView, CameraXConfiguration, ZoomState>
 
+    /**
+     * [carver] 的状态，注意除 [CarverStatus.Recording] 状态外，其它状态都会被推送到这里
+     * */
     private val _carverStatus = MutableStateFlow<CarverStatus>(CarverStatus.Initial())
     val carverStatus: StateFlow<CarverStatus> = _carverStatus
 
+    /**
+     * [CarverStatus.Recording] 状态会被推送到这里
+     * */
     private val _recordingStatus = MutableStateFlow<CarverStatus.Recording?>(null)
     val recordingStatus: StateFlow<CarverStatus.Recording?> = _recordingStatus
 
+    /**
+     * 更新 [carver] 时调用此函数
+     * */
     internal fun updateCarver(newImpl: String, activity: CarverActivity, preview: PreviewView) {
         if (newImpl != _impl.value) {
             carver.shutdown()
@@ -52,6 +67,9 @@ class CarverViewModel : ViewModel() {
         }
     }
 
+    /**
+     * 初始化 [carver] 时调用此函数
+     * */
     internal fun createCarver(
         captor: Captor<PreviewView, CameraXConfiguration, ZoomState>,
         preview: PreviewView

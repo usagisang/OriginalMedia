@@ -47,8 +47,10 @@ class GestureView : View {
 
     private var rectLength = 160f
 
+    // 绘制单击聚焦时的矩形（聚焦框）
     override fun onDraw(canvas: Canvas) {
         if (clickX > 0f && clickY > 0f) {
+            // 画矩形
             canvas.drawRoundRect(
                 clickX - rectLength,
                 clickY - rectLength,
@@ -57,6 +59,8 @@ class GestureView : View {
                 rectLength / 10, rectLength / 10,
                 rectPaint
             )
+
+            // 画中间的两条线
             val lineLength = rectLength / 5
             canvas.drawLine(
                 clickX - lineLength,
@@ -75,15 +79,23 @@ class GestureView : View {
         }
     }
 
+    // 聚焦框的缩小动画
     private var zoomEffectAnim: Animator? = null
+
+    // 聚焦框的闪烁动画
     private var twinkleEffectAnim: Animator? = null
+
+    // 聚焦框的不透明变半透明动画
     private var translucentEffectAnim: Animator? = null
+
+    // 聚焦框的半透明变全透明（消失）动画
     private var transparentEffectAnim: Animator? = null
 
     @Suppress("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
         when (event.actionMasked) {
             MotionEvent.ACTION_POINTER_DOWN -> {
+                // 双指触摸时记录开始的双指距离
                 if (event.pointerCount == 2) {
                     val p0x = event.getX(0)
                     val p0y = event.getY(0)
@@ -94,6 +106,7 @@ class GestureView : View {
                 }
             }
             MotionEvent.ACTION_MOVE -> {
+                // 双指移动时计算双指距离，得到一个跟随手指的放大倍数
                 if (event.pointerCount == 2) {
                     val p0x = event.getX(0)
                     val p0y = event.getY(0)
@@ -109,6 +122,7 @@ class GestureView : View {
                 }
             }
             MotionEvent.ACTION_UP -> {
+                // 抬起手指时判断是否为点击事件，点击事件则绘制聚焦框
                 if (isZoomGesture) {
                     isZoomGesture = false
                     return true
@@ -122,6 +136,9 @@ class GestureView : View {
         }
         return super.onTouchEvent(event)
     }
+
+    // Start --->>> 下面是实现动画效果的函数
+    // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
     @Suppress("UNUSED")
     private fun setZoomEffect(length: Float) {
@@ -207,16 +224,31 @@ class GestureView : View {
         invalidate()
     }
 
+    // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    // End --->>> 上面是实现动画效果的函数
+
+    // Start --->>> 下面是监听的接口
+    // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
     private var zoomGestureListener: ((Float) -> Unit)? = null
 
+    /**
+     * 设置缩放倍数（双指手势）的监听
+     * */
     fun setZoomChangedListener(listener: (Float) -> Unit) {
         zoomGestureListener = listener
     }
 
     private var clickListener: ((Float, Float) -> Unit)? = null
 
+    /**
+     * 设置点击事件的监听，函数中回传的参数为点击位置的 x 坐标和 y 坐标
+     * */
     fun setClickListener(listener: (Float, Float) -> Unit) {
         clickListener = listener
     }
+
+    // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    // End --->>> 上面是监听的接口
 
 }

@@ -16,17 +16,17 @@ abstract class Captor<P, C, Z> {
      * */
     protected abstract var config: C
 
-    private lateinit var mCarver: Carver<P, C, Z>
+    private lateinit var carver: Carver<P, C, Z>
 
     internal fun attachTo(carver: Carver<P, C, Z>) {
-        mCarver = carver
+        this.carver = carver
     }
 
     /**
      * 调用此方法通知绑定的 [Carver] 状态更新
      * */
     protected fun changeStatus(status: CarverStatus) {
-        mCarver.onStatusChanged(status)
+        carver.onStatusChanged(status)
     }
 
     internal fun getConfig() = config
