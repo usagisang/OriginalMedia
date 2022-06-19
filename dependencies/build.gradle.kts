@@ -33,7 +33,11 @@ android {
 dependencies {
     api(Deps.appCompat)
     api(Deps.Ktx.coreKtx)
-    api(Deps.Lifecycle.viewModelKtx)
     api(Deps.Ktx.fragmentKtx)
+
+    api(Deps.Lifecycle.viewModelKtx)
+    api(Deps.Lifecycle.runtimeKtx)
+    api(Deps.Lifecycle.livedata)
+
     api(Deps.material)
 }

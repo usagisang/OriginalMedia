@@ -1,9 +1,6 @@
 package top.gochiusa.originalmedia
 
-<<<<<<< HEAD
 
-=======
->>>>>>> parent of 7eae8b6 (feat————底部导航栏自己实现，用fragment hide代替navigation)
 import android.os.Bundle
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
@@ -27,15 +24,6 @@ class LauncherActivity : BaseActivity<ActivityLauncherBinding>() {
 
 
     }
-
-
-
-
-
-
-
-
-
 
 
 
