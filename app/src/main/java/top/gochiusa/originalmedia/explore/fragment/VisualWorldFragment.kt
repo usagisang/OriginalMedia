@@ -9,7 +9,7 @@ import top.gochiusa.originalmedia.base.BaseFragment
 import top.gochiusa.originalmedia.databinding.FragmentVisualWorldBinding
 
 
-class VisualWorldFragment : BaseFragment<FragmentVisualWorldBinding>() {
+class VisualWorldFragment : BaseFragment() {
 
 
     override fun onCreateView(
@@ -30,7 +30,4 @@ class VisualWorldFragment : BaseFragment<FragmentVisualWorldBinding>() {
             }
     }
 
-    override fun FragmentVisualWorldBinding.initBinding() {
-
-    }
 }
