@@ -3,6 +3,7 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+<<<<<<< HEAD
         <entry key="..\:/topview/OriginalMedia/app/src/main/res/drawable/shape_oral.xml" value="0.262" />
         <entry key="..\:/topview/OriginalMedia/app/src/main/res/layout/activity_launcher.xml" value="0.289247311827957" />
         <entry key="..\:/topview/OriginalMedia/app/src/main/res/layout/fragment_List.xml" value="0.13240740740740742" />
@@ -23,6 +24,8 @@
         <entry key="..\:/topview/OriginalMedia/app/src/main/res/layout/tab_text_layout.xml" value="0.18888888888888888" />
         <entry key="..\:/topview/OriginalMedia/app/src/main/res/menu/nav_bottom.xml" value="0.2708333333333333" />
         <entry key="..\:/topview/OriginalMedia/app/src/main/res/xml/network_security_config.xml" value="0.17037037037037037" />
+=======
+>>>>>>> parent of 7eae8b6 (feat————底部导航栏自己实现，用fragment hide代替navigation)
       </map>
     </option>
   </component>
