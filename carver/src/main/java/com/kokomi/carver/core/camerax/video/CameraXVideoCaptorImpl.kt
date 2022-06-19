@@ -1,4 +1,4 @@
-package com.kokomi.carver.core.camerax
+package com.kokomi.carver.core.camerax.video
 
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -9,61 +9,52 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.video.*
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
-import com.kokomi.carver.core.Captor
 import com.kokomi.carver.core.CarverStatus
 import com.kokomi.carver.checkMainThread
+import com.kokomi.carver.core.camerax.CameraXCaptor
+import com.kokomi.carver.core.camerax.CameraXConfiguration
+import com.kokomi.carver.core.camerax.supportedQualityList
 import com.kokomi.carver.defaultOutputDirectory
 import java.util.concurrent.locks.ReentrantLock
+import com.kokomi.carver.core.camerax.core.CameraXCoreCaptorImpl
 
+/**
+ * CameraX Video 包下的 [VideoCapture] 的视频录制实现
+ *
+ * <p>
+ *
+ * 可以实现视频录制开始、停止、暂停、继续和输出文件功能，但可以调节的参数相比
+ * [CameraXCoreCaptorImpl] 少了很多，
+ * 仅支持视频质量在 [Quality.SD] 、[Quality.HD] 、[Quality.FHD] 、[Quality.UHD]
+ * 中进行切换选择
+ *
+ * @see CameraXCoreCaptorImpl
+ * */
 @Suppress("RestrictedApi", "MissingPermission")
-class CameraXCaptorImpl(
+class CameraXVideoCaptorImpl(
     private val activity: ComponentActivity,
     override var config: CameraXConfiguration =
         CameraXConfiguration(
             quality = Quality.LOWEST,
             outputDirectory = activity.defaultOutputDirectory()
         )
-) : Captor<PreviewView, CameraXConfiguration>() {
+) : CameraXCaptor() {
 
     companion object {
-        private const val TAG = "CameraXCaptorImpl"
+        private const val TAG = "CameraXVideoCaptorImpl"
     }
 
-    private var previewView: PreviewView? = null
+    override var previewView: PreviewView? = null
 
-    private var cameraProvider: ProcessCameraProvider? = null
+    override var cameraProvider: ProcessCameraProvider? = null
 
-    private var camera: Camera? = null
+    override var camera: Camera? = null
 
     private lateinit var videoCapture: VideoCapture<Recorder>
 
     private lateinit var recording: Recording
 
     private val prepareLock = ReentrantLock()
-
-    override fun shutdown() {
-        checkMainThread()
-        // 解绑所有绑定的使用案例，然后销毁
-        cameraProvider?.unbindAll()
-        cameraProvider?.shutdown()
-    }
-
-    override fun onConfigurationChanged(newConfig: CameraXConfiguration) {
-        checkMainThread()
-        // 更新配置，然后重新构建录制者
-        config = newConfig
-        prepareInternal()
-    }
-
-    override fun bindPreview(preview: PreviewView) {
-        checkMainThread()
-        previewView = preview
-    }
-
-    override fun prepare() {
-        checkMainThread()
-        prepareInternal()
-    }
 
     override fun start() {
         checkMainThread()
@@ -112,7 +103,7 @@ class CameraXCaptorImpl(
         recording.resume()
     }
 
-    private fun prepareInternal() {
+    override fun prepareInternal() {
         prepareLock.lock()
         cameraProvider?.unbindAll()
         changeStatus(CarverStatus.Initial())
@@ -163,22 +154,6 @@ class CameraXCaptorImpl(
                 }
             }, ContextCompat.getMainExecutor(activity)
         )
-    }
-
-    override fun changeLensFacing() {
-        val facing = if (config.lensFacing == CameraSelector.LENS_FACING_BACK) {
-            CameraSelector.LENS_FACING_FRONT
-        } else {
-            CameraSelector.LENS_FACING_BACK
-        }
-        config = config.copy(lensFacing = facing)
-        onConfigurationChanged(config)
-    }
-
-    override fun zoom(zoom: Float) {
-        camera?.run {
-            cameraControl.setLinearZoom(zoom)
-        }
     }
 
 }

@@ -1,28 +1,43 @@
-package com.kokomi.carver.core.camerax
+package com.kokomi.carver.core.camerax.core
 
 import android.net.Uri
 import android.os.SystemClock
 import android.util.Log
 import androidx.activity.ComponentActivity
-import androidx.camera.core.Camera
-import androidx.camera.core.CameraSelector
-import androidx.camera.core.Preview
-import androidx.camera.core.VideoCapture
+import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.video.Quality
 import androidx.camera.video.QualitySelector
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
-import com.kokomi.carver.core.Captor
 import com.kokomi.carver.core.CarverStatus
 import com.kokomi.carver.checkMainThread
+import com.kokomi.carver.core.camerax.CameraXCaptor
+import com.kokomi.carver.core.camerax.CameraXConfiguration
+import com.kokomi.carver.core.camerax.supportedQualityList
 import com.kokomi.carver.defaultOutputDirectory
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.concurrent.locks.ReentrantLock
+import com.kokomi.carver.core.camerax.video.CameraXVideoCaptorImpl
 
+/**
+ * CameraX Core 包下的 [VideoCapture] 的视频录制实现
+ *
+ * <p>
+ *
+ * 可以实现视频录制开始、停止和输出文件功能，同时可以支持调节很多参数，
+ * 美中不足的是，无法暂停和继续录制
+ *
+ * <p>
+ *
+ * 如果希望能够暂停和继续录制，可以使用
+ * [CameraXVideoCaptorImpl]
+ *
+ * @see CameraXVideoCaptorImpl
+ * */
 @Suppress("RestrictedApi", "MissingPermission")
 class CameraXCoreCaptorImpl(
     private val activity: ComponentActivity,
@@ -30,47 +45,23 @@ class CameraXCoreCaptorImpl(
         CameraXConfiguration(
             outputDirectory = activity.defaultOutputDirectory()
         )
-) : Captor<PreviewView, CameraXConfiguration>() {
+) : CameraXCaptor() {
 
     companion object {
         private const val TAG = "CameraXCoreCaptorImpl"
     }
 
-    private var previewView: PreviewView? = null
+    override var previewView: PreviewView? = null
 
-    private var cameraProvider: ProcessCameraProvider? = null
+    override var cameraProvider: ProcessCameraProvider? = null
 
-    private var camera: Camera? = null
+    override var camera: Camera? = null
 
     private lateinit var videoCapture: VideoCapture
 
     private val prepareLock = ReentrantLock()
 
     private var job: Job? = null
-
-    override fun shutdown() {
-        checkMainThread()
-        // 解绑所有绑定的使用案例，然后销毁
-        cameraProvider?.unbindAll()
-        cameraProvider?.shutdown()
-    }
-
-    override fun onConfigurationChanged(newConfig: CameraXConfiguration) {
-        checkMainThread()
-        // 更新配置，然后重新构建录制者
-        config = newConfig
-        prepareInternal()
-    }
-
-    override fun bindPreview(preview: PreviewView) {
-        checkMainThread()
-        previewView = preview
-    }
-
-    override fun prepare() {
-        checkMainThread()
-        prepareInternal()
-    }
 
     override fun start() {
         checkMainThread()
@@ -101,7 +92,7 @@ class CameraXCoreCaptorImpl(
             changeStatus(CarverStatus.Start())
             while (true) {
                 changeStatus(CarverStatus.Recording(1000_000 * (SystemClock.uptimeMillis() - startTime)))
-                delay(500L)
+                delay(100L)
             }
         }
     }
@@ -119,7 +110,7 @@ class CameraXCoreCaptorImpl(
         // Nothing
     }
 
-    private fun prepareInternal() {
+    override fun prepareInternal() {
         prepareLock.lock()
         cameraProvider?.unbindAll()
         changeStatus(CarverStatus.Initial())
@@ -132,7 +123,7 @@ class CameraXCoreCaptorImpl(
                     val cameraSelector = CameraSelector.Builder()
                         .requireLensFacing(config.lensFacing)
                         .build()
-                    // 获取视频捕获者
+                    // 获取视频捕获者，配置参数
                     videoCapture = VideoCapture.Builder().apply {
                         with(config) {
                             if (videoFrameRate > 0) setVideoFrameRate(videoFrameRate)
@@ -173,22 +164,6 @@ class CameraXCoreCaptorImpl(
                 }
             }, ContextCompat.getMainExecutor(activity)
         )
-    }
-
-    override fun changeLensFacing() {
-        val facing = if (config.lensFacing == CameraSelector.LENS_FACING_BACK) {
-            CameraSelector.LENS_FACING_FRONT
-        } else {
-            CameraSelector.LENS_FACING_BACK
-        }
-        config = config.copy(lensFacing = facing)
-        onConfigurationChanged(config)
-    }
-
-    override fun zoom(zoom: Float) {
-        camera?.run {
-            cameraControl.setLinearZoom(zoom)
-        }
     }
 
 }

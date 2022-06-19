@@ -5,6 +5,8 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.animation.AnticipateOvershootInterpolator
+import android.view.animation.OvershootInterpolator
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
@@ -16,7 +18,7 @@ import androidx.lifecycle.lifecycleScope
 import com.kokomi.carver.*
 import com.kokomi.carver.clearSystemWindows
 import com.kokomi.carver.core.*
-import com.kokomi.carver.core.camerax.CameraXCaptorImpl
+import com.kokomi.carver.core.camerax.video.CameraXVideoCaptorImpl
 import com.kokomi.carver.core.camerax.getSupportedQualities
 import com.kokomi.carver.core.camerax.qualityFormatter
 import com.kokomi.carver.formatRecordingTime
@@ -26,13 +28,33 @@ import com.kokomi.carver.ui.setting.BIT_RATE
 import com.kokomi.carver.ui.setting.I_FRAME_INTERVAL
 import com.kokomi.carver.ui.setting.QUALITY
 import com.kokomi.carver.ui.setting.VIDEO_FRAME_RATE
-import com.kokomi.carver.weight.ZoomGestureView
+import com.kokomi.carver.weight.CircleProgressBar
+import com.kokomi.carver.weight.GestureView
 import kotlinx.coroutines.launch
+import kotlin.math.round
 
+/**
+ * 使用 [CarverActivity] 可进行视频录制
+ *
+ * <p>
+ *
+ * 当 [CarverActivity] 结束时，若用户已经录制了视频，则会调用 [setResult] 函数将返回码设为
+ * [AppCompatActivity.RESULT_OK] ，然后在返回的 Intent 中的 video 字段存放视频文件的保存路径
+ *
+ * <p>
+ *
+ * 若用户没有录制视频就退出了 [CarverActivity] ，则不会执行任何操作，直接结束 [CarverActivity]
+ *
+ * */
 class CarverActivity : AppCompatActivity() {
 
     companion object {
         private const val TAG = "CarverActivity"
+
+        /**
+         * 最大录制时间，单位：纳秒
+         * */
+        private const val MAX_RECORDING_TIME = 60_000_000_000L
     }
 
     private val resultFromSettingActivity =
@@ -40,11 +62,11 @@ class CarverActivity : AppCompatActivity() {
             if (it.resultCode == RESULT_OK) {
                 it.data?.run {
                     vm.updateCarver(
-                        getStringExtra(IMPL) ?: CAMERAX_IMPL,
+                        getStringExtra(IMPL) ?: CAMERAX_VIDEO_IMPL,
                         this@CarverActivity,
                         previewView
                     )
-                    val config = vm.carver.getConfig()
+                    val config = vm.carver.config()
                     val qualityIndex = getIntExtra(QUALITY, -1)
                     val videoFrameRate = getIntExtra(VIDEO_FRAME_RATE, -1)
                     val bitRate = getIntExtra(BIT_RATE, -1)
@@ -52,7 +74,7 @@ class CarverActivity : AppCompatActivity() {
                     val audioSampleRate = getIntExtra(AUDIO_SAMPLE_RATE, -1)
                     val audioBitRate = getIntExtra(AUDIO_BIT_RATE, -1)
                     val audioChannelCount = getIntExtra(AUDIO_CHANNEL_COUNT, -1)
-                    vm.carver.newConfig(
+                    vm.carver.config(
                         config.copy(
                             quality = if (qualityIndex != -1) getSupportedQualities()[qualityIndex] else config.quality,
                             videoFrameRate = videoFrameRate,
@@ -75,8 +97,13 @@ class CarverActivity : AppCompatActivity() {
     private lateinit var setting: ImageView
     private lateinit var previewView: PreviewView
     private lateinit var blurEffect: ImageView
-    private lateinit var zoomGesture: ZoomGestureView
+    private lateinit var gestureView: GestureView
+    private lateinit var zoomText: TextView
+    private lateinit var pauseAndResume: CardView
+    private lateinit var pauseAndResumeImage: ImageView
     private lateinit var control: CardView
+    private lateinit var controlPoint: CardView
+    private lateinit var progressBar: CircleProgressBar
     private lateinit var changeCamera: CardView
 
     private lateinit var vm: CarverViewModel
@@ -117,18 +144,30 @@ class CarverActivity : AppCompatActivity() {
         setting = findViewById(R.id.iv_carver_setting)
         previewView = findViewById(R.id.pv_carver_preview)
         blurEffect = findViewById(R.id.iv_carver_blur_effect)
-        zoomGesture = findViewById(R.id.zgv_carver_zoom_gesture)
+        gestureView = findViewById(R.id.zgv_carver_gesture)
+        zoomText = findViewById(R.id.tv_carver_zoom)
+        pauseAndResume = findViewById(R.id.cv_carver_pause_and_resume)
+        pauseAndResumeImage = findViewById(R.id.iv_carver_pause_and_resume)
         control = findViewById(R.id.cv_carver_control)
+        controlPoint = findViewById(R.id.cv_carver_control_point)
+        progressBar = findViewById(R.id.cpb_carver_progress)
         changeCamera = findViewById(R.id.cv_carver_change_camera)
 
-        vm.createCarver(CameraXCaptorImpl(this), previewView)
+        progressBar.run {
+            setMaxProgress(MAX_RECORDING_TIME)
+            setProgress(MAX_RECORDING_TIME)
+            scaleX = 0.6f
+            scaleY = 0.6f
+        }
+
+        vm.createCarver(CameraXVideoCaptorImpl(this), previewView)
 
         setting.setOnClickListener {
             resultFromSettingActivity.launch(
                 Intent(this, SettingActivity::class.java).apply {
-                    val config = vm.carver.getConfig()
+                    val config = vm.carver.config()
                     putExtra(IMPL, vm.impl.value)
-                    putExtra(QUALITY, qualityFormatter(vm.carver.getConfig().quality))
+                    putExtra(QUALITY, qualityFormatter(vm.carver.config().quality))
                     putExtra(VIDEO_FRAME_RATE, config.videoFrameRate)
                     putExtra(BIT_RATE, config.bitRate)
                     putExtra(I_FRAME_INTERVAL, config.iFrameInterval)
@@ -138,22 +177,17 @@ class CarverActivity : AppCompatActivity() {
                 })
         }
 
-        zoomGesture.setZoomChangedListener {
+        gestureView.setZoomChangedListener {
             val status = this.vm.carverStatus.value
             if (!(status is CarverStatus.Initial || status is CarverStatus.Error || status is CarverStatus.Shutdown)) {
-                vm.carver.setZoom(it)
+                vm.carver.zoom(it)
             }
         }
 
-        control.setOnClickListener {
-            if (saving) {
-                toast("正在保存，请稍后")
-                return@setOnClickListener
-            }
+        gestureView.setClickListener { x, y -> vm.carver.focus(x, y) }
+
+        pauseAndResume.setOnClickListener {
             when (this.vm.carverStatus.value) {
-                is CarverStatus.Finalize, is CarverStatus.Prepared -> {
-                    vm.carver.start()
-                }
                 is CarverStatus.Start, is CarverStatus.Resume -> {
                     vm.carver.pause()
                 }
@@ -166,21 +200,35 @@ class CarverActivity : AppCompatActivity() {
             }
         }
 
-        control.setOnLongClickListener {
-            val status = this.vm.carverStatus.value
-            if (status is CarverStatus.Start || status is CarverStatus.Resume || status is CarverStatus.Pause) {
-                saving = true
-                toast("正在保存")
-                vm.carver.stop()
+        control.setOnClickListener {
+            if (saving) {
+                toast("正在保存，请稍后")
+                return@setOnClickListener
             }
-            true
+            when (this.vm.carverStatus.value) {
+                is CarverStatus.Finalize, is CarverStatus.Prepared -> {
+                    vm.carver.start()
+                }
+                is CarverStatus.Start, is CarverStatus.Resume, is CarverStatus.Pause -> {
+                    saving = true
+                    vm.carver.stop()
+                    toast("正在保存")
+                }
+                else -> {
+                    /* Nothing to do. */
+                }
+            }
         }
 
         changeCamera.setOnClickListener {
             val status = this.vm.carverStatus.value
-            if (!(status is CarverStatus.Prepared || status is CarverStatus.Finalize))
+            if (!(status is CarverStatus.Prepared || status is CarverStatus.Finalize)) {
+                toast("当前状态不能更换摄像头")
                 return@setOnClickListener
-            vm.carver.changeLensFacing()
+            }
+            gestureView.clearRect()
+            vm.carver.lensFacing()
+            changeCameraRotationClockwise()
         }
 
         lifecycleScope.launch {
@@ -189,39 +237,51 @@ class CarverActivity : AppCompatActivity() {
                     is CarverStatus.Initial -> {
                         val b = previewView.bitmap ?: return@collect
                         PreviewViewBlurEffect(this@CarverActivity, b, blurEffect).startAnim()
-                        rec.text = "Initial"
                     }
                     is CarverStatus.Prepared -> {
-                        rec.text = "Prepared"
+                        gestureView.clearZoom()
+                        vm.carver.zoom().observe(this@CarverActivity) {
+                            it ?: return@observe
+                            val z = it.zoomRatio
+                            zoomText.text =
+                                if (z < 10) "${String.format("%.1f", z)}X"
+                                else "${round(z)}X"
+                        }
                     }
                     is CarverStatus.Start -> {
-                        startRecBreath()
                         rec.text = "REC"
+                        progressBar.setProgress(MAX_RECORDING_TIME)
+                        pauseAndResumeImage.setImageResource(R.drawable.ic_pause)
+                        startRecBreath()
+                        displayPauseAndResume()
+                        controlBlockToPoint()
+                        progressBarEnlarge()
                     }
                     is CarverStatus.Finalize -> {
-                        stopRecBreath()
                         with(status.info) {
                             intent.putExtra("video_file", path)
                             setResult(RESULT_OK, intent)
                             toast("录像已保存至:${path ?: "保存错误"}")
                         }
-                        timeText.text = "--:--"
+                        timeText.text = ""
+                        stopRecBreath()
+                        hidePauseAndResume()
+                        controlPointToBlock()
+                        progressBarNarrow()
                         saving = false
-                        rec.text = "Finalize"
                     }
                     is CarverStatus.Pause -> {
+                        pauseAndResumeImage.setImageResource(R.drawable.ic_resume)
                         stopRecBreath()
-                        rec.text = "Pause"
                     }
                     is CarverStatus.Resume -> {
-                        startRecBreath()
                         rec.text = "REC"
+                        pauseAndResumeImage.setImageResource(R.drawable.ic_pause)
+                        startRecBreath()
                     }
                     is CarverStatus.Shutdown -> {
-                        rec.text = "Shutdown"
                     }
                     is CarverStatus.Error -> {
-                        rec.text = "ERROR"
                         Log.e(TAG, "[ERROR]", status.t)
                     }
                     else -> {}
@@ -232,10 +292,20 @@ class CarverActivity : AppCompatActivity() {
         lifecycleScope.launch {
             vm.recordingStatus.collect { status ->
                 status ?: return@collect
-                timeText.text = formatRecordingTime(status.info)
+                status.info.let { time ->
+                    timeText.text = formatRecordingTime(time)
+                    progressBar.setProgress(MAX_RECORDING_TIME - time)
+                    if (time >= MAX_RECORDING_TIME) {
+                        vm.carver.stop()
+                    }
+                }
             }
         }
 
+        registerAccelerometerListener {
+            gestureView.clearRect()
+            vm.carver.cancelFocus()
+        }
     }
 
     override fun onResume() {
@@ -258,6 +328,7 @@ class CarverActivity : AppCompatActivity() {
             1f
         ).apply {
             setAutoCancel(true)
+            interpolator = null
             duration = 2000L
             repeatCount = ObjectAnimator.INFINITE
         }.start()
@@ -271,8 +342,116 @@ class CarverActivity : AppCompatActivity() {
             1f
         ).apply {
             setAutoCancel(true)
+            interpolator = null
             duration = 100L
         }.start()
+    }
+
+    private fun displayPauseAndResume() {
+        if (vm.impl.value == CAMERAX_CORE_IMPL) return
+        ObjectAnimator.ofFloat(
+            pauseAndResume,
+            "alpha",
+            pauseAndResume.alpha,
+            1f
+        ).apply {
+            setAutoCancel(true)
+            interpolator = null
+            start()
+        }
+    }
+
+    private fun hidePauseAndResume() {
+        if (vm.impl.value == CAMERAX_CORE_IMPL) return
+        ObjectAnimator.ofFloat(
+            pauseAndResume,
+            "alpha",
+            pauseAndResume.alpha,
+            0f
+        ).apply {
+            setAutoCancel(true)
+            interpolator = null
+            start()
+        }
+    }
+
+    private fun controlBlockToPoint() {
+        ObjectAnimator.ofFloat(
+            this,
+            "ControlPointScale",
+            controlPoint.scaleX,
+            0.6f
+        ).apply {
+            setAutoCancel(true)
+            interpolator = AnticipateOvershootInterpolator()
+            start()
+        }
+    }
+
+    private fun controlPointToBlock() {
+        ObjectAnimator.ofFloat(
+            this,
+            "ControlPointScale",
+            controlPoint.scaleX,
+            1f
+        ).apply {
+            setAutoCancel(true)
+            interpolator = OvershootInterpolator()
+            start()
+        }
+    }
+
+    private fun progressBarEnlarge() {
+        ObjectAnimator.ofFloat(
+            this,
+            "ProgressBarScale",
+            progressBar.scaleX,
+            1f
+        ).apply {
+            setAutoCancel(true)
+            interpolator = OvershootInterpolator()
+            start()
+        }
+    }
+
+    private fun progressBarNarrow() {
+        ObjectAnimator.ofFloat(
+            this,
+            "ProgressBarScale",
+            progressBar.scaleX,
+            0.8f
+        ).apply {
+            setAutoCancel(true)
+            interpolator = AnticipateOvershootInterpolator()
+            start()
+        }
+    }
+
+    @Suppress("UNUSED")
+    private fun setControlPointScale(scale: Float) {
+        controlPoint.scaleX = scale
+        controlPoint.scaleY = scale
+    }
+
+    @Suppress("UNUSED")
+    private fun setProgressBarScale(scale: Float) {
+        progressBar.scaleX = scale
+        progressBar.scaleY = scale
+    }
+
+    private fun changeCameraRotationClockwise() {
+        val r = changeCamera.rotation
+        val target = r + 180 - r % 180
+        ObjectAnimator.ofFloat(
+            changeCamera,
+            "Rotation",
+            r,
+            target
+        ).apply {
+            setAutoCancel(true)
+            duration = 600L
+            start()
+        }
     }
 
 }

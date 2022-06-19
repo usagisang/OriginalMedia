@@ -4,4 +4,5 @@
     <color name="app_soft_white">#FFF5F5F5</color>
     <color name="app_red">#F50000</color>
     <color name="app_translucent">#66F5F5F5</color>
+    <color name="app_black">#FF000000</color>
 </resources>
