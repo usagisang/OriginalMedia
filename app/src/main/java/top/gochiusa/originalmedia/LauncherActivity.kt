@@ -1,94 +1,116 @@
 package top.gochiusa.originalmedia
 
-<<<<<<< HEAD
-
-=======
->>>>>>> parent of 7eae8b6 (feat————底部导航栏自己实现，用fragment hide代替navigation)
-import android.os.Bundle
-import androidx.navigation.NavController
-import androidx.navigation.Navigation
-import androidx.navigation.ui.NavigationUI
-import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.google.android.material.tabs.TabLayout
+import android.graphics.Color
+import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.FragmentTransaction
+import kotlinx.android.synthetic.main.activity_launcher.*
+import kotlinx.android.synthetic.main.bottom_bar.*
+import top.gochiusa.originalmedia.account.fragment.AccountFragment
 import top.gochiusa.originalmedia.base.BaseActivity
+import top.gochiusa.originalmedia.creation.fragment.CreationFragment
 import top.gochiusa.originalmedia.databinding.ActivityLauncherBinding
-import top.gochiusa.originalmedia.explore.adapter.PageAdapter
+import top.gochiusa.originalmedia.explore.fragment.ExploreFragment
+
 
 class LauncherActivity : BaseActivity<ActivityLauncherBinding>() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
+
+
+    private var mExploreFragment: ExploreFragment? = null
+    private var mCreationFragment: CreationFragment? = null
+    private var mAccountFragment: AccountFragment? = null
 
 
     override fun ActivityLauncherBinding.initBinding() {
-        val navController = Navigation.findNavController(this@LauncherActivity, R.id.nav_host)
-        val navigationView = mBinding.navView
-        NavigationUI.setupWithNavController(navigationView, navController);
 
-
+        init()
+        setFragment(0)
     }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    private fun changeTabSize(){
-        //字体大小目前变化不了
-/*
-            tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
-                override fun onTabSelected(tab: TabLayout.Tab?) {
-                    tab?.apply {
-                        customView?.findViewById<TextView>(R.id.tv_top_item)?.isSelected = true
-                        val tv = customView?.findViewById<TextView>(R.id.tv_top_item)
-                        tv?.apply {
-                            typeface = Typeface.defaultFromStyle(Typeface.BOLD)//加粗
-                            setTextSize(TypedValue.COMPLEX_UNIT_SP, 22F)//直接用setTextSize(22)也一样
-                            alpha = 0.9f//透明度
-                            invalidate()
-
-                        }
-
-                    }
-
-                }
-
-                override fun onTabUnselected(tab: TabLayout.Tab?) {
-
-                    tab?.apply {
-                        customView?.findViewById<TextView>(R.id.tv_top_item)?.isSelected = true
-                        val tv = customView?.findViewById<TextView>(R.id.tv_top_item)
-                        tv?.apply {
-                            typeface = Typeface.defaultFromStyle(Typeface.BOLD)//加粗
-                            setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f)
-                            alpha = 0.6f;
-
-                            invalidate()
-
-                        }
-
-                    }
-
-                }
-
-                @RequiresApi(Build.VERSION_CODES.M)
-                override fun onTabReselected(tab: TabLayout.Tab?) {
-
-                }
-
-            })
-*/
+    private fun init() {
+        iv_bottom_explore.setOnClickListener {
+            setFragment(0)
+        }
+        iv_bottom_creation.setOnClickListener {
+            setFragment(1)
+        }
+        iv_bottom_personal.setOnClickListener {
+            setFragment(2)
+        }
     }
+
+    private fun setFragment(index: Int) {
+        //获取Fragment管理器
+        val mFragmentManager: FragmentManager = supportFragmentManager
+        //开启事务
+        val mTransaction: FragmentTransaction = mFragmentManager.beginTransaction()
+        //隐藏所有Fragment
+        hideFragments(mTransaction)
+        when (index) {
+            0 -> {
+                iv_bottom_explore.setColorFilter(Color.WHITE)
+                iv_bottom_creation.setColorFilter(Color.GRAY)
+                iv_bottom_personal.setColorFilter(Color.GRAY)
+                if (mExploreFragment == null) {
+                    mExploreFragment = ExploreFragment()
+                    mTransaction.add(
+                        R.id.container, mExploreFragment!!,
+
+                        )
+                } else {
+                    mTransaction.show(mExploreFragment!!)
+                }
+            }
+            2 -> {
+                iv_bottom_explore.setColorFilter(Color.GRAY)
+                iv_bottom_creation.setColorFilter(Color.GRAY)
+                iv_bottom_personal.setColorFilter(Color.WHITE)
+                if (mAccountFragment == null) {
+                    mAccountFragment = AccountFragment()
+                    mTransaction.add(
+                        R.id.container, mAccountFragment!!,
+                    )
+                } else {
+                    mTransaction.show(mAccountFragment!!)
+                }
+            }
+            1 -> {
+                iv_bottom_explore.setColorFilter(Color.GRAY)
+                iv_bottom_creation.setColorFilter(Color.WHITE)
+                iv_bottom_personal.setColorFilter(Color.GRAY)
+                if (mCreationFragment == null) {
+                    mCreationFragment = CreationFragment()
+                    mTransaction.add(
+                        R.id.container, mCreationFragment!!,
+                    )
+                } else {
+                    mTransaction.show(mCreationFragment!!)
+                }
+            }
+            else -> {}
+        }
+        //提交事务
+        mTransaction.commit()
+    }
+
+    private fun hideFragments(transaction: FragmentTransaction) {
+        if (mExploreFragment != null) {
+            //隐藏Fragment
+            transaction.hide(mExploreFragment!!)
+            //将对应菜单栏设置为默认状态
+
+        }
+        if (mAccountFragment != null) {
+            transaction.hide(mAccountFragment!!)
+
+        }
+        if (mCreationFragment != null) {
+            transaction.hide(mCreationFragment!!)
+
+        }
+    }
+
+
 
 
 }

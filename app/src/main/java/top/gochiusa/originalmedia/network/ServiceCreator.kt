@@ -1,11 +1,10 @@
 package top.gochiusa.originalmedia.network
 
-import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 object ServiceCreator {
-    private const val BASE_URL = "https://www.mxnzp.com/"
+    private const val BASE_URL = "8.136.115.103:8080/"
     private val retrofit = Retrofit.Builder()
         .baseUrl(BASE_URL)
         .addConverterFactory(GsonConverterFactory.create())

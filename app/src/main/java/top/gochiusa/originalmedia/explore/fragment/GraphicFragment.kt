@@ -63,7 +63,7 @@ class GraphicFragment : BaseFragment<FragmentGraphicBinding>() {
             }
         })
 
-        mVpGraphic.getGraphicList("509","1")
+//        mVpGraphic.getGraphicList("509","1")
     }
 
 

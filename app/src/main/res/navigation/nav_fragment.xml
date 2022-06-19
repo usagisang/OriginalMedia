@@ -14,5 +14,5 @@
 
     <fragment
         android:id="@+id/fragment_account"
-        android:name="top.gochiusa.originalmedia.account.AccountFragment" />
+        android:name="top.gochiusa.originalmedia.account.fragment.AccountFragment" />
 </navigation>
