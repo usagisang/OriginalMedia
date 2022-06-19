@@ -15,7 +15,7 @@ import top.gochiusa.originalmedia.widget.VerticalPageTransformer
 
 class GraphicFragment : BaseFragment<FragmentGraphicBinding>() {
 
-    val mVpGraphic by lazy { ViewModelProvider(this)[GraphicViewModel::class.java] }
+    private val mVpGraphic by lazy { ViewModelProvider(this)[GraphicViewModel::class.java] }
 
     lateinit var mAdapter:VerticalAdapter
 

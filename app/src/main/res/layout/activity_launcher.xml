@@ -6,35 +6,21 @@
     <data>
 
     </data>
-
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        tools:context=".LauncherActivity">
 
-        <com.google.android.material.bottomnavigation.BottomNavigationView
-            android:id="@+id/nav_view"
-            android:layout_width="0dp"
-            android:layout_height="40dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            android:background="@color/black_back"
-            app:itemTextColor="@color/gray"
-            app:itemRippleColor="@color/white_back"
-            app:menu="@menu/nav_bottom" />
-
-        <fragment
-            android:id="@+id/nav_host"
-            android:name="androidx.navigation.fragment.NavHostFragment"
-            android:layout_width="0dp"
+        <FrameLayout
+            android:id="@+id/container"
+            android:layout_width="match_parent"
             android:layout_height="0dp"
-            app:defaultNavHost="false"
-            app:labelVisibilityMode="labeled"
-            app:layout_constraintBottom_toTopOf="@+id/nav_view"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:navGraph="@navigation/nav_fragment" />
+            android:layout_weight="1"/>
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+        <include layout="@layout/bottom_bar"/>
+
+    </LinearLayout>
 </layout>
