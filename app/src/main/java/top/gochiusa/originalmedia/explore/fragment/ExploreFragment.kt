@@ -12,7 +12,7 @@ import top.gochiusa.originalmedia.databinding.FragmentExploreBinding
 import top.gochiusa.originalmedia.explore.adapter.PageAdapter
 
 
-class ExploreFragment : BaseFragment<FragmentExploreBinding>() {
+class ExploreFragment : BaseFragment() {
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -55,6 +55,5 @@ class ExploreFragment : BaseFragment<FragmentExploreBinding>() {
             }
     }
 
-    override fun FragmentExploreBinding.initBinding() {
-    }
+
 }

@@ -17,7 +17,7 @@ import top.gochiusa.originalmedia.explore.adapter.VideoListAdapter
 import top.gochiusa.originalmedia.explore.bean.Video
 
 
-class VideoFragment : BaseFragment<FragmentVideoBinding>() {
+class VideoFragment : BaseFragment() {
     private lateinit var mMyAdapter:VideoListAdapter
     private val mDataList = ArrayList<Video>()
 
@@ -99,8 +99,5 @@ class VideoFragment : BaseFragment<FragmentVideoBinding>() {
             })
     }
 
-    override fun FragmentVideoBinding.initBinding() {
 
-
-    }
 }
