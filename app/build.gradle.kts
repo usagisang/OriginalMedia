@@ -47,15 +47,15 @@ android {
 
 dependencies {
     implementation(project(":dependencies"))
-    implementation(project(":carver"))
-    implementation(project(":glplayer"))
+/*    implementation(project(":carver"))
+    implementation(project(":glplayer"))*/
 
-    implementation(Deps.ImmersionBar.baseBag)
-    implementation(Deps.ImmersionBar.baseKTX)
+    api(Deps.ImmersionBar.baseBag)
+    api(Deps.ImmersionBar.baseKTX)
     implementation(Deps.ImmersionBar.fragmentDie)
     implementation(Deps.retrofit)
     implementation(Deps.retrofitGsonConverter)
-
+    implementation(Deps.Lifecycle.livedata)
     implementation(Deps.Navigation.navigationUI)
     implementation(Deps.Navigation.fragment)
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
