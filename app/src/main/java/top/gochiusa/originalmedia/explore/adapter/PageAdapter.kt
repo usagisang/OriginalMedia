@@ -23,10 +23,10 @@ class PageAdapter(
                 GraphicFragment()
             }
             1 -> {
-                VideoFragment()
+                VisualWorldFragment()
             }
             2 -> {
-                VisualWorldFragment()
+                VideoFragment()
             }
             else -> GraphicFragment()
         }

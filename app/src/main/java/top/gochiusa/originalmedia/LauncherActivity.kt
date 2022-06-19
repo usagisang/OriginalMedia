@@ -1,5 +1,6 @@
 package top.gochiusa.originalmedia
 
+
 import android.os.Bundle
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
@@ -23,15 +24,6 @@ class LauncherActivity : BaseActivity<ActivityLauncherBinding>() {
 
 
     }
-
-
-
-
-
-
-
-
-
 
 
 

@@ -15,4 +15,5 @@
     <string name="title_edit_graphic">点击此处添加标题...</string>
     <string name="graphic_hint">"     点击此处添加内容..."</string>
     <string name="finish">完成</string>
+    <string name="video_title">视频题目</string>
 </resources>
