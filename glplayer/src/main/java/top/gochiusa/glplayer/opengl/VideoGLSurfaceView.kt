@@ -82,7 +82,7 @@ class VideoGLSurfaceView
     }
 
     override fun onVideoMetadataChanged(format: Format) {
-        renderer.setVideoSize(format.width, format.height)
+        renderer.setVideoInfo(format.width, format.height, format.rotation)
     }
 
     override fun onFrameAvailable(surfaceTexture: SurfaceTexture?) {

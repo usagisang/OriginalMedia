@@ -43,6 +43,11 @@ interface Renderer: Receiver {
     fun onSeekTo()
 
     /**
+     * 发生Pause事件后回调
+     */
+    fun onPause()
+
+    /**
      * 状态为[STATE_ENABLE]时可调用，取消与[Sender]的关联
      * 调用成功后状态转为[STATE_DISABLE]
      */

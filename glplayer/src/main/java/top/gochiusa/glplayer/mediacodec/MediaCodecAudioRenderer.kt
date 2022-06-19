@@ -76,6 +76,7 @@ class MediaCodecAudioRenderer(
         bufferPresentationTimeUs: Long
     ): Boolean {
         val audioOutput = audioTrack
+        //PlayerLog.d(message = "position $positionUs, bufferTime $bufferPresentationTimeUs")
         if (audioOutput == null || bufferSize < 0 || buffer == null) {
             buffer?.clear()
             codec.releaseOutputBuffer(bufferIndex, false)
@@ -129,11 +130,9 @@ class MediaCodecAudioRenderer(
         return audioClock
     }
 
-    override fun onDisabled(oldSender: Sender?) {
-        super.onDisabled(oldSender)
-        val f = audioFormat
-        if (f != null) {
-            oldSender?.unbindTrack(f, this)
+    override fun onPause() {
+        runCatching {
+            audioTrack?.pause()
         }
     }
 
