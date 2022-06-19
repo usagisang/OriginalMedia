@@ -10,22 +10,31 @@ object Build {
 }
 
 object Deps {
-    object Compose {
-        const val dependentiesVersion = "1.1.0"
-        const val compilerVersion = "1.0.5"
+    object ImmersionBar{
+        const val version = "3.2.2"
+        const val baseBag = "com.geyifeng.immersionbar:immersionbar:$version"
+        const val baseKTX = "com.geyifeng.immersionbar:immersionbar-ktx:$version"
+        const val fragmentDie = "com.geyifeng.immersionbar:immersionbar-components:$version"
+    }
 
-        const val composeUi = "androidx.compose.ui:ui:$dependentiesVersion"
-        const val composeMaterial = "androidx.compose.material:material:$dependentiesVersion"
-        const val composeUiToolingPreview =
+    object Compose {
+        const val dependentiesVersion = "1.2.0-beta02"
+        const val compilerVersion = "1.2.0-beta02"
+
+        const val ui = "androidx.compose.ui:ui:$dependentiesVersion"
+        const val material = "androidx.compose.material:material:$dependentiesVersion"
+        const val uiToolingPreview =
             "androidx.compose.ui:ui-tooling-preview:$dependentiesVersion"
         const val livedataRuntime =
             "androidx.compose.runtime:runtime-livedata:$dependentiesVersion"
         const val composeActivity = "androidx.activity:activity-compose:1.4.0"
-        const val composeViewBinding = "androidx.compose.ui:ui-viewbinding:$dependentiesVersion"
+        const val viewBinding = "androidx.compose.ui:ui-viewbinding:$dependentiesVersion"
 
-        const val composeRuntime = "androidx.compose.runtime:runtime:$dependentiesVersion"
+        const val runtime = "androidx.compose.runtime:runtime:$dependentiesVersion"
         const val uiDebugTool = "androidx.compose.ui:ui-tooling:$dependentiesVersion"
         const val junitTest = "androidx.compose.ui:ui-test-junit4:$dependentiesVersion"
+
+        const val testManifest = "androidx.compose.ui:ui-test-manifest:$dependentiesVersion"
 
         const val constraintLayoutDSL =
             "androidx.constraintlayout:constraintlayout-compose:1.0.1"
@@ -33,6 +42,7 @@ object Deps {
 
     object Lifecycle {
         const val version = "2.4.1"
+        const val livedata ="androidx.lifecycle:lifecycle-livedata-ktx:$version"
         const val viewModelCompose = "androidx.lifecycle:lifecycle-viewmodel-compose:$version"
         const val viewModelKtx = "androidx.lifecycle:lifecycle-viewmodel-ktx:$version"
         const val runtimeKtx = "androidx.lifecycle:lifecycle-runtime-ktx:$version"
@@ -43,6 +53,8 @@ object Deps {
         const val fragmentKtx = "androidx.navigation:navigation-fragment-ktx:$version"
         const val navigationUiKtx = "androidx.navigation:navigation-ui-ktx:$version"
         const val compose = "androidx.navigation:navigation-compose:$version"
+        const val fragment = "androidx.navigation:navigation-fragment:$version"
+        const val navigationUI = "androidx.navigation:navigation-ui:$version"
     }
 
     object Ktx {
