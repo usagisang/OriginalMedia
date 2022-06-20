@@ -8,7 +8,6 @@ import top.gochiusa.glplayer.opengl.base.ProgramData
 import top.gochiusa.glplayer.opengl.objects.EntireScreen
 import top.gochiusa.glplayer.opengl.programs.VideoShaderProgram
 import top.gochiusa.glplayer.util.ShaderHelper
-import java.util.concurrent.atomic.AtomicBoolean
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 
@@ -36,13 +35,16 @@ class ProgramsRenderer(
     /**
      * 投影矩阵
      */
-    private var matrix: FloatArray = FloatArray(16)
+    private val projectionMatrix: FloatArray = FloatArray(16)
 
-    private var frameAvailable: AtomicBoolean = AtomicBoolean(false)
+    /**
+     * 模型矩阵
+     */
+    private val modelMatrix: FloatArray = FloatArray(16)
 
-    // TODO 获取Video宽高
     private var videoWidth: Int = -1
     private var videoHeight: Int = -1
+    private var videoRotation: Float = 0F
 
     private var surfaceWidth: Int = -1
     private var surfaceHeight: Int = -1
@@ -50,7 +52,7 @@ class ProgramsRenderer(
     override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
         glSurfaceView.onSurfaceTextureAvailable(init())
 
-        Matrix.setIdentityM(matrix, 0)
+        Matrix.setIdentityM(projectionMatrix, 0)
         videoShaderProgram = VideoShaderProgram(glSurfaceView.context)
         entireScreen = EntireScreen()
     }
@@ -66,34 +68,45 @@ class ProgramsRenderer(
     override fun onDrawFrame(gl: GL10?) {
         glClear(GL_COLOR_BUFFER_BIT)
 
-        if (frameAvailable.compareAndSet(true, false)) {
-            surfaceTexture.updateTexImage()
-        }
-
         videoShaderProgram.useProgram()
-        videoShaderProgram.setUniforms(matrix, textureId)
+        videoShaderProgram.setUniforms(projectionMatrix, textureId)
 
         entireScreen.bindData(videoShaderProgram)
         entireScreen.draw()
     }
 
+    fun setVideoInfo(width: Int, height: Int, rotation: Int) {
+        // rotation是顺时针旋转的信息，我们需要进行一次反转
+        val antiClockwise = (360 - rotation).coerceAtLeast(0)
+        if (width > 0 && height > 0) {
+            if (antiClockwise % 180 == 0) {
+                videoWidth = width
+                videoHeight = height
+            } else {
+                // 随着视频的旋转，width和height的语义也发生了变化
+                videoWidth = height
+                videoHeight = width
+            }
+        } else {
+            videoWidth = -1
+            videoHeight = -1
+        }
+        videoRotation = antiClockwise.toFloat()
+        refreshMatrix()
+    }
+
     private fun init(): SurfaceTexture {
         textureId = ShaderHelper.createOESTextureId()
-
         surfaceTexture = SurfaceTexture(textureId)
-        surfaceTexture.setOnFrameAvailableListener {
-            frameAvailable.set(true)
-        }
         return surfaceTexture
     }
 
     private fun refreshMatrix() {
-        if (surfaceWidth < 0 || surfaceHeight < 0 || videoWidth < 0 || videoHeight < 0) {
-            return
-        }
+        Matrix.setIdentityM(modelMatrix, 0)
+        Matrix.setIdentityM(projectionMatrix, 0)
         val screenRatio: Float = (surfaceWidth.toFloat()) / (surfaceHeight.toFloat())
 
-        val videoRatio: Float = if (videoWidth == 0 || videoHeight == 0) {
+        val videoRatio: Float = if (videoWidth <= 0 || videoHeight <= 0) {
             screenRatio
         } else {
             (videoWidth.toFloat()) / (videoHeight.toFloat())
@@ -102,10 +115,16 @@ class ProgramsRenderer(
         // 这种计算方式假定了虚拟坐标为1，如果虚拟坐标修改，则投影矩阵的计算方式也需要修改
         if (videoRatio > screenRatio) {
             val r = videoRatio / screenRatio
-            Matrix.orthoM(matrix, 0, -1F, 1F, -r, r, -1F, 1F)
+            Matrix.orthoM(projectionMatrix, 0, -1F, 1F, -r, r, -1F, 1F)
         } else {
             val r = screenRatio / videoRatio
-            Matrix.orthoM(matrix, 0, -r, r, -1F, 1F, -1F, 1F)
+            Matrix.orthoM(projectionMatrix, 0, -r, r, -1F, 1F, -1F, 1F)
         }
+        // 调整模型矩阵
+        Matrix.rotateM(modelMatrix, 0, videoRotation, 0f, 0f, 1f)
+
+        val temp = FloatArray(16)
+        Matrix.multiplyMM(temp, 0, projectionMatrix, 0, modelMatrix, 0)
+        System.arraycopy(temp, 0, projectionMatrix, 0, temp.size)
     }
 }

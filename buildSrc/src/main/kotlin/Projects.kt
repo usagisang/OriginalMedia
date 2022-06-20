@@ -18,21 +18,23 @@ object Deps {
     }
 
     object Compose {
-        const val dependentiesVersion = "1.1.1"
-        const val compilerVersion = "1.1.1"
+        const val dependentiesVersion = "1.2.0-beta02"
+        const val compilerVersion = "1.2.0-beta02"
 
-        const val composeUi = "androidx.compose.ui:ui:$dependentiesVersion"
-        const val composeMaterial = "androidx.compose.material:material:$dependentiesVersion"
-        const val composeUiToolingPreview =
+        const val ui = "androidx.compose.ui:ui:$dependentiesVersion"
+        const val material = "androidx.compose.material:material:$dependentiesVersion"
+        const val uiToolingPreview =
             "androidx.compose.ui:ui-tooling-preview:$dependentiesVersion"
         const val livedataRuntime =
             "androidx.compose.runtime:runtime-livedata:$dependentiesVersion"
         const val composeActivity = "androidx.activity:activity-compose:1.4.0"
-        const val composeViewBinding = "androidx.compose.ui:ui-viewbinding:$dependentiesVersion"
+        const val viewBinding = "androidx.compose.ui:ui-viewbinding:$dependentiesVersion"
 
-        const val composeRuntime = "androidx.compose.runtime:runtime:$dependentiesVersion"
+        const val runtime = "androidx.compose.runtime:runtime:$dependentiesVersion"
         const val uiDebugTool = "androidx.compose.ui:ui-tooling:$dependentiesVersion"
         const val junitTest = "androidx.compose.ui:ui-test-junit4:$dependentiesVersion"
+
+        const val testManifest = "androidx.compose.ui:ui-test-manifest:$dependentiesVersion"
 
         const val constraintLayoutDSL =
             "androidx.constraintlayout:constraintlayout-compose:1.0.1"
@@ -106,6 +108,17 @@ object Deps {
     object Paging {
         const val runtime = "androidx.paging:paging-runtime-ktx:3.1.1"
         const val compose = "androidx.paging:paging-compose:1.0.0-alpha14"
+    }
+
+    // CameraX
+    object CameraX {
+        private const val version = "1.1.0-rc01"
+
+        const val camera2 = "androidx.camera:camera-camera2:$version"
+        const val core = "androidx.camera:camera-core:$version"
+        const val lifeCycle = "androidx.camera:camera-lifecycle:$version"
+        const val view = "androidx.camera:camera-view:$version"
+        const val video = "androidx.camera:camera-video:$version"
     }
 
     const val appCompat = "androidx.appcompat:appcompat:1.4.1"
