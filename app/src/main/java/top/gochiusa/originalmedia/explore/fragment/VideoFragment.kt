@@ -12,16 +12,15 @@ import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.fragment_video.*
 import top.gochiusa.originalmedia.R
 import top.gochiusa.originalmedia.base.BaseFragment
+import top.gochiusa.originalmedia.explore.adapter.VideoListAdapter
+import top.gochiusa.originalmedia.explore.bean.Video
 
 
 class VideoFragment : BaseFragment() {
-<<<<<<< HEAD
-    private lateinit var mMyAdapter:VideoListAdapter
+    private lateinit var mMyAdapter: VideoListAdapter
     private val mDataList = ArrayList<Video>()
-=======
     /*private lateinit var mMyAdapter: VideoListAdapter
     private val mDataList = ArrayList<Video>()*/
->>>>>>> 639667ce55b5d3351307e62f3c5ca269332e3307
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,

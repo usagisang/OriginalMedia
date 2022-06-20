@@ -25,6 +25,7 @@ abstract class BaseActivity<VB : ViewDataBinding>  : AppCompatActivity() , BaseB
         mBinding.initBinding()
         ImmersionBar.with(this)
             .init()
+
     }
 
 

@@ -1,43 +1,36 @@
 package top.gochiusa.originalmedia
 
-<<<<<<< HEAD
 import android.graphics.Color
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
-import kotlinx.android.synthetic.main.activity_launcher.*
 import kotlinx.android.synthetic.main.bottom_bar.*
+
 import top.gochiusa.originalmedia.account.fragment.AccountFragment
-=======
-import androidx.fragment.app.FragmentManager
-import androidx.fragment.app.FragmentTransaction
->>>>>>> 639667ce55b5d3351307e62f3c5ca269332e3307
+
 import top.gochiusa.originalmedia.base.BaseActivity
 import top.gochiusa.originalmedia.creation.fragment.CreationFragment
 import top.gochiusa.originalmedia.databinding.ActivityLauncherBinding
 import top.gochiusa.originalmedia.explore.fragment.ExploreFragment
-<<<<<<< HEAD
 
 
 class LauncherActivity : BaseActivity<ActivityLauncherBinding>() {
 
-=======
->>>>>>> 639667ce55b5d3351307e62f3c5ca269332e3307
 
     private var mExploreFragment: ExploreFragment? = null
     private var mCreationFragment: CreationFragment? = null
     private var mAccountFragment: AccountFragment? = null
 
-class LauncherActivity : BaseActivity<ActivityLauncherBinding>() {
 
     override fun ActivityLauncherBinding.initBinding() {
 
-<<<<<<< HEAD
         init()
         setFragment(0)
     }
 
 
     private fun init() {
+
+        println("$iv_bottom_explore 为什么我我我我 ")
         iv_bottom_explore.setOnClickListener {
             setFragment(0)
         }
@@ -103,86 +96,14 @@ class LauncherActivity : BaseActivity<ActivityLauncherBinding>() {
         mTransaction.commit()
     }
 
-=======
-    private var mExploreFragment: ExploreFragment? = null
-    private var mCreationFragment: CreationFragment? = null
-    //private var mAccountFragment: AccountFragment? = null
 
 
-    override fun ActivityLauncherBinding.initBinding() {
-
-        init()
-        setFragment(0)
-    }
 
 
-    private fun init() {
-        /*iv_bottom_explore.setOnClickListener {
-            setFragment(0)
-        }
-        iv_bottom_creation.setOnClickListener {
-            setFragment(1)
-        }
-        iv_bottom_personal.setOnClickListener {
-            setFragment(2)
-        }*/
-    }
 
-    private fun setFragment(index: Int) {
-        //获取Fragment管理器
-        val mFragmentManager: FragmentManager = supportFragmentManager
-        //开启事务
-        val mTransaction: FragmentTransaction = mFragmentManager.beginTransaction()
-        //隐藏所有Fragment
-        hideFragments(mTransaction)
-        when (index) {
-            0 -> {
-                /*iv_bottom_explore.setColorFilter(Color.WHITE)
-                iv_bottom_creation.setColorFilter(Color.GRAY)
-                iv_bottom_personal.setColorFilter(Color.GRAY)
-                if (mExploreFragment == null) {
-                    mExploreFragment = ExploreFragment()
-                    mTransaction.add(
-                        R.id.container, mExploreFragment!!,
 
-                        )
-                } else {
-                    mTransaction.show(mExploreFragment!!)
-                }*/
-            }
-            2 -> {
-                /*iv_bottom_explore.setColorFilter(Color.GRAY)
-                iv_bottom_creation.setColorFilter(Color.GRAY)
-                iv_bottom_personal.setColorFilter(Color.WHITE)
-                if (mAccountFragment == null) {
-                    mAccountFragment = AccountFragment()
-                    mTransaction.add(
-                        R.id.container, mAccountFragment!!,
-                    )
-                } else {
-                    mTransaction.show(mAccountFragment!!)
-                }*/
-            }
-            1 -> {
-                /*iv_bottom_explore.setColorFilter(Color.GRAY)
-                iv_bottom_creation.setColorFilter(Color.WHITE)
-                iv_bottom_personal.setColorFilter(Color.GRAY)
-                if (mCreationFragment == null) {
-                    mCreationFragment = CreationFragment()
-                    mTransaction.add(
-                        R.id.container, mCreationFragment!!,
-                    )
-                } else {
-                    mTransaction.show(mCreationFragment!!)
-                }*/
-            }
-            else -> {}
-        }
-        //提交事务
-        mTransaction.commit()
-    }
 
->>>>>>> 639667ce55b5d3351307e62f3c5ca269332e3307
+
     private fun hideFragments(transaction: FragmentTransaction) {
         if (mExploreFragment != null) {
             //隐藏Fragment
@@ -190,17 +111,11 @@ class LauncherActivity : BaseActivity<ActivityLauncherBinding>() {
             //将对应菜单栏设置为默认状态
 
         }
-<<<<<<< HEAD
         if (mAccountFragment != null) {
             transaction.hide(mAccountFragment!!)
 
         }
-=======
-        /*if (mAccountFragment != null) {
-            transaction.hide(mAccountFragment!!)
 
-        }*/
->>>>>>> 639667ce55b5d3351307e62f3c5ca269332e3307
         if (mCreationFragment != null) {
             transaction.hide(mCreationFragment!!)
 
