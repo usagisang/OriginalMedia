@@ -47,12 +47,13 @@ android {
 
 dependencies {
     implementation(project(":dependencies"))
-/*    implementation(project(":carver"))
-    implementation(project(":glplayer"))*/
+    implementation(project(":carver"))
+    implementation(project(":glplayer"))
 
-    api(Deps.ImmersionBar.baseBag)
-    api(Deps.ImmersionBar.baseKTX)
+    implementation(Deps.ImmersionBar.baseBag)
+    implementation(Deps.ImmersionBar.baseKTX)
     implementation(Deps.ImmersionBar.fragmentDie)
+
     implementation(Deps.retrofit)
     implementation(Deps.retrofitGsonConverter)
     implementation(Deps.Lifecycle.livedata)

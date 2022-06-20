@@ -12,14 +12,11 @@ import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.fragment_video.*
 import top.gochiusa.originalmedia.R
 import top.gochiusa.originalmedia.base.BaseFragment
-import top.gochiusa.originalmedia.databinding.FragmentVideoBinding
-import top.gochiusa.originalmedia.explore.adapter.VideoListAdapter
-import top.gochiusa.originalmedia.explore.bean.Video
 
 
 class VideoFragment : BaseFragment() {
-    private lateinit var mMyAdapter:VideoListAdapter
-    private val mDataList = ArrayList<Video>()
+    /*private lateinit var mMyAdapter: VideoListAdapter
+    private val mDataList = ArrayList<Video>()*/
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -42,7 +39,7 @@ class VideoFragment : BaseFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         for (i in 0..4){
-            mDataList.add(Video(1))
+            // mDataList.add(Video(1))
         }
         initRecyclerView()
     }
@@ -88,13 +85,13 @@ class VideoFragment : BaseFragment() {
                      * 这么写是为了获取RecycleView的宽高
                      */
                     // 创建Adapter，并指定数据集
-                    mMyAdapter = VideoListAdapter(
+                    /*mMyAdapter = VideoListAdapter(
                         mDataList,
                         rv_video.width,
                         rv_video.height
                     )
                     // 设置Adapter
-                    rv_video.adapter = mMyAdapter
+                    rv_video.adapter = mMyAdapter*/
                 }
             })
     }
