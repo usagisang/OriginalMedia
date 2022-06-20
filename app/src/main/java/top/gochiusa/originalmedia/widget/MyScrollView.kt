@@ -26,7 +26,7 @@ class MyScrollView : ScrollView {
     override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
         when (ev.action) {
             MotionEvent.ACTION_DOWN -> parent.parent.requestDisallowInterceptTouchEvent(true)
-            MotionEvent.ACTION_MOVE -> if (scrollY in 1 until maxY) parent.requestDisallowInterceptTouchEvent(
+            MotionEvent.ACTION_MOVE -> if (scrollY in 0 until maxY) parent.requestDisallowInterceptTouchEvent(
                 true
             ) else parent.requestDisallowInterceptTouchEvent(false)
             MotionEvent.ACTION_UP -> parent.parent.requestDisallowInterceptTouchEvent(false)

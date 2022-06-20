@@ -14,10 +14,10 @@ import top.gochiusa.originalmedia.explore.bean.Graphic
 import top.gochiusa.originalmedia.util.TextUtil
 
 
-class VerticalAdapter(var context: Context) : PagerAdapter() {
+class VerticalAdapter(var context: Context,var loadMore: LoadMore) : PagerAdapter() {
     private val mData: ArrayList<Graphic> = ArrayList()
     private val mContext:Context = context
-
+    var mHasNext:Boolean = true
     fun setData(list: ArrayList<Graphic>?) {
         mData.clear()
         mData.addAll(list!!)
@@ -47,6 +47,9 @@ class VerticalAdapter(var context: Context) : PagerAdapter() {
         tvContent.text = mData[position].content
         TextUtil.toggleEllipsize(tvContent,mData[position].content)
         container.addView(view)
+        if(position == mData.size - 1&&mHasNext){
+            loadMore.loadMore()
+        }
         return view
     }
 
@@ -57,4 +60,8 @@ class VerticalAdapter(var context: Context) : PagerAdapter() {
     override fun destroyItem(@NonNull container: ViewGroup, position: Int, @NonNull `object`: Any) {
         container.removeView(`object` as View)
     }
+}
+
+interface LoadMore{
+    fun loadMore()
 }

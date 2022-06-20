@@ -12,8 +12,7 @@ object NewsRepository {
 
             if (graphicResponse.code == 1) {
 
-                val graphicList = graphicResponse.result
-                Result.success(graphicList)
+                Result.success(graphicResponse)
             } else {
                 Result.failure(RuntimeException("response status is${graphicResponse.code}"))
             }
