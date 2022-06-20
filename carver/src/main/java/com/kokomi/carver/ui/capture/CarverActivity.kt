@@ -31,6 +31,7 @@ import com.kokomi.carver.ui.setting.VIDEO_FRAME_RATE
 import com.kokomi.carver.weight.CircleProgressBar
 import com.kokomi.carver.weight.GestureView
 import kotlinx.coroutines.launch
+import java.io.File
 import kotlin.math.round
 
 /**
@@ -39,7 +40,7 @@ import kotlin.math.round
  * <p>
  *
  * 当 [CarverActivity] 结束时，若用户已经录制了视频，则会调用 [setResult] 函数将返回码设为
- * [AppCompatActivity.RESULT_OK] ，然后在返回的 Intent 中的 video 字段存放视频文件的保存路径
+ * [AppCompatActivity.RESULT_OK] ，然后在返回的 Intent 中的 video_file 字段存放视频文件的保存路径
  *
  * <p>
  *
@@ -258,10 +259,15 @@ class CarverActivity : AppCompatActivity() {
                         progressBarEnlarge()
                     }
                     is CarverStatus.Finalize -> {
-                        with(status.info) {
+                        val path = status.info.path
+                        if (path != null) {
                             intent.putExtra("video_file", path)
                             setResult(RESULT_OK, intent)
-                            toast("录像已保存至:${path ?: "保存错误"}")
+                            saveVideoToMediaStore(File(path))
+                            toast("保存路径:$path")
+                        } else {
+                            setResult(RESULT_CANCELED)
+                            toast("保存错误")
                         }
                         timeText.text = ""
                         stopRecBreath()

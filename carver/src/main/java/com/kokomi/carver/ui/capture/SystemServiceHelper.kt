@@ -1,13 +1,13 @@
 package com.kokomi.carver.ui.capture
 
+import android.app.Activity
+import android.content.ContentValues
 import android.content.Context
-import android.hardware.Sensor
-import android.hardware.SensorEvent
-import android.hardware.SensorEventListener
-import android.hardware.SensorManager
+import android.content.Intent
+import android.provider.MediaStore
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
-import kotlin.math.abs
+import java.io.File
 
 /**
  * 录制要请求的权限列表
@@ -24,6 +24,23 @@ fun ComponentActivity.requestCarverPermissions(listener: (Map<String, Boolean>) 
     registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { result ->
         listener(result)
     }.launch(carverPermissions)
+}
+
+@Suppress("DEPRECATION")
+fun Activity.saveVideoToMediaStore(video: File) {
+    val time = System.currentTimeMillis()
+    val values = ContentValues().apply {
+        put(MediaStore.Video.Media.TITLE, video.name)
+        put(MediaStore.Video.Media.DISPLAY_NAME, video.name)
+        put(MediaStore.Video.Media.MIME_TYPE, "video/mp4")
+        put(MediaStore.Video.Media.DATE_TAKEN, time)
+        put(MediaStore.Video.Media.DATE_MODIFIED, time)
+        put(MediaStore.Video.Media.DATE_ADDED, time)
+        put(MediaStore.Video.Media.DATA, video.absolutePath)
+        put(MediaStore.Video.Media.SIZE, video.length())
+    }
+    val uri = contentResolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values)
+    sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, uri))
 }
 
 fun Context.registerAccelerometerListener(listener: () -> Unit) {
