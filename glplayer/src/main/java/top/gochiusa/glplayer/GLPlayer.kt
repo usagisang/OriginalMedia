@@ -180,6 +180,10 @@ private constructor(
             return
         }
 
+        this.videoOutput?.let {
+            clearVideoSurfaceView(it)
+        }
+
         this.videoOutput = surfaceView
         if (surfaceView is VideoMetadataListener) {
             componentListener.internalVideoMetadataListener = surfaceView
@@ -193,10 +197,12 @@ private constructor(
     }
 
     override fun clearVideoSurfaceView(surfaceView: SurfaceView) {
-        setVideoOutputInternal(null)
+        if (this.videoOutput == surfaceView) {
+            setVideoOutputInternal(null)
+            this.videoOutput = null
+        }
 
-        this.videoOutput = null
-        if (surfaceView is VideoMetadataListener) {
+        if (surfaceView == componentListener.internalVideoMetadataListener) {
             componentListener.internalVideoMetadataListener = null
         }
         if (surfaceView is SurfaceProvider) {
