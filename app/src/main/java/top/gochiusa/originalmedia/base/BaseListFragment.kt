@@ -7,7 +7,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import top.gochiusa.originalmedia.databinding.FragmentListBinding
 
+/*
 
+*/
 /**
  * ClassName:BaseListFragment
  * Description:所有具有下拉刷新和上拉加载更多列表界面的基类
@@ -15,14 +17,17 @@ import top.gochiusa.originalmedia.databinding.FragmentListBinding
  * HomeView->BaseView
  * Presenter->BaseListPresenter
  * Adapter->BaseListAdapter
- */
+ *//*
+
 abstract class BaseListFragment<RESPONSE, ITEM_BEAN, ITEM_VIEW :
 View> : BaseView<RESPONSE>, BaseFragment<FragmentListBinding>() {
     private val adapter by lazy { getSpecialAdapter() }
 
-    /**
+    */
+/**
      * 获取适配器adapter
-     */
+     *//*
+
     abstract fun getSpecialAdapter(): BaseListAdapter<ITEM_BEAN, ITEM_VIEW>
     override fun onError(message: String?) {
         mBinding?. refreshLayout?.isRefreshing = false
@@ -84,4 +89,4 @@ View> : BaseView<RESPONSE>, BaseFragment<FragmentListBinding>() {
 
     abstract fun getList(response: RESPONSE?): List<ITEM_BEAN>?
 
-}
+}*/

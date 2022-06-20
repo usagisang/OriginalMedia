@@ -53,9 +53,10 @@ dependencies {
     implementation(Deps.ImmersionBar.baseBag)
     implementation(Deps.ImmersionBar.baseKTX)
     implementation(Deps.ImmersionBar.fragmentDie)
+
     implementation(Deps.retrofit)
     implementation(Deps.retrofitGsonConverter)
-
+    implementation(Deps.Lifecycle.livedata)
     implementation(Deps.Navigation.navigationUI)
     implementation(Deps.Navigation.fragment)
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
