@@ -17,8 +17,8 @@ object NewsNetWork {
 
 
 
-    suspend fun graphicList(typeId:String,page:String) =
-        graphicService.graphicList(typeId,page).await()
+    suspend fun graphicList(page:Int,limit:Int) =
+        graphicService.graphicList(page,limit).await()
 
 
     private suspend fun <T> Call<T>.await():T{

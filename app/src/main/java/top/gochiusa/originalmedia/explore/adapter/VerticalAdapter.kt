@@ -1,25 +1,31 @@
 package top.gochiusa.originalmedia.explore.adapter
 
 import android.content.Context
+import android.text.TextUtils
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
+import android.widget.TextView
 import androidx.annotation.NonNull
 import androidx.viewpager.widget.PagerAdapter
+import com.bumptech.glide.Glide
 import top.gochiusa.originalmedia.R
-import top.gochiusa.originalmedia.explore.bean.Data
+import top.gochiusa.originalmedia.explore.bean.Graphic
+import top.gochiusa.originalmedia.util.TextUtil
 
 
 class VerticalAdapter(var context: Context) : PagerAdapter() {
-    private val mData: ArrayList<Data> = ArrayList()
+    private val mData: ArrayList<Graphic> = ArrayList()
     private val mContext:Context = context
 
-    fun setData(list: ArrayList<Data>?) {
+    fun setData(list: ArrayList<Graphic>?) {
         mData.clear()
         mData.addAll(list!!)
         notifyDataSetChanged()
     }
 
     override fun getCount(): Int {
+        println("是多少个size 请看看${mData.size}")
         return mData.size
     }
 
@@ -31,6 +37,15 @@ class VerticalAdapter(var context: Context) : PagerAdapter() {
     override fun instantiateItem(@NonNull container: ViewGroup, position: Int): Any {
 
         val view: View = View.inflate(mContext, R.layout.fragment_gra_item, null)
+        val tvContent= view.findViewById<TextView>(R.id.tv_graphic_content)
+        val tvTitle= view.findViewById<TextView>(R.id.tv_graphic_title)
+        val tvTime = view.findViewById<TextView>(R.id.tv_time)
+        val ivGraphic  = view.findViewById<ImageView>(R.id.iv_graphic)
+        Glide.with(context).load(mData[position].images).into(ivGraphic)
+        tvTitle.text = mData[position].title
+        tvTime.text = mData[position].uploadTime
+        tvContent.text = mData[position].content
+        TextUtil.toggleEllipsize(tvContent,mData[position].content)
         container.addView(view)
         return view
     }

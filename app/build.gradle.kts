@@ -53,6 +53,7 @@ dependencies {
     api(Deps.ImmersionBar.baseBag)
     api(Deps.ImmersionBar.baseKTX)
     implementation(Deps.ImmersionBar.fragmentDie)
+    implementation(Deps.glide)
 
     implementation(Deps.retrofit)
     implementation(Deps.retrofitGsonConverter)

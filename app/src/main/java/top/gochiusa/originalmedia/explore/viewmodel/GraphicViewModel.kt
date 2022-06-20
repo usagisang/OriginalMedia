@@ -3,24 +3,24 @@ package top.gochiusa.originalmedia.explore.viewmodel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
-import top.gochiusa.originalmedia.explore.bean.Data
+import top.gochiusa.originalmedia.explore.bean.Graphic
 import top.gochiusa.originalmedia.explore.repository.NewsRepository
 
 class GraphicViewModel:ViewModel(){
     private val graphicLiveData = MutableLiveData<GraphicSearchData>()
 
-    val graphicList = ArrayList<Data>()
+    var graphicList = ArrayList<Graphic>()
 
     val graphicListLiveData = Transformations.switchMap(graphicLiveData){
-        NewsRepository.graphicList(it.typeId,it.page)
+        NewsRepository.graphicList(it.page,it.limit)
     }
 
 
-    fun getGraphicList(typeId: String,page: String){
-        graphicLiveData.value = GraphicSearchData(typeId, page)
+    fun getGraphicList(page: Int,limit: Int){
+        graphicLiveData.value = GraphicSearchData(page, limit)
     }
 
 
-    data class GraphicSearchData(var typeId:String,var page:String)
+    data class GraphicSearchData(var page:Int,var limit:Int)
 
 }

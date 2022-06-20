@@ -5,14 +5,14 @@ import kotlinx.coroutines.Dispatchers
 import top.gochiusa.originalmedia.network.NewsNetWork
 
 object NewsRepository {
-    fun graphicList(typeId: String, page: String) = liveData(Dispatchers.IO) {
+    fun graphicList(page: Int, limit: Int) = liveData(Dispatchers.IO) {
         val result = try {
 
-            val graphicResponse = NewsNetWork.graphicList(typeId, page)
+            val graphicResponse = NewsNetWork.graphicList(page, limit)
 
             if (graphicResponse.code == 1) {
 
-                val graphicList = graphicResponse.data
+                val graphicList = graphicResponse.result
                 Result.success(graphicList)
             } else {
                 Result.failure(RuntimeException("response status is${graphicResponse.code}"))
