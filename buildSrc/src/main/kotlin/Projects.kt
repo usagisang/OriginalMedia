@@ -121,6 +121,8 @@ object Deps {
         const val video = "androidx.camera:camera-video:$version"
     }
 
+    const val qiNiu = "com.qiniu:qiniu-android-sdk:8.4.4"
+
     const val appCompat = "androidx.appcompat:appcompat:1.4.1"
     const val constraintLayout = "androidx.constraintlayout:constraintlayout:2.1.4"
     const val material = "com.google.android.material:material:1.6.0"
