@@ -1,5 +1,6 @@
 package com.kokomi.uploader.entity
 
+import android.net.Uri
 import java.io.File
 
 data class ReleaseInfo(
@@ -16,7 +17,7 @@ data class ReleaseInfo(
      * */
     val content: String,
     /**
-     * 文件，图片或视频
+     * 文件，图片或视频文件
      * */
     val file: File
 )
