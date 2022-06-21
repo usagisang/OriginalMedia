@@ -19,6 +19,8 @@ import kotlinx.coroutines.flow.collectLatest
 import top.gochiusa.glplayer.PlayerView
 import top.gochiusa.originalmedia.video.entity.Video
 import top.gochiusa.originalmedia.video.fragment.DefaultVideoViewModel
+import top.gochiusa.originalmedia.video.theme.SemiBlack
+import top.gochiusa.originalmedia.video.theme.SemiWhite
 import top.gochiusa.originalmedia.video.util.ProgressUtil
 
 
@@ -27,7 +29,7 @@ import top.gochiusa.originalmedia.video.util.ProgressUtil
 internal fun VideoScreen(
     items: LazyPagingItems<Video>,
     pagerState: PagerState = rememberPagerState(),
-    videoViewModel: DefaultVideoViewModel
+    videoViewModel: DefaultVideoViewModel,
 ) {
     val currentPage by remember {
         snapshotFlow {
@@ -37,26 +39,25 @@ internal fun VideoScreen(
 
     // 初始状态下为player提供数据的Effect
     LaunchedEffect(items.itemCount > 0) {
-        if (items.itemCount > 0) {
-            videoViewModel.onPageChange(items[0])
-        }
+        videoViewModel.onPageChange(items.getOrNull(0))
     }
     // 上拉/下滑到新的一页的处理逻辑
     LaunchedEffect(currentPage) {
-        videoViewModel.onPageChange(if (items.itemCount <= currentPage) null else
-            items[currentPage])
+        videoViewModel.onPageChange(items.getOrNull(currentPage))
     }
 
 
     VerticalPager(
-        count = items.itemCount,
+        count = items.itemCount + 1,
         state = pagerState,
-        modifier = Modifier.background(color = Color.Black)
+        modifier = Modifier.background(color = SemiBlack)
     ) { page ->
-        if (currentPage == page) {
-            VideoPagerContent(video = items[page], videoViewModel = videoViewModel)
+        if (page == items.itemCount) {
+            EndPagerContent()
+        } else if (currentPage == page) {
+            VideoPagerContent(video = items.getOrNull(page), videoViewModel = videoViewModel)
         } else {
-            EmptyPagerContent(video = items[page])
+            EmptyPagerContent(video = items.getOrNull(page))
         }
     }
 }
@@ -145,6 +146,25 @@ private fun EmptyPagerContent(
     Box(modifier = Modifier.fillMaxSize()) {
         VideoTitle(modifier = Modifier.align(Alignment.TopCenter), video = video)
     }
+}
+
+@Composable
+private fun EndPagerContent() {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = "你来到了一望无际的荒原",
+            color = SemiWhite,
+            fontSize = 16.sp,
+            modifier = Modifier.padding(bottom = 48.dp)
+        )
+    }
+}
+
+private fun <T : Any> LazyPagingItems<T>.getOrNull(index: Int): T? {
+    return if (itemCount <= index) null else this[index]
 }
 
 

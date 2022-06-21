@@ -14,12 +14,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.google.accompanist.pager.ExperimentalPagerApi
-import top.gochiusa.glplayer.listener.EventListenerAdapter
 import top.gochiusa.originalmedia.video.components.VideoScreen
 import top.gochiusa.originalmedia.video.entity.VideoState
 
-
-class VideoFragment : Fragment(), EventListenerAdapter {
+class VideoFragment : Fragment() {
     private val viewModel: DefaultVideoViewModel by viewModels {
         object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T =
@@ -54,7 +52,7 @@ class VideoFragment : Fragment(), EventListenerAdapter {
 
                 VideoScreen(
                     items = videoItems,
-                    videoViewModel = viewModel
+                    videoViewModel = viewModel,
                 )
             }
         }
