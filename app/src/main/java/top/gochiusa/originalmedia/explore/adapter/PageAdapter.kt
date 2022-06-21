@@ -4,8 +4,9 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentStatePagerAdapter
 import top.gochiusa.originalmedia.explore.fragment.GraphicFragment
-import top.gochiusa.originalmedia.explore.fragment.VideoFragment
+
 import top.gochiusa.originalmedia.explore.fragment.VisualWorldFragment
+import top.gochiusa.originalmedia.video.fragment.VideoFragment
 
 /**
  * viewpager加载fragment的时候使用，viewpager的pageradapter适配器
