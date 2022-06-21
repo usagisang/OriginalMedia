@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+
+<top.gochiusa.originalmedia.widget.MyScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/black_back"
+    android:overScrollMode="never"
+    android:scrollbars="none">
+
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_item_gra"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/black_back"
+        tools:context=".explore.fragment.GraItemFragment">
+
+        <TextView
+            android:id="@+id/tv_graphic_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:layout_marginEnd="20dp"
+            android:layout_marginStart="20dp"
+            android:text="@string/hello_blank_fragment"
+            android:textColor="@color/white_back"
+            android:textSize="23sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            android:id="@+id/iv_graphic"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:layout_margin="20dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/shape_oral"
+            app:layout_constraintTop_toBottomOf="@+id/tv_graphic_title" />
+
+        <TextView
+            android:id="@+id/tv_graphic_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="20dp"
+
+            android:background="@color/black_back"
+            android:text="今天我 为啊阿斯顿阿斯顿安康九十年代看书纪念卡是你的萨克你的看我\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n九年卡位卡瓦尼的昂科威你我对你阿斯顿阿萨的fmg no 是你的可能阿斯顿喀什空间那可就能看见才能                      氨基酸可能的看看就是你可能吗，查询可能卡农挖煤                                                       老师的妇女爱着你拿到阿萨阿萨大三大撒 阿斯顿阿萨大苏打阿三的去"
+            android:textColor="@color/white_back"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/iv_graphic" />
+
+        <TextView
+            android:id="@+id/tv_time"
+
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="20dp"
+            android:background="@color/black_back"
+            android:text="2022-06-20 17:49:08"
+            android:textColor="@color/teal_200"
+            app:layout_constraintTop_toBottomOf="@id/tv_graphic_content"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintRight_toRightOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</top.gochiusa.originalmedia.widget.MyScrollView>

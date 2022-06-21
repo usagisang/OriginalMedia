@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<top.gochiusa.originalmedia.widget.MyScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/black_back"
+    android:overScrollMode="never"
+    android:scrollbars="none">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/black_back"
+        tools:context=".creation.fragment.GraphicCreateFragment">
+
+        <EditText
+            android:id="@+id/tv_create_gra_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginEnd="20dp"
+            android:hint="@string/title_edit_graphic"
+            android:scrollHorizontally="true"
+            android:singleLine="true"
+            android:textColor="@color/white_back"
+            android:textColorHint="@color/gray"
+            android:textSize="36dp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+
+        <ImageView
+            android:id="@+id/iv_add_pic"
+            android:layout_width="0dp"
+            android:layout_height="180dp"
+            android:layout_margin="30dp"
+            android:background="@drawable/shape_oral"
+            android:scaleType="fitXY"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tv_create_gra_title">
+
+
+        </ImageView>
+
+
+        <EditText
+            android:id="@+id/tv_graphic_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="20dp"
+            android:background="@color/black_back"
+            android:hint="@string/graphic_hint"
+            android:textColor="@color/white_back"
+            android:textColorHint="@color/gray"
+            app:layout_constraintBottom_toTopOf="@+id/ll_graphic_finish"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/iv_add_pic" />
+
+
+
+
+        <LinearLayout
+            android:id="@+id/ll_graphic_finish"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="4dp"
+            android:layout_marginStart="4dp"
+            android:layout_marginTop="100dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:orientation="vertical"
+            app:layout_constraintEnd_toEndOf="parent" >
+            <ImageView
+                android:layout_width="40dp"
+                android:layout_height="30dp"
+                android:src="@drawable/finish_icon"/>
+            <TextView
+                android:id="@+id/tv_graphic_finish"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="22sp"
+
+                android:textColor="@color/white_back"
+                android:text="@string/finish"/>
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</top.gochiusa.originalmedia.widget.MyScrollView>

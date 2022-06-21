@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.kokomi.carver">
+
+    <uses-feature android:name="android.hardware.camera.any" />
+
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
+    <application>
+        <activity
+            android:name=".view.setting.SettingActivity"
+            android:exported="false" />
+        <activity
+            android:name=".view.carver.CarverActivity"
+            android:exported="false" />
+    </application>
+
+</manifest>

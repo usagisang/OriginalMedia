@@ -1,3 +1,21 @@
 <resources>
     <string name="app_name">明日头条</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="graphic">图文</string>
+    <string name="sight">视界</string>
+    <string name="video">视频</string>
+    <string name="login">登录</string>
+    <string name="id">ID</string>
+    <string name="account_id">ID</string>
+    <string name="password_hint">输入密码</string>
+    <string name="id_hint">输入ID</string>
+    <string name="password">密码</string>
+    <string name="start">开始</string>
+    <string name="title_edit_graphic">点击此处添加标题...</string>
+    <string name="graphic_hint">"     点击此处添加内容..."</string>
+    <string name="finish">完成</string>
+    <string name="video_title">视频题目</string>
+    <string name="exit_login">退出登录</string>
+    <string name="welcome">欢迎你</string>
 </resources>

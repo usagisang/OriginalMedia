@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_fragment"
+    app:startDestination="@id/fragment_explore">
+
+    <fragment
+        android:id="@+id/fragment_explore"
+        android:name="top.gochiusa.originalmedia.explore.fragment.ExploreFragment" />
+
+    <fragment
+        android:id="@+id/fragment_creation"
+        android:name="top.gochiusa.originalmedia.creation.fragment.CreationFragment" />
+
+    <fragment
+        android:id="@+id/fragment_account"
+        android:name="top.gochiusa.originalmedia.account.fragment.AccountFragment" />
+</navigation>
