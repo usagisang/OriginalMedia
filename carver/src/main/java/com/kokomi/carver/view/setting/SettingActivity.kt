@@ -1,4 +1,4 @@
-package com.kokomi.carver.ui.setting
+package com.kokomi.carver.view.setting
 
 import android.graphics.Color
 import android.os.Bundle
@@ -10,8 +10,8 @@ import androidx.compose.material.Surface
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModelProvider
 import com.kokomi.carver.setStatusBarTextColor
-import com.kokomi.carver.ui.capture.CAMERAX_VIDEO_IMPL
-import com.kokomi.carver.ui.capture.IMPL_LIST
+import com.kokomi.carver.view.carver.CAMERAX_VIDEO_IMPL
+import com.kokomi.carver.view.carver.IMPL_LIST
 
 /**
  * 设置界面 Activity

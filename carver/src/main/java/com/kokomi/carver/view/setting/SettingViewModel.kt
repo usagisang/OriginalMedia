@@ -1,9 +1,9 @@
-package com.kokomi.carver.ui.setting
+package com.kokomi.carver.view.setting
 
 import androidx.lifecycle.ViewModel
 import com.kokomi.carver.core.camerax.getSupportedQualities
 import com.kokomi.carver.core.camerax.qualityFormatter
-import com.kokomi.carver.ui.capture.CAMERAX_VIDEO_IMPL
+import com.kokomi.carver.view.carver.CAMERAX_VIDEO_IMPL
 import kotlinx.coroutines.flow.MutableStateFlow
 
 internal const val IMPL = "impl"

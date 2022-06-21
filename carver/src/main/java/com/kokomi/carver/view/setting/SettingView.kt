@@ -1,4 +1,4 @@
-package com.kokomi.carver.ui.setting
+package com.kokomi.carver.view.setting
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable

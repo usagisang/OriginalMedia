@@ -1,15 +1,16 @@
-package com.kokomi.carver.ui.capture
+package com.kokomi.carver.view.carver
 
 import android.animation.ObjectAnimator
+import android.content.ContentValues
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.provider.MediaStore
 import android.util.Log
 import android.view.animation.AnticipateOvershootInterpolator
 import android.view.animation.OvershootInterpolator
 import android.widget.ImageView
 import android.widget.TextView
-import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.view.PreviewView
 import androidx.cardview.widget.CardView
@@ -18,18 +19,19 @@ import androidx.lifecycle.lifecycleScope
 import com.kokomi.carver.*
 import com.kokomi.carver.clearSystemWindows
 import com.kokomi.carver.core.*
-import com.kokomi.carver.core.camerax.video.CameraXVideoCaptorImpl
+import com.kokomi.carver.core.camerax.CameraXVideoCaptorImpl
 import com.kokomi.carver.core.camerax.getSupportedQualities
 import com.kokomi.carver.core.camerax.qualityFormatter
 import com.kokomi.carver.formatRecordingTime
 import com.kokomi.carver.setStatusBarTextColor
-import com.kokomi.carver.ui.setting.*
-import com.kokomi.carver.ui.setting.BIT_RATE
-import com.kokomi.carver.ui.setting.I_FRAME_INTERVAL
-import com.kokomi.carver.ui.setting.QUALITY
-import com.kokomi.carver.ui.setting.VIDEO_FRAME_RATE
+import com.kokomi.carver.view.setting.*
+import com.kokomi.carver.view.setting.BIT_RATE
+import com.kokomi.carver.view.setting.I_FRAME_INTERVAL
+import com.kokomi.carver.view.setting.QUALITY
+import com.kokomi.carver.view.setting.VIDEO_FRAME_RATE
 import com.kokomi.carver.weight.CircleProgressBar
 import com.kokomi.carver.weight.GestureView
+import com.kokomi.okpremission.OkResult.requirePermission
 import kotlinx.coroutines.launch
 import java.io.File
 import kotlin.math.round
@@ -56,6 +58,14 @@ class CarverActivity : AppCompatActivity() {
          * 最大录制时间，单位：纳秒
          * */
         private const val MAX_RECORDING_TIME = 60_000_000_000L
+
+        /**
+         * 录制要请求的权限列表
+         * */
+        private val carverPermissions = arrayOf(
+            android.Manifest.permission.CAMERA,
+            android.Manifest.permission.RECORD_AUDIO
+        )
     }
 
     private val resultFromSettingActivity =
@@ -115,26 +125,21 @@ class CarverActivity : AppCompatActivity() {
 
         statusBar = findViewById(R.id.tv_carver_status_bar)
 
-        requestCarverPermissions {
-            it.map { result ->
-                if (result.key == carverPermissions[0]) {
-                    if (!result.value) {
-                        Toast.makeText(this, "未授予拍照权限，无法录制视频", Toast.LENGTH_LONG).show()
-                        finish()
-                        return@map
-                    }
-                }
-                if (result.key == carverPermissions[1]) {
-                    if (!result.value) {
-                        Toast.makeText(this, "未授予录音权限，无法录制音频", Toast.LENGTH_LONG).show()
-                        finish()
-                        return@map
-                    } else {
-                        init()
-                    }
-                }
+        var count = 0
+
+        requirePermission(carverPermissions, {
+            count++
+            if (count == 2) init()
+        }, {
+            if (it == carverPermissions[0]) {
+                toast("未授予拍照权限，无法录制视频")
+                finish()
             }
-        }
+            if (it == carverPermissions[1]) {
+                toast("未授予录音权限，无法录制音频")
+                finish()
+            }
+        })
     }
 
     private fun init() {
@@ -233,7 +238,7 @@ class CarverActivity : AppCompatActivity() {
         }
 
         lifecycleScope.launch {
-            this@CarverActivity.vm.carverStatus.collect { status ->
+            vm.carverStatus.collect { status ->
                 when (status) {
                     is CarverStatus.Initial -> {
                         val b = previewView.bitmap ?: return@collect
@@ -307,11 +312,6 @@ class CarverActivity : AppCompatActivity() {
                 }
             }
         }
-
-        registerAccelerometerListener {
-            gestureView.clearRect()
-            vm.carver.cancelFocus()
-        }
     }
 
     override fun onResume() {
@@ -323,6 +323,23 @@ class CarverActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         vm.carver.shutdown()
+    }
+
+    @Suppress("DEPRECATION")
+    private fun saveVideoToMediaStore(video: File) {
+        val time = System.currentTimeMillis()
+        val values = ContentValues().apply {
+            put(MediaStore.Video.Media.TITLE, video.name)
+            put(MediaStore.Video.Media.DISPLAY_NAME, video.name)
+            put(MediaStore.Video.Media.MIME_TYPE, "video/mp4")
+            put(MediaStore.Video.Media.DATE_TAKEN, time)
+            put(MediaStore.Video.Media.DATE_MODIFIED, time)
+            put(MediaStore.Video.Media.DATE_ADDED, time)
+            put(MediaStore.Video.Media.DATA, video.absolutePath)
+            put(MediaStore.Video.Media.SIZE, video.length())
+        }
+        val uri = contentResolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values)
+        sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, uri))
     }
 
     private fun startRecBreath() {
