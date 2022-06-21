@@ -49,6 +49,7 @@ dependencies {
     implementation(project(":carver"))
     implementation(project(":glplayer"))
     implementation(project(":uploader"))
+    
     api(Deps.ImmersionBar.baseBag)
     api(Deps.ImmersionBar.baseKTX)
     implementation(Deps.ImmersionBar.fragmentDie)
