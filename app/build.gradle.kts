@@ -6,7 +6,6 @@ plugins {
 
 android {
     compileSdk = Build.compileSdkVersion
-
     defaultConfig {
         applicationId = Build.applicationId
         minSdk = Build.minimumSdkVersion
@@ -47,19 +46,21 @@ android {
 
 dependencies {
     implementation(project(":dependencies"))
-    implementation(project(":carver"))
-    implementation(project(":glplayer"))
+/*    implementation(project(":carver"))
+    implementation(project(":glplayer"))*/
 
-    implementation(Deps.ImmersionBar.baseBag)
-    implementation(Deps.ImmersionBar.baseKTX)
+    api(Deps.ImmersionBar.baseBag)
+    api(Deps.ImmersionBar.baseKTX)
     implementation(Deps.ImmersionBar.fragmentDie)
-
+    implementation(Deps.glide)
     implementation(Deps.retrofit)
     implementation(Deps.retrofitGsonConverter)
     implementation(Deps.Lifecycle.livedata)
     implementation(Deps.Navigation.navigationUI)
     implementation(Deps.Navigation.fragment)
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
+
+
 
     testImplementation(TestDeps.Local.junit)
     androidTestImplementation(TestDeps.Instrumentation.espresso)

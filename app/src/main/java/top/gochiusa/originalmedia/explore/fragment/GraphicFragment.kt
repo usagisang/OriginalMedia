@@ -9,24 +9,23 @@ import androidx.lifecycle.ViewModelProvider
 import kotlinx.android.synthetic.main.fragment_graphic.*
 import top.gochiusa.originalmedia.R
 import top.gochiusa.originalmedia.base.BaseFragment
-import top.gochiusa.originalmedia.databinding.FragmentGraphicBinding
+import top.gochiusa.originalmedia.explore.adapter.LoadMore
 import top.gochiusa.originalmedia.explore.adapter.VerticalAdapter
-import top.gochiusa.originalmedia.explore.bean.Data
+import top.gochiusa.originalmedia.explore.bean.Graphic
 import top.gochiusa.originalmedia.explore.viewmodel.GraphicViewModel
 import top.gochiusa.originalmedia.widget.VerticalPageTransformer
 
 
-class GraphicFragment : BaseFragment() {
-
-
+class GraphicFragment : BaseFragment(),LoadMore {
+    private var mCurPage:Int = 0
     private val mVpGraphic by lazy { ViewModelProvider(this)[GraphicViewModel::class.java] }
-
     lateinit var mAdapter: VerticalAdapter
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initData()
         initVerticalAdapter()
+
     }
 
     override fun onCreateView(
@@ -48,30 +47,38 @@ class GraphicFragment : BaseFragment() {
     }
 
 
+
+
+
+
     private fun initVerticalAdapter() {
-        mAdapter = VerticalAdapter(requireContext())
+        mAdapter = VerticalAdapter(requireContext(),this)
         vp_Graphic.setPageTransformer(false, VerticalPageTransformer())
         vp_Graphic.adapter = mAdapter
-
-        val list = ArrayList<Data>();
-        list.add(Data(",", ArrayList(), "", "", "", ""))
-
-        list.add(Data(",", ArrayList(), "", "", "", ""))
-        list.add(Data(",", ArrayList(), "", "", "", ""))
-
-        mAdapter.setData(list)
+//        mAdapter.setData(mVpGraphic.graphicList)
     }
 
     private fun initData() {
+
         mVpGraphic.graphicListLiveData.observe(viewLifecycleOwner, Observer {
-            val graphicList = it.getOrNull()
-            if (graphicList != null) {
-                mVpGraphic.graphicList.clear()
-                mVpGraphic.graphicList.addAll(graphicList)
+            val result = it.getOrNull()
+            val list = result?.result
+            if (list != null) {
+                mVpGraphic.graphicList.addAll(list)
             }
+
+            mAdapter.setData(mVpGraphic.graphicList)
+            mAdapter.mHasNext = result?.hasNext!!
         })
 
-//        mVpGraphic.getGraphicList("509","1")
+        mVpGraphic.getGraphicList(0,2)
+
+    }
+
+    override fun loadMore() {
+        mCurPage++
+        mVpGraphic.getGraphicList(mCurPage,2)
+
     }
 
 

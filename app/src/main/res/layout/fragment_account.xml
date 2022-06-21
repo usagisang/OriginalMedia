@@ -1,14 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"/>
-<!--
+
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <<data>
+
+    <data>
 
         <variable
             name="user"
@@ -78,6 +75,7 @@
             android:layout_height="75dp"
             android:background="@drawable/account_head"
             android:src="@drawable/head_account"
+
             app:layout_constraintBottom_toTopOf="@id/view_help"
             app:layout_constraintStart_toStartOf="@id/guideline_left_v"
             app:layout_constraintTop_toBottomOf="@+id/iv_login_back" />
@@ -176,4 +174,4 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-</layout>-->
+</layout>

@@ -19,7 +19,7 @@
 
 
 
-        <!--<include layout="@layout/bottom_bar"/>-->
+        <include layout="@layout/bottom_bar"/>
 
     </LinearLayout>
 </layout>
