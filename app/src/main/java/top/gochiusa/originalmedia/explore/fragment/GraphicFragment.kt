@@ -66,7 +66,6 @@ class GraphicFragment : BaseFragment(),LoadMore {
             if (list != null) {
                 mVpGraphic.graphicList.addAll(list)
             }
-            println("我知道你想看${mVpGraphic.graphicList[0].content}")
 
             mAdapter.setData(mVpGraphic.graphicList)
             mAdapter.mHasNext = result?.hasNext!!

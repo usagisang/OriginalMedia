@@ -8,7 +8,7 @@ import android.view.ViewGroup
 import top.gochiusa.originalmedia.R
 
 
-class StartFragment : Fragment() {
+class   StartFragment : Fragment() {
 
 
     override fun onCreate(savedInstanceState: Bundle?) {

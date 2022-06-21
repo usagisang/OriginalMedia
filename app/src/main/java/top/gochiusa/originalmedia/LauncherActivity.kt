@@ -1,12 +1,13 @@
 package top.gochiusa.originalmedia
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.graphics.Color
+import androidx.core.app.ActivityCompat
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
 import kotlinx.android.synthetic.main.bottom_bar.*
-
 import top.gochiusa.originalmedia.account.fragment.AccountFragment
-
 import top.gochiusa.originalmedia.base.BaseActivity
 import top.gochiusa.originalmedia.creation.fragment.CreationFragment
 import top.gochiusa.originalmedia.databinding.ActivityLauncherBinding
@@ -16,13 +17,14 @@ import top.gochiusa.originalmedia.explore.fragment.ExploreFragment
 class LauncherActivity : BaseActivity<ActivityLauncherBinding>() {
 
 
+
     private var mExploreFragment: ExploreFragment? = null
     private var mCreationFragment: CreationFragment? = null
     private var mAccountFragment: AccountFragment? = null
 
 
     override fun ActivityLauncherBinding.initBinding() {
-
+        getPer()
         init()
         setFragment(0)
     }
@@ -122,7 +124,18 @@ class LauncherActivity : BaseActivity<ActivityLauncherBinding>() {
         }
     }
 
-
+    private fun getPer() {
+        val permission =
+            ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        if (permission != PackageManager.PERMISSION_GRANTED) {
+            // 请求权限
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                1
+            )
+        }
+    }
 
 
 }

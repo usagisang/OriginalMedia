@@ -3,11 +3,15 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
-        <entry key="..\:/topview/OriginalMedia/app/src/main/res/layout/fragment_creat_graphic.xml" value="0.1" />
+        <entry key="..\:/topview/OriginalMedia/app/src/main/res/drawable/shape_oral.xml" value="0.224" />
+        <entry key="..\:/topview/OriginalMedia/app/src/main/res/layout/fragment_account.xml" value="0.36666666666666664" />
+        <entry key="..\:/topview/OriginalMedia/app/src/main/res/layout/fragment_creat_graphic.xml" value="0.33" />
         <entry key="..\:/topview/OriginalMedia/app/src/main/res/layout/fragment_create_viedo.xml" value="0.17552083333333332" />
         <entry key="..\:/topview/OriginalMedia/app/src/main/res/layout/fragment_creation.xml" value="0.17552083333333332" />
-        <entry key="..\:/topview/OriginalMedia/app/src/main/res/layout/fragment_gra_item.xml" value="0.19270833333333334" />
+        <entry key="..\:/topview/OriginalMedia/app/src/main/res/layout/fragment_explore.xml" value="0.49166666666666664" />
+        <entry key="..\:/topview/OriginalMedia/app/src/main/res/layout/fragment_gra_item.xml" value="0.33" />
         <entry key="..\:/topview/OriginalMedia/app/src/main/res/layout/fragment_graphic.xml" value="0.17552083333333332" />
+        <entry key="..\:/topview/OriginalMedia/app/src/main/res/layout/fragment_start.xml" value="0.33489583333333334" />
         <entry key="..\:/topview/OriginalMedia/app/src/main/res/layout/fragment_visual_world.xml" value="0.17552083333333332" />
       </map>
     </option>

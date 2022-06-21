@@ -9,15 +9,20 @@ import android.widget.TextView
 import androidx.annotation.NonNull
 import androidx.viewpager.widget.PagerAdapter
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners
+import com.bumptech.glide.request.RequestOptions
 import top.gochiusa.originalmedia.R
 import top.gochiusa.originalmedia.explore.bean.Graphic
 import top.gochiusa.originalmedia.util.TextUtil
 
 
-class VerticalAdapter(var context: Context,var loadMore: LoadMore) : PagerAdapter() {
+class VerticalAdapter(var context: Context, var loadMore: LoadMore) : PagerAdapter() {
     private val mData: ArrayList<Graphic> = ArrayList()
-    private val mContext:Context = context
-    var mHasNext:Boolean = true
+    private val mContext: Context = context
+    private val mRoundedCorners = RoundedCorners(15)//圆角为5
+
+    val mOptions = RequestOptions.bitmapTransform(mRoundedCorners);
+    var mHasNext: Boolean = true
     fun setData(list: ArrayList<Graphic>?) {
         mData.clear()
         mData.addAll(list!!)
@@ -37,17 +42,21 @@ class VerticalAdapter(var context: Context,var loadMore: LoadMore) : PagerAdapte
     override fun instantiateItem(@NonNull container: ViewGroup, position: Int): Any {
 
         val view: View = View.inflate(mContext, R.layout.fragment_gra_item, null)
-        val tvContent= view.findViewById<TextView>(R.id.tv_graphic_content)
-        val tvTitle= view.findViewById<TextView>(R.id.tv_graphic_title)
+        val tvContent = view.findViewById<TextView>(R.id.tv_graphic_content)
+        val tvTitle = view.findViewById<TextView>(R.id.tv_graphic_title)
         val tvTime = view.findViewById<TextView>(R.id.tv_time)
-        val ivGraphic  = view.findViewById<ImageView>(R.id.iv_graphic)
-        Glide.with(context).load(mData[position].images).into(ivGraphic)
+        val ivGraphic = view.findViewById<ImageView>(R.id.iv_graphic)
+
+        Glide.with(context)
+            .load(mData[position].images)
+            .apply(mOptions)
+            .into(ivGraphic)
         tvTitle.text = mData[position].title
         tvTime.text = mData[position].uploadTime
         tvContent.text = mData[position].content
-        TextUtil.toggleEllipsize(tvContent,mData[position].content)
+        TextUtil.toggleEllipsize(tvContent, mData[position].content)
         container.addView(view)
-        if(position == mData.size - 1&&mHasNext){
+        if (position == mData.size - 1 && mHasNext) {
             loadMore.loadMore()
         }
         return view
@@ -62,6 +71,6 @@ class VerticalAdapter(var context: Context,var loadMore: LoadMore) : PagerAdapte
     }
 }
 
-interface LoadMore{
+interface LoadMore {
     fun loadMore()
 }
