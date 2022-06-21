@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="video_video_reload_tip">视频播放失败了，请点击重试</string>
+</resources>

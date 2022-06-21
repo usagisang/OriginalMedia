@@ -26,6 +26,15 @@ class DefaultMediaSource(
     private var hasNext = true
     private val sample: Sample by lazy { DefaultSample() }
 
+    private var _durationUs: Long = -1L
+    override val durationUs: Long
+        get() = _durationUs
+
+    override val cacheDurationUs: Long
+        get() = mediaExtractor?.cachedDuration ?: -1L
+
+    private lateinit var mediaItem: MediaItem
+
 
     override fun bindTrack(format: Format, receiver: Receiver) {
         mediaExtractor?.selectTrack(format.trackIndex)
@@ -62,14 +71,6 @@ class DefaultMediaSource(
         receiverMap.remove(format.trackIndex)
     }
 
-    private var _durationUs: Long = -1L
-    override val durationUs: Long
-        get() = _durationUs
-
-    override val cacheDurationUs: Long
-        get() = mediaExtractor?.cachedDuration ?: -1L
-
-    private lateinit var mediaItem: MediaItem
 
     override fun setDataSource(
         mediaItem: MediaItem,
@@ -77,6 +78,7 @@ class DefaultMediaSource(
     ) {
         this.mediaItem = mediaItem
         val mediaExtractor = MediaExtractor()
+        _durationUs = -1L
 
         // may block
         mediaItem.uri?.let {
