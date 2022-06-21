@@ -16,7 +16,7 @@ data class ReleaseInfo(
      * */
     val content: String,
     /**
-     * 文件，图片或视频，图片可以多张，但是视频就不要多个了，视频一个就好
+     * 文件，图片或视频
      * */
-    val files: List<File>
+    val file: File
 )

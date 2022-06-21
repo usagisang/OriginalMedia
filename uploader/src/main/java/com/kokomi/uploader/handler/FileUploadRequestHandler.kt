@@ -13,20 +13,15 @@ class FileUploadRequestHandler(
     private val listener: UploaderListener
 ) : RequestHandler() {
 
-    override suspend fun request(any: Any?): List<String> {
-        val list = mutableListOf<String>()
-        for (i in releaseInfo.files.indices) {
-            val info = uploadQiNiu.syncPut(
-                releaseInfo.files[i],
-                fileKey(releaseInfo.userId, releaseInfo.files[i], i),
-                any?.toString() ?: throw UploaderException("Failed to get upload token."),
-                UploadOptions(null, null, false,
-                    { key, percent -> listener.onUploading(key, round(100 * percent).toInt()) },
-                    { false }
-                ))
-            list.add(info.resourceUrl())
-        }
-        return list
+    override suspend fun request(any: Any?): String {
+        return uploadQiNiu.syncPut(
+            releaseInfo.file,
+            fileKey(releaseInfo.userId, releaseInfo.file),
+            any?.toString() ?: throw UploaderException("Failed to get upload token."),
+            UploadOptions(null, null, false,
+                { key, percent -> listener.onUploading(key, round(100 * percent).toInt()) },
+                { false }
+            )).resourceUrl()
     }
 
     private fun ResponseInfo.resourceUrl(): String {

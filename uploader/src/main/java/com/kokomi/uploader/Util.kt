@@ -4,10 +4,11 @@ import java.io.File
 import java.math.BigInteger
 import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
+import kotlin.math.abs
 import kotlin.random.Random
 
-internal fun fileKey(userId: Long, file: File, index: Int): String {
-    val str = "${userId}${System.currentTimeMillis()}$index${Random.nextInt()}"
+internal fun fileKey(userId: Long, file: File): String {
+    val str = "${userId}${System.currentTimeMillis()}${abs(Random.nextInt())}"
     return "${str.encryptMD5() ?: str}.${file.extension}"
 }
 
