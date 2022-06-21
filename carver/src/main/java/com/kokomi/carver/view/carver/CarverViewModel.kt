@@ -1,4 +1,4 @@
-package com.kokomi.carver.ui.capture
+package com.kokomi.carver.view.carver
 
 import androidx.camera.core.ZoomState
 import androidx.camera.view.PreviewView
@@ -6,9 +6,9 @@ import androidx.lifecycle.ViewModel
 import com.kokomi.carver.core.Captor
 import com.kokomi.carver.core.Carver
 import com.kokomi.carver.core.CarverStatus
-import com.kokomi.carver.core.camerax.video.CameraXVideoCaptorImpl
+import com.kokomi.carver.core.camerax.CameraXVideoCaptorImpl
 import com.kokomi.carver.core.camerax.CameraXConfiguration
-import com.kokomi.carver.core.camerax.core.CameraXCoreCaptorImpl
+import com.kokomi.carver.core.camerax.CameraXCoreCaptorImpl
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 

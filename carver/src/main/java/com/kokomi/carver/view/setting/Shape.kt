@@ -1,4 +1,4 @@
-package com.kokomi.carver.ui.setting
+package com.kokomi.carver.view.setting
 
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Shapes

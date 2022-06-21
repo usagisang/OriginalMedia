@@ -1,47 +1,50 @@
-package com.kokomi.carver.core.camerax.video
+package com.kokomi.carver.core.camerax
 
+import android.net.Uri
+import android.os.SystemClock
 import android.util.Log
 import androidx.activity.ComponentActivity
-import androidx.camera.core.Camera
-import androidx.camera.core.CameraSelector
-import androidx.camera.core.Preview
+import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
-import androidx.camera.video.*
+import androidx.camera.video.Quality
+import androidx.camera.video.QualitySelector
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import com.kokomi.carver.core.CarverStatus
 import com.kokomi.carver.checkMainThread
-import com.kokomi.carver.core.camerax.CameraXCaptor
-import com.kokomi.carver.core.camerax.CameraXConfiguration
-import com.kokomi.carver.core.camerax.supportedQualityList
 import com.kokomi.carver.defaultOutputDirectory
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.util.concurrent.locks.ReentrantLock
-import com.kokomi.carver.core.camerax.core.CameraXCoreCaptorImpl
 
 /**
- * CameraX Video 包下的 [VideoCapture] 的视频录制实现
+ * CameraX Core 包下的 [VideoCapture] 的视频录制实现
  *
  * <p>
  *
- * 可以实现视频录制开始、停止、暂停、继续和输出文件功能，但可以调节的参数相比
- * [CameraXCoreCaptorImpl] 少了很多，
- * 仅支持视频质量在 [Quality.SD] 、[Quality.HD] 、[Quality.FHD] 、[Quality.UHD]
- * 中进行切换选择
+ * 可以实现视频录制开始、停止和输出文件功能，同时可以支持调节很多参数，
+ * 美中不足的是，无法暂停和继续录制
  *
- * @see CameraXCoreCaptorImpl
+ * <p>
+ *
+ * 如果希望能够暂停和继续录制，可以使用
+ * [CameraXVideoCaptorImpl]
+ *
+ * @see CameraXVideoCaptorImpl
  * */
 @Suppress("RestrictedApi", "MissingPermission")
-class CameraXVideoCaptorImpl(
+class CameraXCoreCaptorImpl(
     private val activity: ComponentActivity,
     override var config: CameraXConfiguration =
         CameraXConfiguration(
-            quality = Quality.LOWEST,
             outputDirectory = activity.defaultOutputDirectory()
         )
 ) : CameraXCaptor() {
 
     companion object {
-        private const val TAG = "CameraXVideoCaptorImpl"
+        private const val TAG = "CameraXCoreCaptorImpl"
     }
 
     override var previewView: PreviewView? = null
@@ -50,57 +53,57 @@ class CameraXVideoCaptorImpl(
 
     override var camera: Camera? = null
 
-    private lateinit var videoCapture: VideoCapture<Recorder>
-
-    private lateinit var recording: Recording
+    private lateinit var videoCapture: VideoCapture
 
     private val prepareLock = ReentrantLock()
+
+    private var job: Job? = null
 
     override fun start() {
         checkMainThread()
         // 保存路径
         val videoFile = config.outputFile()
         // 输出控制
-        val outputOptions = FileOutputOptions.Builder(videoFile).build()
+        val outputOptions = VideoCapture.OutputFileOptions.Builder(videoFile).build()
         // 准备开始录制
-        recording = videoCapture.output
-            .prepareRecording(activity, outputOptions)
-            .withAudioEnabled()
-            .start(ContextCompat.getMainExecutor(activity)) { event ->
-                when (event) {
-                    is VideoRecordEvent.Start -> {
-                        changeStatus(CarverStatus.Start())
-                    }
-                    is VideoRecordEvent.Finalize -> {
-                        changeStatus(CarverStatus.Finalize(event.outputResults.outputUri))
-                    }
-                    is VideoRecordEvent.Status -> {
-                        // 返回信息中包含录制信息
-                        changeStatus(CarverStatus.Recording(event.recordingStats.recordedDurationNanos))
-                    }
-                    is VideoRecordEvent.Pause -> {
-                        changeStatus(CarverStatus.Pause())
-                    }
-                    is VideoRecordEvent.Resume -> {
-                        changeStatus(CarverStatus.Resume())
-                    }
+        videoCapture.startRecording(
+            outputOptions,
+            ContextCompat.getMainExecutor(activity),
+            object : VideoCapture.OnVideoSavedCallback {
+
+                override fun onError(videoCaptureError: Int, message: String, cause: Throwable?) {
+                    job?.cancel()
+                    changeStatus(CarverStatus.Error(cause ?: RuntimeException("未知错误")))
                 }
+
+                override fun onVideoSaved(outputFileResults: VideoCapture.OutputFileResults) {
+                    job?.cancel()
+                    changeStatus(CarverStatus.Finalize(Uri.fromFile(videoFile)))
+                }
+
             }
+        )
+        val startTime = SystemClock.uptimeMillis()
+        job = activity.lifecycleScope.launch {
+            changeStatus(CarverStatus.Start())
+            while (true) {
+                changeStatus(CarverStatus.Recording(1000_000 * (SystemClock.uptimeMillis() - startTime)))
+                delay(100L)
+            }
+        }
     }
 
     override fun stop() {
         checkMainThread()
-        recording.stop()
+        videoCapture.stopRecording()
     }
 
     override fun pause() {
-        checkMainThread()
-        recording.pause()
+        // Nothing
     }
 
     override fun resume() {
-        checkMainThread()
-        recording.resume()
+        // Nothing
     }
 
     override fun prepareInternal() {
@@ -116,14 +119,17 @@ class CameraXVideoCaptorImpl(
                     val cameraSelector = CameraSelector.Builder()
                         .requireLensFacing(config.lensFacing)
                         .build()
-                    // 获取视频捕获者
-                    videoCapture = VideoCapture.withOutput(
-                        Recorder.Builder()
-                            .setQualitySelector(
-                                QualitySelector.from(config.quality)
-                            )
-                            .build()
-                    )
+                    // 获取视频捕获者，配置参数
+                    videoCapture = VideoCapture.Builder().apply {
+                        with(config) {
+                            if (videoFrameRate > 0) setVideoFrameRate(videoFrameRate)
+                            if (bitRate > 0) setBitRate(bitRate)
+                            if (iFrameInterval > 0) setIFrameInterval(iFrameInterval)
+                            if (audioSampleRate > 0) setAudioSampleRate(audioSampleRate)
+                            if (audioBitRate > 0) setAudioBitRate(audioBitRate)
+                            if (audioChannelCount > 0) setAudioChannelCount(audioChannelCount)
+                        }
+                    }.build()
                     // 通过相机提供者获取相机实例，并把相机的信息绑定到预览视图和视频捕获者
                     cameraProvider = cameraProviderFuture.get()
                     cameraProvider!!.unbindAll()

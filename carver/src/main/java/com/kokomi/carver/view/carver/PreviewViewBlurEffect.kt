@@ -1,7 +1,7 @@
 // Android 12 以下要用以前的方法来实现高斯模糊
 @file:Suppress("DEPRECATION")
 
-package com.kokomi.carver.ui.capture
+package com.kokomi.carver.view.carver
 
 import android.animation.ObjectAnimator
 import android.content.Context

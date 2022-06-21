@@ -3,8 +3,6 @@ package com.kokomi.carver.core.camerax
 import androidx.camera.core.CameraSelector
 import androidx.camera.video.Quality
 import java.io.File
-import com.kokomi.carver.core.camerax.video.CameraXVideoCaptorImpl
-import com.kokomi.carver.core.camerax.core.CameraXCoreCaptorImpl
 
 /**
  * 摄像头准备完毕后，这个列表中会存有当前摄像头支持的所有视频质量

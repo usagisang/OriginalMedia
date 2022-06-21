@@ -48,6 +48,8 @@ android {
 
 dependencies {
     implementation(project(":dependencies"))
+    implementation(project(":okresult"))
+
     implementation(Deps.CameraX.camera2)
     implementation(Deps.CameraX.core)
     implementation(Deps.CameraX.lifeCycle)
