@@ -1,9 +1,14 @@
 package top.gochiusa.originalmedia.explore.fragment
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import kotlinx.android.synthetic.main.fragment_graphic.*
@@ -11,12 +16,11 @@ import top.gochiusa.originalmedia.R
 import top.gochiusa.originalmedia.base.BaseFragment
 import top.gochiusa.originalmedia.explore.adapter.LoadMore
 import top.gochiusa.originalmedia.explore.adapter.VerticalAdapter
-import top.gochiusa.originalmedia.explore.bean.Graphic
 import top.gochiusa.originalmedia.explore.viewmodel.GraphicViewModel
 import top.gochiusa.originalmedia.widget.VerticalPageTransformer
 
 
-class GraphicFragment : BaseFragment(),LoadMore {
+class GraphicFragment : BaseFragment(),LoadMore  {
     private var mCurPage:Int = 0
     private val mVpGraphic by lazy { ViewModelProvider(this)[GraphicViewModel::class.java] }
     lateinit var mAdapter: VerticalAdapter
