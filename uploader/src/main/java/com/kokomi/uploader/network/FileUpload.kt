@@ -6,7 +6,7 @@ import com.qiniu.android.storage.UploadManager
 
 internal const val QI_NIU_HOST = "http://rdomwxl7m.hn-bkt.clouddn.com/"
 
-val uploadQiNiu by lazy {
+internal val uploadQiNiu by lazy {
     UploadManager(
         Configuration.Builder()
             .connectTimeout(90)

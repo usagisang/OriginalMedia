@@ -25,7 +25,11 @@ class FileUploadRequestHandler(
     }
 
     private fun ResponseInfo.resourceUrl(): String {
-        return "$QI_NIU_HOST${response.get("key")}"
+        if (isOK) {
+            return "$QI_NIU_HOST${response.get("key")}"
+        } else {
+            throw UploaderException(error)
+        }
     }
 
 }
