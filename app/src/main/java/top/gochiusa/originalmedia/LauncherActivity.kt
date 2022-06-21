@@ -17,7 +17,6 @@ import top.gochiusa.originalmedia.explore.fragment.ExploreFragment
 class LauncherActivity : BaseActivity<ActivityLauncherBinding>() {
 
 
-
     private var mExploreFragment: ExploreFragment? = null
     private var mCreationFragment: CreationFragment? = null
     private var mAccountFragment: AccountFragment? = null
@@ -99,13 +98,6 @@ class LauncherActivity : BaseActivity<ActivityLauncherBinding>() {
     }
 
 
-
-
-
-
-
-
-
     private fun hideFragments(transaction: FragmentTransaction) {
         if (mExploreFragment != null) {
             //隐藏Fragment
@@ -127,11 +119,16 @@ class LauncherActivity : BaseActivity<ActivityLauncherBinding>() {
     private fun getPer() {
         val permission =
             ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-        if (permission != PackageManager.PERMISSION_GRANTED) {
+        val readPermission =
+            ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+        if (permission != PackageManager.PERMISSION_GRANTED ||readPermission != PackageManager.PERMISSION_GRANTED) {
             // 请求权限
             ActivityCompat.requestPermissions(
                 this,
-                arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                arrayOf(
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                    Manifest.permission.READ_EXTERNAL_STORAGE
+                ),
                 1
             )
         }
