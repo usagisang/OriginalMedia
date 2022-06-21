@@ -81,7 +81,7 @@ object Deps {
     }
 
     object Accompanist {
-        const val version = "0.23.1"
+        const val version = "0.24.9-beta"
         const val accompanistInsets = "com.google.accompanist:accompanist-insets:$version"
         const val pager = "com.google.accompanist:accompanist-pager:$version"
         const val pagerIndicators = "com.google.accompanist:accompanist-pager-indicators:$version"
@@ -120,6 +120,8 @@ object Deps {
         const val view = "androidx.camera:camera-view:$version"
         const val video = "androidx.camera:camera-video:$version"
     }
+
+    const val qiNiu = "com.qiniu:qiniu-android-sdk:8.4.4"
 
     const val appCompat = "androidx.appcompat:appcompat:1.4.1"
     const val constraintLayout = "androidx.constraintlayout:constraintlayout:2.1.4"
