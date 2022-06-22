@@ -35,6 +35,12 @@ class NewsFlowFragment<VM : NewsFlowViewModel>(
                     lifecycleScope.launch { loadMore() }
                 }
                 adapter = imageFlowAdapter
+                registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+                    override fun onPageSelected(position: Int) {
+                        flowCurrentItem = position
+                        imageFlowAdapter.notifyItemChanged(position)
+                    }
+                })
             }
 
             lifecycleScope.launch {

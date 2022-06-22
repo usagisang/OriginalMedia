@@ -30,6 +30,12 @@ android {
     kotlinOptions {
         jvmTarget = "1.8"
     }
+    buildFeatures {
+        compose = true
+    }
+    composeOptions {
+        kotlinCompilerExtensionVersion = Deps.Compose.compilerVersion
+    }
 }
 
 dependencies {
@@ -44,6 +50,12 @@ dependencies {
     implementation(Deps.glide)
     implementation(Deps.retrofit)
     implementation(Deps.Lifecycle.livedata)
+
+    implementation(Deps.Compose.ui)
+    implementation(Deps.Compose.material)
+    implementation(Deps.Compose.uiToolingPreview)
+    implementation(Deps.Compose.composeActivity)
+    implementation(Deps.Compose.runtime)
 
     testImplementation(TestDeps.Local.junit)
     androidTestImplementation(TestDeps.Instrumentation.espresso)

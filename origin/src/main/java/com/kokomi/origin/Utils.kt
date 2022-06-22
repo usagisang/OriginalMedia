@@ -7,6 +7,7 @@ import android.text.Html
 import android.text.Html.FROM_HTML_MODE_LEGACY
 import android.text.Spanned
 import android.view.View
+import android.view.WindowManager
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.IdRes
@@ -82,6 +83,11 @@ internal fun Activity.clearSystemWindows(
 internal fun Activity.statusBarTextColor(isWhite: Boolean) {
     ViewCompat.getWindowInsetsController(window.decorView)
         ?.isAppearanceLightStatusBars = !isWhite
+}
+
+internal fun Activity.keepScreenAlive(alive: Boolean = true) {
+    if (alive) window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+    else window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 }
 
 internal val String.html: Spanned
