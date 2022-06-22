@@ -14,7 +14,12 @@ import com.kokomi.origin.entity.TYPE_IMAGE
 import com.kokomi.origin.explore.tabBarHeight
 import com.kokomi.origin.getStatusBarHeight
 import com.kokomi.origin.html
+import com.kokomi.origin.player.GLPlayer
+import com.kokomi.origin.player.glPlayer
 import com.kokomi.origin.view
+import top.gochiusa.glplayer.PlayerView
+
+internal var flowCurrentItem = -1
 
 internal class NewsFlowAdapter(
     private val news: List<News>,
@@ -48,7 +53,11 @@ internal class NewsFlowAdapter(
             }
         else {
             with(holder as ViewHolderVideoImpl) {
-//                player.setPlayer()
+                if (flowCurrentItem == position) {
+                    player.onResume()
+                    player.setPlayer(glPlayer)
+                    GLPlayer.play(new.resource)
+                }
                 title.text = new.title
             }
         }
@@ -58,6 +67,12 @@ internal class NewsFlowAdapter(
     override fun getItemViewType(position: Int) = news[position].type
 
     override fun getItemCount() = news.size
+
+    override fun onViewDetachedFromWindow(holder: ViewHolder) {
+        if (holder is ViewHolderVideoImpl) {
+            holder.player.onPause()
+        }
+    }
 
     internal abstract class ViewHolder(root: View) : RecyclerView.ViewHolder(root)
 
@@ -79,7 +94,7 @@ internal class NewsFlowAdapter(
 
     internal class ViewHolderVideoImpl(root: View) : ViewHolder(root) {
         internal val title = root.view<TextView>(R.id.tv_video_news_title)
-//        internal val player = root.view<PlayerView>(R.id.pv_video_news_player)
+        internal val player = root.view<PlayerView>(R.id.pv_video_news_player)
 
         init {
             root.view<TextView>(R.id.tv_video_news_status_bar) {

@@ -6,10 +6,11 @@
     android:layout_height="match_parent"
     android:background="@color/soft_black">
 
-    <ImageView
+    <androidx.compose.ui.platform.ComposeView
+        android:id="@+id/compose_user_content"
         android:layout_width="match_parent"
-        android:layout_height="200dp"
-        android:scaleType="centerCrop"/>
+        android:layout_height="match_parent"
+        android:layout_above="@id/tv_user_navigation" />
 
     <TextView
         android:id="@+id/tv_user_navigation"

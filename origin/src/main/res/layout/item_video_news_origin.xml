@@ -11,6 +11,14 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
+    <top.gochiusa.glplayer.PlayerView
+        android:id="@+id/pv_video_news_player"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/tv_video_news_navigation"
+        android:layout_below="@id/tv_video_news_status_bar"
+        android:background="@color/black" />
+
     <TextView
         android:id="@+id/tv_video_news_title"
         android:layout_width="match_parent"
@@ -24,13 +32,6 @@
         android:textColor="@color/soft_white"
         android:textSize="24sp"
         android:textStyle="bold" />
-
-    <top.gochiusa.glplayer.PlayerView
-        android:id="@+id/pv_video_news_player"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_above="@id/tv_video_news_navigation"
-        android:layout_below="@id/tv_video_news_title" />
 
     <TextView
         android:id="@+id/tv_video_news_navigation"
