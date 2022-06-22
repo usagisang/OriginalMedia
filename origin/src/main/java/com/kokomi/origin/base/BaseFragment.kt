@@ -10,4 +10,12 @@ abstract class BaseFragment : Fragment() {
         ViewModelProvider(this)[VM::class.java].bind()
     }
 
+    protected inline fun <VM : ViewModel> viewModel(vm: Class<VM>, bind: VM.() -> Unit) {
+        ViewModelProvider(this)[vm].bind()
+    }
+
+    protected inline fun <reified VM : ViewModel> activityViewModel(bind: VM.() -> Unit) {
+        ViewModelProvider(requireActivity())[VM::class.java].bind()
+    }
+
 }

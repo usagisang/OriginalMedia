@@ -1,12 +1,14 @@
-package com.kokomi.origin.base
+package com.kokomi.origin.user
 
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.kokomi.origin.R
+import com.kokomi.origin.base.BaseFragment
+import com.kokomi.origin.base.ModelFragment
 
-class ModelFragment : BaseFragment() {
+class UserFragment : BaseFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -16,11 +18,12 @@ class ModelFragment : BaseFragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        return inflater.inflate(R.layout.fragment_explore_origin, container, false)
+        return inflater.inflate(R.layout.fragment_user_origin, container, false)
     }
 
     companion object {
         @JvmStatic
         fun newInstance() = ModelFragment()
     }
+
 }

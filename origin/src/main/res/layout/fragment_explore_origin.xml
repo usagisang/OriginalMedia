@@ -4,8 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/soft_black"
-    tools:context=".OriginActivity">
+    android:background="@color/soft_black">
 
     <TextView
         android:id="@+id/tv_explore_status_bar"
@@ -13,12 +12,12 @@
         android:layout_height="wrap_content" />
 
     <androidx.viewpager2.widget.ViewPager2
-        android:id="@+id/vp_explore_vp"
+        android:id="@+id/vp_explore_pager"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@id/tv_explore_status_bar" />
+        android:layout_height="match_parent" />
 
     <LinearLayout
+        android:id="@+id/ll_explore_tab_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/tv_explore_status_bar"
@@ -34,7 +33,7 @@
             android:paddingVertical="16dp"
             android:text="图文"
             android:textColor="@color/soft_white"
-            android:textSize="24sp"
+            android:textSize="22sp"
             android:textStyle="bold" />
 
         <TextView
@@ -46,7 +45,7 @@
             android:paddingVertical="16dp"
             android:text="视界"
             android:textColor="@color/soft_gray_white"
-            android:textSize="24sp"
+            android:textSize="22sp"
             android:textStyle="bold" />
 
         <TextView
@@ -58,7 +57,7 @@
             android:paddingVertical="16dp"
             android:text="视频"
             android:textColor="@color/soft_gray_white"
-            android:textSize="24sp"
+            android:textSize="22sp"
             android:textStyle="bold" />
 
     </LinearLayout>

@@ -38,7 +38,7 @@ object NewsApi {
         emit(Pair(hasNext, list))
     }.flowOn(default)
 
-    suspend fun mixNews(limit: Int = 5) = flow<List<News>> {
+    suspend fun mixNews(limit: Int = 5) = flow<Pair<Boolean, List<News>>> {
         val body = io { apiService.mixNews(limit).string() }
         val json = JSONObject(body)
         val code = json.getInt("code")
@@ -60,7 +60,7 @@ object NewsApi {
             }
             list.add(news)
         }
-        emit(list)
+        emit(Pair(true, list))
     }.flowOn(default)
 
     suspend fun login(userName: String, password: String) = flow {
@@ -79,18 +79,18 @@ object NewsApi {
     private fun formatImageNews(result: JSONObject) =
         News(
             result.getString("title"),
-            result.getString("videoUrl"),
+            result.getString("images"),
             result.getString("content"),
             result.getLong("userId"),
             result.getString("uploadTime"),
-            TYPE_VIDEO
+            TYPE_IMAGE
         )
 
     private fun formatVideoNews(result: JSONObject) =
         News(
             result.getString("title"),
             result.getString("videoUrl"),
-            result.getString("content"),
+            "",
             result.getLong("userId"),
             result.getString("uploadTime"),
             TYPE_VIDEO
