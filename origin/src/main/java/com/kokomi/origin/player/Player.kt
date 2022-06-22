@@ -1,6 +1,7 @@
 package com.kokomi.origin.player
 
 import android.content.Context
+import com.kokomi.origin.appContext
 import top.gochiusa.glplayer.GLPlayer
 import top.gochiusa.glplayer.base.Player
 import top.gochiusa.glplayer.entity.MediaItem
@@ -16,13 +17,12 @@ object GLPlayer {
 
 }
 
-internal lateinit var glPlayerContext: Context
-
 internal val glPlayer: Player by lazy {
-    GLPlayer.Builder(glPlayerContext)
+    GLPlayer.Builder(appContext)
         .setRenderFirstFrame(true)
         .setInfiniteLoop(true)
         .setPlayAfterLoading(true)
+        .setRenderFirstFrame(true)
         .build().apply {
             addEventListener(object : EventListener {
                 override fun onPlayerError(errorCode: Int) {
