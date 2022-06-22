@@ -18,7 +18,7 @@ class PlayerView
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
-): FrameLayout(context) {
+): FrameLayout(context, attrs, defStyleAttr) {
 
     private var internalPlayer: Player? = null
 
@@ -47,7 +47,7 @@ class PlayerView
 
 
     /**
-     *  当用户可以看见播放平面时应当调用的方法。此方法与[onResume]相对应
+     * 当用户可以看见播放平面时应当调用的方法。此方法与[onPause]相对应
      */
     fun onResume() {
         if (surfaceView is GLSurfaceView) {
