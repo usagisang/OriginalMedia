@@ -10,8 +10,7 @@
     <FrameLayout
         android:id="@+id/fl_origin_fragment"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_above="@id/ll_origin_navigation" />
+        android:layout_height="match_parent" />
 
     <LinearLayout
         android:id="@+id/ll_origin_navigation"
@@ -29,7 +28,7 @@
             android:src="@drawable/ic_explore" />
 
         <ImageView
-            android:id="@+id/iv_origin_camera"
+            android:id="@+id/iv_origin_creation"
             android:layout_width="0dp"
             android:layout_height="72dp"
             android:layout_marginVertical="8dp"
