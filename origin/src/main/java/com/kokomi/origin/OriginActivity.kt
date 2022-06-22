@@ -1,5 +1,6 @@
 package com.kokomi.origin
 
+import android.content.Context
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.ImageView
@@ -7,7 +8,6 @@ import android.widget.LinearLayout
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.kokomi.origin.explore.ExploreFragment
-import com.kokomi.origin.player.glPlayerContext
 import com.kokomi.origin.user.UserFragment
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -17,6 +17,8 @@ private const val CREATION = "creation"
 private const val USER = "user"
 
 internal var navigationHeight = 0
+
+internal lateinit var appContext: Context
 
 class OriginActivity : AppCompatActivity() {
 
@@ -28,7 +30,7 @@ class OriginActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_origin)
 
-        glPlayerContext = applicationContext
+        appContext = applicationContext
 
         clearSystemWindows()
 
