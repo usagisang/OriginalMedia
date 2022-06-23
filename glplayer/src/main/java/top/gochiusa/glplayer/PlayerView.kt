@@ -6,6 +6,9 @@ import android.util.AttributeSet
 import android.view.SurfaceView
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
 import top.gochiusa.glplayer.base.Player
 import top.gochiusa.glplayer.opengl.VideoGLSurfaceView
 import top.gochiusa.glplayer.util.Assert
@@ -18,11 +21,13 @@ class PlayerView
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
-): FrameLayout(context, attrs, defStyleAttr) {
+): FrameLayout(context, attrs, defStyleAttr), DefaultLifecycleObserver {
 
     private var internalPlayer: Player? = null
 
     private val surfaceView: SurfaceView
+
+    private var lifecycle: Lifecycle? = null
 
     init {
         surfaceView = VideoGLSurfaceView(context)
@@ -47,7 +52,19 @@ class PlayerView
 
 
     /**
-     * 当用户可以看见播放平面时应当调用的方法。此方法与[onPause]相对应
+     * 当用户不再能够看见播放平面时应当调用的方法，
+     * 应用进入后台时，如果仍保持对媒体流的渲染，则必须调用该方法，否则，视频流渲染将异常终止。
+     * 此方法与[onResume]相对应
+     */
+    fun onPause() {
+        if (surfaceView is GLSurfaceView) {
+            surfaceView.onPause()
+        }
+    }
+
+    /**
+     * 当用户可以看见播放平面时应当调用的方法。
+     * 此方法与[onPause]相对应，如果曾调用过[onPause]暂停渲染，则渲染将在调用[onResume]后才会恢复
      */
     fun onResume() {
         if (surfaceView is GLSurfaceView) {
@@ -56,16 +73,46 @@ class PlayerView
     }
 
     /**
-     * 当用户不再能够看见播放平面时应当调用的方法。此方法与[onResume]相对应
+     * 绑定[Lifecycle]，这将允许[PlayerView]在合适的时机自动回调[onResume]和[onPause]
+     * 与[Lifecycle]的绑定将在[onDetachedFromWindow]中自动解除
      */
-    fun onPause() {
-        if (surfaceView is GLSurfaceView) {
-            surfaceView.onPause()
-        }
+    fun bindLifecycle(lifecycle: Lifecycle) {
+        lifecycle.addObserver(this)
+        this.lifecycle = lifecycle
+    }
+
+    /**
+     * 解除与[Lifecycle]的绑定
+     */
+    fun unbindLifecycle() {
+        lifecycle?.removeObserver(this)
+        lifecycle = null
     }
 
     override fun onDetachedFromWindow() {
         internalPlayer?.clearVideoSurfaceView(surfaceView)
+        unbindLifecycle()
         super.onDetachedFromWindow()
+    }
+
+    override fun onResume(owner: LifecycleOwner) {
+        onResume()
+    }
+
+    override fun onPause(owner: LifecycleOwner) {
+        onPause()
+    }
+
+    override fun onScreenStateChanged(screenState: Int) {
+        super.onScreenStateChanged(screenState)
+        // 当锁屏状态发生变化时，自动暂停/恢复渲染
+        when(screenState) {
+            SCREEN_STATE_ON -> {
+                onResume()
+            }
+            SCREEN_STATE_OFF -> {
+                onPause()
+            }
+        }
     }
 }
