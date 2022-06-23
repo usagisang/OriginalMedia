@@ -6,11 +6,11 @@
     android:layout_height="match_parent"
     android:background="@color/soft_black">
 
-    <ScrollView
+    <com.kokomi.origin.weight.OriginScrollView
         android:id="@+id/sv_image_news_scroll"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@id/tv_image_news_navigation">
+        android:layout_above="@id/tv_image_news_open">
 
         <RelativeLayout
             android:layout_width="match_parent"
@@ -65,7 +65,18 @@
 
         </RelativeLayout>
 
-    </ScrollView>
+    </com.kokomi.origin.weight.OriginScrollView>
+
+    <TextView
+        android:id="@+id/tv_image_news_open"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/tv_image_news_navigation"
+        android:layout_centerHorizontal="true"
+        android:padding="8dp"
+        android:text="展开"
+        android:textColor="@color/soft_white"
+        android:textSize="16sp" />
 
     <TextView
         android:id="@+id/tv_image_news_navigation"

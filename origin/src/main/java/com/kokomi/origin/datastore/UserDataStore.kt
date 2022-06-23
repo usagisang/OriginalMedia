@@ -8,7 +8,7 @@ import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.kokomi.origin.entity.User
-import com.kokomi.origin.io
+import com.kokomi.origin.util.io
 import kotlinx.coroutines.flow.*
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore("user")

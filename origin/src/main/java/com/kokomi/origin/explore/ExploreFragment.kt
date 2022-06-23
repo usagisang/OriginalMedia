@@ -6,16 +6,20 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.widget.ViewPager2
 import com.kokomi.origin.R
 import com.kokomi.origin.base.BaseFragment
-import com.kokomi.origin.getStatusBarHeight
-import com.kokomi.origin.view
+import com.kokomi.origin.util.getStatusBarHeight
+import com.kokomi.origin.util.view
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 internal var tabBarHeight = 0
+
+private const val COLOR_SELECTED = 0xFFF5F5F5.toInt()
+private const val COLOR_UN_SELECTED = 0xCCBDBDBD.toInt()
 
 class ExploreFragment : BaseFragment() {
 
@@ -32,13 +36,36 @@ class ExploreFragment : BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         with(view) {
+            val image = view<TextView>(R.id.tv_explore_image)
+            val mix = view<TextView>(R.id.tv_explore_mix)
+            val video = view<TextView>(R.id.tv_explore_video)
+
             val explorePager = view<ViewPager2>(R.id.vp_explore_pager) {
                 adapter = ExplorePagerAdapter(this@ExploreFragment)
+                registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+                    override fun onPageSelected(position: Int) {
+                        when (position) {
+                            0 -> {
+                                image.isSelected(true)
+                                mix.isSelected(false)
+                                video.isSelected(false)
+                            }
+                            1 -> {
+                                image.isSelected(false)
+                                mix.isSelected(true)
+                                video.isSelected(false)
+                            }
+                            2 -> {
+                                image.isSelected(false)
+                                mix.isSelected(false)
+                                video.isSelected(true)
+                            }
+                        }
+                    }
+                })
             }
 
-            view<TextView>(R.id.tv_explore_image) {
-                setOnClickListener { explorePager.currentItem = 0 }
-            }
+            image.setOnClickListener { explorePager.currentItem = 0 }
 
             view<TextView>(R.id.tv_explore_mix) {
                 setOnClickListener { explorePager.currentItem = 1 }
@@ -58,6 +85,14 @@ class ExploreFragment : BaseFragment() {
                     tabBarHeight = height
                 }
             }
+        }
+    }
+
+    private fun TextView.isSelected(selected: Boolean) {
+        if (selected) {
+            setTextColor(COLOR_SELECTED)
+        } else {
+            setTextColor(COLOR_UN_SELECTED)
         }
     }
 
