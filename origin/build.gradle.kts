@@ -50,7 +50,6 @@ dependencies {
     implementation(Deps.glide)
     implementation(Deps.retrofit)
     implementation(Deps.Lifecycle.livedata)
-    implementation(Deps.DataStore.core)
     implementation(Deps.DataStore.preferences)
 
     implementation(Deps.Compose.ui)

@@ -1,10 +1,9 @@
 package com.kokomi.origin.user
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.kokomi.origin.appContext
-import com.kokomi.origin.datastore.UserDataStore.loadUser
-import com.kokomi.origin.datastore.UserDataStore.saveUser
+import com.kokomi.origin.datastore.*
 import com.kokomi.origin.entity.User
 import com.kokomi.origin.network.NewsApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,34 +22,44 @@ class UserViewModel : ViewModel() {
     private val _user = MutableStateFlow(EMPTY_USER)
     internal val user: StateFlow<User> = _user
 
-    internal fun loadUser() {
-        viewModelScope.launch {
-            appContext.loadUser().collect { user ->
-                _user.emit(user)
-            }
-        }
-    }
+    private val _isLogged = MutableStateFlow(false)
+    internal val isLogged: StateFlow<Boolean> = _isLogged
 
-    internal fun login() {
+    internal fun login(context: Context) {
         viewModelScope.launch {
             NewsApi.login(userName.value, password.value)
                 .catch {
                     it.printStackTrace()
                     _user.emit(EMPTY_USER)
-                }
-                .collect { user ->
+                    _isLogged.emit(false)
+                }.collect { user ->
+                    context.saveUser(user)
                     _user.emit(user)
-                    appContext.saveUser(user)
+                    _isLogged.emit(true)
                 }
         }
     }
 
-    internal fun logout() {
+    internal fun logout(context: Context) {
         viewModelScope.launch {
-            userName.value = ""
-            password.value = ""
-            _user.value = EMPTY_USER
-            appContext.saveUser(EMPTY_USER)
+            userName.emit("")
+            password.emit("")
+            _user.emit(EMPTY_USER)
+            context.clearUser()
+            _isLogged.emit(false)
+        }
+    }
+
+    internal fun Context.loadUserFromDataStore() {
+        viewModelScope.launch {
+            val user = loadUser()
+            if (user != null) {
+                _user.emit(user)
+                _isLogged.emit(true)
+            } else {
+                _user.emit(EMPTY_USER)
+                _isLogged.emit(false)
+            }
         }
     }
 
