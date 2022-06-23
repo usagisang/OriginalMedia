@@ -24,10 +24,10 @@ class UserFragment : BaseFragment() {
     ): View {
         return inflater.inflate(R.layout.fragment_user_origin, container, false).apply {
             viewModel<UserViewModel> {
-                loadUser()
+                requireContext().loadUserFromDataStore()
 
                 view<ComposeView>(R.id.compose_user_content) {
-                    setContent { UserContentView(this@viewModel) }
+                    setContent { UserContentView(requireContext(), this@viewModel) }
                 }
             }
         }
