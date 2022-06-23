@@ -10,7 +10,7 @@ import com.kokomi.origin.R
 import com.kokomi.origin.base.BaseFragment
 import com.kokomi.origin.base.ModelFragment
 import com.kokomi.origin.navigationHeight
-import com.kokomi.origin.view
+import com.kokomi.origin.util.view
 
 class UserFragment : BaseFragment() {
 

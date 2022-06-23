@@ -8,7 +8,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.widget.ViewPager2
 import com.kokomi.origin.R
 import com.kokomi.origin.base.BaseFragment
-import com.kokomi.origin.view
+import com.kokomi.origin.util.view
 import kotlinx.coroutines.launch
 
 class NewsFlowFragment<VM : NewsFlowViewModel>(
@@ -31,7 +31,10 @@ class NewsFlowFragment<VM : NewsFlowViewModel>(
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         viewModel(vm) {
             view.view<ViewPager2>(R.id.vp_news_flow_pager) {
-                imageFlowAdapter = NewsFlowAdapter(news.value.first) {
+                imageFlowAdapter = NewsFlowAdapter(
+                    news.value.first,
+                    { isUserInputEnabled = !it }
+                ) {
                     lifecycleScope.launch { loadMore() }
                 }
                 adapter = imageFlowAdapter

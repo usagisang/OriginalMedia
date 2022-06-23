@@ -9,6 +9,9 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.kokomi.origin.explore.ExploreFragment
 import com.kokomi.origin.user.UserFragment
+import com.kokomi.origin.util.clearSystemWindows
+import com.kokomi.origin.util.keepScreenAlive
+import com.kokomi.origin.util.view
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
