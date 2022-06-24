@@ -4,10 +4,7 @@ import android.content.Context
 import android.os.*
 import android.view.Surface
 import android.view.SurfaceView
-import top.gochiusa.glplayer.base.Player
-import top.gochiusa.glplayer.base.Renderer
-import top.gochiusa.glplayer.base.RendererFactory
-import top.gochiusa.glplayer.base.SurfaceProvider
+import top.gochiusa.glplayer.base.*
 import top.gochiusa.glplayer.data.DefaultMediaSourceFactory
 import top.gochiusa.glplayer.data.MediaSource
 import top.gochiusa.glplayer.data.MediaSourceFactory
@@ -71,6 +68,8 @@ private constructor(
 
     private var mediaItem: MediaItem? = null
 
+    private var syncClock: MediaClock? = null
+
     /**
      * 播放器当前状态
      * 规定只能在主线程更改播放器状态并通知相应的监听器
@@ -92,6 +91,10 @@ private constructor(
         renderers = (builder.rendererFactory ?: CodecRendererFactory()).createRenders(
             eventHandler, componentListener)
         requestHeaders = builder.requestHeader
+
+        syncClock = renderers.firstOrNull {
+            it.getTrackType() == Constants.TRACK_TYPE_AUDIO
+        } ?.getMediaClock()
     }
 
     override fun play() {
@@ -402,11 +405,10 @@ private constructor(
             return
         }
 
-        val delayTimeMs = (5L - SystemClock.elapsedRealtime() + loopStart).coerceAtLeast(1)
-        _currentPositionUs = ((SystemClock.elapsedRealtime() - startRenderTimeMs) * 1000
-                + delayTimeMs).coerceAtMost(mediaSource.durationUs)
-        /*_currentPositionUs = ((SystemClock.elapsedRealtime() - startRenderTimeMs) * 1000)
-            .coerceAtMost(mediaSource.durationUs)*/
+        val delayTimeMs = (10L - SystemClock.elapsedRealtime() + loopStart).coerceAtLeast(1)
+        /*_currentPositionUs = ((SystemClock.elapsedRealtime() - startRenderTimeMs) * 1000
+                + delayTimeMs).coerceAtMost(mediaSource.durationUs)*/
+        _currentPositionUs = getCurrentPosition(delayTimeMs)
 
         // 如果数据源缓存不足
         if (shouldWaitForCache()) {
@@ -448,7 +450,7 @@ private constructor(
         }
 
         renderers.forEach {
-            it.onSeekTo()
+            it.onSeekTo(positionUs)
         }
         val syncTime = mediaSource.seekTo(positionUs, SeekMode.CLOSEST_SYNC)
         //_currentPositionUs = if (syncTime < 0) positionUs else syncTime
@@ -612,6 +614,24 @@ private constructor(
             } catch (e: Exception) {
                 PlayerLog.v(message = e)
             }
+        }
+    }
+
+    /**
+     * 计算当前播放位置
+     */
+    private fun getCurrentPosition(delayTimeMs: Long): Long {
+        val realTime = ((SystemClock.elapsedRealtime() - startRenderTimeMs) * 1000
+                + delayTimeMs).coerceAtMost(mediaSource.durationUs)
+        val clock = syncClock ?: return realTime
+        val time: Long = clock.getPositionUs()
+
+        return if (time < 0) {
+            realTime
+        } else if (time >= clock.getDurationUs()) {
+            mediaSource.durationUs
+        } else {
+            time.coerceAtMost(realTime)
         }
     }
 
