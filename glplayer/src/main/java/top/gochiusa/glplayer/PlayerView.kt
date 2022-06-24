@@ -93,6 +93,14 @@ class PlayerView
         lifecycle = null
     }
 
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        lifecycle?.let {
+            bindLifecycle(it)
+        }
+        rebindPlayerUncheck()
+    }
+
     override fun onDetachedFromWindow() {
         internalPlayer?.clearVideoSurfaceView(surfaceView)
         unbindLifecycle()
@@ -118,5 +126,9 @@ class PlayerView
                 onPause()
             }
         }
+    }
+
+    private fun rebindPlayerUncheck() {
+        internalPlayer?.setVideoSurfaceView(surfaceView)
     }
 }
