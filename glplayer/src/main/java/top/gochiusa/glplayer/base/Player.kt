@@ -5,7 +5,7 @@ import top.gochiusa.glplayer.entity.MediaItem
 import top.gochiusa.glplayer.listener.EventListener
 
 /**
- * 播放器接口。注意，大多数的状态转换需要满足条件
+ * 播放器接口。接口描述的大多数的状态转换需要满足条件
  */
 interface Player {
 
@@ -16,6 +16,8 @@ interface Player {
 
     /**
      * 播放器状态转为[Player.STATE_PAUSE]，并暂停媒体播放
+     *
+     * 此调用保证对[Player.STATE_LOADING]和[Player.STATE_BUFFERING]生效，状态将在稍后转为[Player.STATE_PAUSE]
      */
     fun pause()
 
