@@ -9,6 +9,7 @@ import top.gochiusa.glplayer.entity.Format
 import top.gochiusa.glplayer.entity.MediaCodecConfiguration
 import top.gochiusa.glplayer.util.PlayerLog
 import java.nio.ByteBuffer
+import java.util.*
 
 /**
  * 基于[MediaCodec]而实现的渲染适配器
@@ -18,13 +19,12 @@ abstract class MediaCodecRenderer(
     var renderTimeLimitMs: Long = LIMIT_NOT_SET
 ): BaseRenderer(trackType) {
 
-    protected var lastPositionUs: Long = -1
+    protected var lastPositionUs: Long = -1L
 
     protected var codec: MediaCodec? = null
         private set
-    private val bufferInfo = MediaCodec.BufferInfo()
 
-    private var pendingBuffer: PendingBuffer? = null
+    private val pendingBufferQueue: Queue<PendingBuffer> = PriorityQueue()
 
 
     final override fun render(positionUs: Long, elapsedRealtimeMs: Long) {
@@ -56,8 +56,9 @@ abstract class MediaCodecRenderer(
         releaseCodec()
     }
 
-    override fun onSeekTo() {
+    override fun onSeekTo(startPositionUs: Long) {
         flushCodec()
+        lastPositionUs = startPositionUs
     }
 
     override fun onSenderChanged(
@@ -85,7 +86,8 @@ abstract class MediaCodecRenderer(
     /**
      * 交由子类实现的处理输出帧的具体逻辑
      * @param bufferIndex 缓冲区索引，父类保证其有效
-     * @param buffer 如果配置了承接输出数据的surface，buffer为null
+     * @param bufferInfo 缓冲区的相关信息
+     * @param buffer 如果配置了承接输出数据的surface，[buffer]为null
      * @return 如果调用了[MediaCodec.releaseOutputBuffer]，请返回true，否则请返回false
      */
     abstract fun processOutputBuffer(
@@ -94,9 +96,7 @@ abstract class MediaCodecRenderer(
         codec: MediaCodec,
         buffer: ByteBuffer?,
         bufferIndex: Int,
-        bufferFlags: Int,
-        bufferSize: Int,
-        bufferPresentationTimeUs: Long
+        bufferInfo: MediaCodec.BufferInfo
     ): Boolean
 
 
@@ -123,15 +123,15 @@ abstract class MediaCodecRenderer(
             mediaCodec.start()
             codec = mediaCodec
         }.onFailure {
-            PlayerLog.e(message = "cannot init MediaCodec instance, " +
-                    "please check the metadata of media")
+            PlayerLog.e(message = "cannot init MediaCodec instance of type: ${configuration.type}" +
+                    " info: ${it.message}")
             throw it
         }
     }
 
     internal fun flushCodec() {
         val codec = codec
-        pendingBuffer = null
+        pendingBufferQueue.clear()
         try {
             codec?.flush()
         } catch (e: IllegalStateException) {
@@ -141,6 +141,7 @@ abstract class MediaCodecRenderer(
 
     internal fun releaseCodec() {
         codec?.release()
+        pendingBufferQueue.clear()
         codec = null
     }
 
@@ -180,14 +181,18 @@ abstract class MediaCodecRenderer(
 
     private fun drainOutputBuffer(positionUs: Long, elapsedRealtimeUs: Long): Boolean {
         val mediaCodec = codec ?: return false
-        val (index, info) = pendingBuffer ?: mediaCodec.nextOutputBuffer()
-        pendingBuffer = null
 
-        if (index == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
-            return true
-        }  else if (index < 0) {
-            return false
+        var info = MediaCodec.BufferInfo()
+        var index = mediaCodec.dequeueOutputBuffer(info, 0L)
+
+        if (index >= 0) {
+            pendingBufferQueue.offer(PendingBuffer(index, info))
         }
+        val pendingBuffer = pendingBufferQueue.peek()
+            ?: return index == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED
+
+        info = pendingBuffer.info
+        index = pendingBuffer.index
 
         val outputBuffer = mediaCodec.getOutputBuffer(index)
         outputBuffer?.let {
@@ -201,46 +206,38 @@ abstract class MediaCodecRenderer(
             mediaCodec,
             outputBuffer,
             index,
-            info.flags,
-            info.size,
-            info.presentationTimeUs
+            info
         )
         if (processOutput) {
             lastPositionUs = info.presentationTimeUs
+            // 丢弃相应的信息
+            pendingBufferQueue.poll()
 
-            val endOfStream = (info.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0
-            if (!endOfStream) {
+            val hasNext = (info.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM) == 0
+            if (hasNext) {
                 return true
-            }
-        } else {
-            // 一个可被输出的帧没有被处理，对此帧进行缓存
-            if (index >= 0) {
-                pendingBuffer = PendingBuffer(index, info.copy())
             }
         }
         return false
     }
 
-    private fun MediaCodec.nextOutputBuffer(timeoutUs: Long = 0L): PendingBuffer {
-        val index = dequeueOutputBuffer(bufferInfo, timeoutUs)
-        return PendingBuffer(index, bufferInfo)
-    }
-
-    private fun MediaCodec.BufferInfo.copy(): MediaCodec.BufferInfo {
-        return MediaCodec.BufferInfo().let {
-            it.set(offset, size, presentationTimeUs, flags)
-            it
-        }
-    }
-
     companion object {
         const val LIMIT_NOT_SET = -1L
-        const val DEFAULT_AUDIO_SYNC_LIMIT = 30000L
         const val DEFAULT_VIDEO_SYNC_LIMIT = 50000L
     }
 
     data class PendingBuffer(
         val index: Int,
         val info: MediaCodec.BufferInfo
-    )
+    ): Comparable<PendingBuffer> {
+        override fun compareTo(other: PendingBuffer): Int {
+           return if (info.presentationTimeUs < other.info.presentationTimeUs) {
+                -1
+            } else if (info.presentationTimeUs == other.info.presentationTimeUs) {
+                0
+            } else {
+                1
+            }
+        }
+    }
 }

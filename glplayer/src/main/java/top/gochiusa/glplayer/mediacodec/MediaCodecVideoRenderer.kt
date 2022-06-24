@@ -51,6 +51,8 @@ class MediaCodecVideoRenderer(
             }
         }
         if (sampleFormats.isNotEmpty()) {
+            // 将播放位置重置为无效位置
+            lastPositionUs = -1L
             PlayerLog.w(
                 message = "The media file does not contain media types supported by " +
                         "MediaCodecVideoRenderer"
@@ -64,11 +66,11 @@ class MediaCodecVideoRenderer(
         codec: MediaCodec,
         buffer: ByteBuffer?,
         bufferIndex: Int,
-        bufferFlags: Int,
-        bufferSize: Int,
-        bufferPresentationTimeUs: Long
+        bufferInfo: MediaCodec.BufferInfo
     ): Boolean {
-        //PlayerLog.d(message = "video position $positionUs bufferTime $bufferPresentationTimeUs")
+        val bufferSize: Int = bufferInfo.size
+        val presentationTimeUs: Long = bufferInfo.presentationTimeUs
+        //PlayerLog.d(message = "video position $positionUs bufferTime ${bufferInfo.presentationTimeUs}")
         if (surface == null || bufferSize <= 0) {
             buffer?.clear()
             codec.releaseOutputBuffer(bufferIndex, false)
@@ -76,20 +78,19 @@ class MediaCodecVideoRenderer(
         }
         val syncLimit = if (syncLimitUs > 0) syncLimitUs else 1
 
-        val syncRange = (bufferPresentationTimeUs - syncLimit)..(bufferPresentationTimeUs
+        val syncRange = (presentationTimeUs - syncLimit)..(presentationTimeUs
                 + syncLimit)
         // 当前播放位置处于可同步的范围内(不超出此帧的PTS前后syncLimitMs内)
         return if (positionUs in syncRange) {
             //PlayerLog.d(message = "Frame in syncRange")
             try {
                 codec.releaseOutputBuffer(bufferIndex, true)
-                frameLossCount = maxOf(frameLossCount - 3, 0)
             } catch (error: MediaCodec.CodecException) {
                 // 如果报出MediaCodec.CodecException，有可能是释放了一个不完整的帧
                 PlayerLog.e(message = error)
             }
             true
-        } else if (bufferPresentationTimeUs in positionUs..(positionUs + leadingLimitUs)) {
+        } else if (presentationTimeUs in positionUs..(positionUs + leadingLimitUs)) {
             //PlayerLog.d(message = "frame pending release")
             // 此帧超前，但不超过leadingLimitMs指定的最大限度
             false
@@ -151,5 +152,9 @@ class MediaCodecVideoRenderer(
 
     inner class VideoClock: MediaClock {
         override fun getPositionUs(): Long = lastPositionUs
+
+        override fun getDurationUs(): Long {
+            return videoFormat?.duration ?: -1L
+        }
     }
 }
