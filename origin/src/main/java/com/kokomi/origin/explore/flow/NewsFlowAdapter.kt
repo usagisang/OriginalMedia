@@ -1,6 +1,7 @@
 package com.kokomi.origin.explore.flow
 
 import android.animation.ObjectAnimator
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,11 +15,16 @@ import com.kokomi.origin.entity.TYPE_IMAGE
 import com.kokomi.origin.explore.tabBarHeight
 import com.kokomi.origin.util.getStatusBarHeight
 import com.kokomi.origin.util.html
-import com.kokomi.origin.player.GLPlayer
-import com.kokomi.origin.player.glPlayer
+import com.kokomi.origin.player.PlayerPool
+import com.kokomi.origin.util.main
 import com.kokomi.origin.util.view
 import com.kokomi.origin.weight.OriginScrollView
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import top.gochiusa.glplayer.PlayerView
+import top.gochiusa.glplayer.listener.EventListener
+import top.gochiusa.glplayer.listener.EventListenerAdapter
 
 internal var flowCurrentItem = -1
 
@@ -28,6 +34,7 @@ private const val CLOSE_TEXT = "收起"
 
 internal class NewsFlowAdapter(
     private val news: List<News>,
+    private val playerPool: PlayerPool,
     private val loadMore: () -> Unit
 ) : RecyclerView.Adapter<NewsFlowAdapter.ViewHolder>() {
 
@@ -39,6 +46,7 @@ internal class NewsFlowAdapter(
             )
         } else {
             ViewHolderVideoImpl(
+                playerPool,
                 LayoutInflater.from(parent.context)
                     .inflate(R.layout.item_video_news_origin, parent, false)
             )
@@ -54,14 +62,20 @@ internal class NewsFlowAdapter(
 
     override fun getItemCount() = news.size
 
+    override fun onViewAttachedToWindow(holder: ViewHolder) {
+        holder.onAttached()
+    }
+
     override fun onViewDetachedFromWindow(holder: ViewHolder) {
-        holder.onViewHolderDetached()
+        holder.onDetached()
     }
 
     internal abstract class ViewHolder(root: View) : RecyclerView.ViewHolder(root) {
-        abstract fun onBindViewHolder(new: News, position: Int)
+        internal abstract fun onBindViewHolder(new: News, position: Int)
 
-        abstract fun onViewHolderDetached()
+        internal abstract fun onDetached()
+
+        internal abstract fun onAttached()
     }
 
     internal class ViewHolderImageImpl(root: View) : ViewHolder(root) {
@@ -111,8 +125,11 @@ internal class NewsFlowAdapter(
             }, 1L)
         }
 
-        override fun onViewHolderDetached() {
+        override fun onDetached() {
             close()
+        }
+
+        override fun onAttached() {
         }
 
         private fun open() {
@@ -143,9 +160,12 @@ internal class NewsFlowAdapter(
         }
     }
 
-    internal class ViewHolderVideoImpl(root: View) : ViewHolder(root) {
+    internal class ViewHolderVideoImpl(
+        private val playerPool: PlayerPool,
+        root: View
+    ) : ViewHolder(root) {
         private val title = root.view<TextView>(R.id.tv_video_news_title)
-        private val player = root.view<PlayerView>(R.id.pv_video_news_player)
+        private val playerView = root.view<PlayerView>(R.id.pv_video_news_player)
 
         init {
             root.view<TextView>(R.id.tv_video_news_status_bar) {
@@ -157,16 +177,41 @@ internal class NewsFlowAdapter(
         }
 
         override fun onBindViewHolder(new: News, position: Int) {
-            if (flowCurrentItem == position) {
-                player.onResume()
-                player.setPlayer(glPlayer)
-                GLPlayer.play(new.resource)
-            }
+//            Log.e("TAG", "onBindViewHolder: $position")
+            playerPool.prepare(playerView, new.resource)
             title.text = new.title
         }
 
-        override fun onViewHolderDetached() {
-            player.onPause()
+        override fun onDetached() {
+            Log.e("TAG", "onDetached: $bindingAdapterPosition")
+            playerView.bindPlayer!!.pause()
+            playerView.onPause()
+        }
+
+        var count = 0
+
+        override fun onAttached() {
+            Log.e("TAG", "onAttached: $bindingAdapterPosition")
+            playerView.onResume()
+            if (bindingAdapterPosition == 0) {
+                playerView.bindPlayer!!.addEventListener(object : EventListenerAdapter {
+                    override fun onPlaybackStateChanged(playbackState: Int) {
+                        Log.e("TAG", "onStateChange: $playbackState")
+                    }
+                })
+            }
+            playerView.bindPlayer!!.playAfterLoading = true
+            playerView.bindPlayer!!.play()
+            count++
+            if (count == 2)
+                GlobalScope.launch {
+                    repeat(1000) {
+                        delay(3000L)
+                        main { playerView.bindPlayer!!.play() }
+                        delay(3000L)
+                        main { playerView.bindPlayer!!.pause() }
+                    }
+                }
         }
     }
 

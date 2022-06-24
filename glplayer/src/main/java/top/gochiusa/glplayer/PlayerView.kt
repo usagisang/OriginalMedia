@@ -21,9 +21,12 @@ class PlayerView
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
-): FrameLayout(context, attrs, defStyleAttr), DefaultLifecycleObserver {
+) : FrameLayout(context, attrs, defStyleAttr), DefaultLifecycleObserver {
 
     private var internalPlayer: Player? = null
+
+    val bindPlayer: Player?
+        get() = internalPlayer
 
     private val surfaceView: SurfaceView
 
@@ -31,7 +34,8 @@ class PlayerView
 
     init {
         surfaceView = VideoGLSurfaceView(context)
-        addView(surfaceView, 0,
+        addView(
+            surfaceView, 0,
             LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT
@@ -106,7 +110,7 @@ class PlayerView
     override fun onScreenStateChanged(screenState: Int) {
         super.onScreenStateChanged(screenState)
         // 当锁屏状态发生变化时，自动暂停/恢复渲染
-        when(screenState) {
+        when (screenState) {
             SCREEN_STATE_ON -> {
                 onResume()
             }

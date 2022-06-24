@@ -5,9 +5,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 import com.kokomi.origin.R
 import com.kokomi.origin.base.BaseFragment
+import com.kokomi.origin.player.PlayerPool
 import com.kokomi.origin.util.view
 import kotlinx.coroutines.launch
 
@@ -31,10 +33,12 @@ class NewsFlowFragment<VM : NewsFlowViewModel>(
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         viewModel(vm) {
             view.view<ViewPager2>(R.id.vp_news_flow_pager) {
-                imageFlowAdapter = NewsFlowAdapter(news.value.first) {
-                    lifecycleScope.launch { loadMore() }
-                }
+                imageFlowAdapter = NewsFlowAdapter(
+                    news.value.first,
+                    PlayerPool()
+                ) { lifecycleScope.launch { loadMore() } }
                 adapter = imageFlowAdapter
+                setViewPager2CacheSize(5)
                 registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
                     override fun onPageSelected(position: Int) {
                         flowCurrentItem = position
@@ -50,6 +54,13 @@ class NewsFlowFragment<VM : NewsFlowViewModel>(
 
             lifecycleScope.launch { loadMore() }
         }
+    }
+
+    private fun ViewPager2.setViewPager2CacheSize(size: Int) {
+        val field = ViewPager2::class.java.getDeclaredField("mRecyclerView")
+        field.isAccessible = true
+        val recyclerView = field.get(this) as RecyclerView
+        recyclerView.setItemViewCacheSize(size)
     }
 
     companion object {

@@ -63,6 +63,7 @@ class ExploreFragment : BaseFragment() {
                         }
                     }
                 })
+                currentItem = 2
             }
 
             image.setOnClickListener { explorePager.currentItem = 0 }
