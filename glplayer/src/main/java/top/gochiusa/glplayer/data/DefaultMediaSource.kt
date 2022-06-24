@@ -80,6 +80,7 @@ class DefaultMediaSource(
         this.mediaItem = mediaItem
         val mediaExtractor = MediaExtractor()
         _durationUs = -1L
+        hasNext = true
 
         // may block
         mediaItem.uri?.let {
