@@ -76,6 +76,7 @@ class DefaultMediaSource(
         mediaItem: MediaItem,
         requestHeaders: Map<String, String>?
     ) {
+        releaseOldMediaExtractor()
         this.mediaItem = mediaItem
         val mediaExtractor = MediaExtractor()
         _durationUs = -1L
@@ -125,6 +126,13 @@ class DefaultMediaSource(
             if (_durationUs < 0) {
                 _durationUs = format.duration
             }
+        }
+    }
+
+    private fun releaseOldMediaExtractor() {
+        runCatching {
+            mediaExtractor?.release()
+            mediaExtractor = null
         }
     }
 
