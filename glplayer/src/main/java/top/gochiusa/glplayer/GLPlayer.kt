@@ -23,6 +23,24 @@ import java.util.concurrent.CopyOnWriteArraySet
 
 /**
  * 播放器实现类
+ *
+ * <b>快速使用:</b>
+ *
+ * ```
+ * val glPlayer: Player = GLPlayer.Builder(context).setPlayAfterLoading(true).build()
+ *
+ * findViewById<PlayerView>(R.id.player_view).setPlayer(glPlayer)
+ *
+ * glPlayer.setMediaItem(MediaItem.fromUrl(videoUrl))
+ *
+ * glPlayer.prepare()
+ *
+ * ```
+ * 如果应用退出到后台，则必须调用[Player.pause]或[PlayerView.onPause]两个函数之一，否则视频流渲染
+ * 将会因为 EGL Display 被释放而异常终止
+ *
+ * [PlayerView]提供了绑定到[androidx.lifecycle.Lifecycle]的函数[PlayerView.bindLifecycle]，
+ * 能够免去手动调用[PlayerView.onPause]的繁琐
  */
 class GLPlayer
 private constructor(
