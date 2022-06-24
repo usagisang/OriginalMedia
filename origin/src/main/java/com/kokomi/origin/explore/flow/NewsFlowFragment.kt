@@ -31,17 +31,13 @@ class NewsFlowFragment<VM : NewsFlowViewModel>(
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         viewModel(vm) {
             view.view<ViewPager2>(R.id.vp_news_flow_pager) {
-                imageFlowAdapter = NewsFlowAdapter(
-                    news.value.first,
-                    { isUserInputEnabled = !it }
-                ) {
+                imageFlowAdapter = NewsFlowAdapter(news.value.first) {
                     lifecycleScope.launch { loadMore() }
                 }
                 adapter = imageFlowAdapter
                 registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
                     override fun onPageSelected(position: Int) {
                         flowCurrentItem = position
-                        imageFlowAdapter.notifyItemChanged(position)
                     }
                 })
             }
