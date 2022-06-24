@@ -16,7 +16,7 @@
         android:id="@+id/ll_origin_navigation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
+        android:layout_above="@id/tv_origin_navigation_bar"
         android:orientation="horizontal">
 
         <ImageView
@@ -44,5 +44,11 @@
             android:src="@drawable/ic_user" />
 
     </LinearLayout>
+
+    <TextView
+        android:id="@+id/tv_origin_navigation_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true" />
 
 </RelativeLayout>

@@ -17,7 +17,7 @@ private val userName by lazy { stringPreferencesKey("userName") }
 private val userId by lazy { longPreferencesKey("userId") }
 private val nickName by lazy { stringPreferencesKey("nickName") }
 
-suspend fun Context.saveUser(user: User) {
+suspend infix fun Context.saveUser(user: User) {
     io {
         dataStore.edit {
             it[userName] = user.userName

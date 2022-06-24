@@ -1,6 +1,5 @@
 package com.kokomi.origin.player
 
-import android.util.Log
 import androidx.annotation.MainThread
 import com.kokomi.origin.appContext
 import top.gochiusa.glplayer.GLPlayer
@@ -17,9 +16,22 @@ internal class PlayerPool(
 
     private var bufferPlayerQueueHead = 0
 
+    /**
+     * 最后一个是主播放器(MainPlayer)
+     * <p>
+     *
+     * 其它都是缓冲播放器(BufferPlayer)
+     * <p>
+     *
+     * 只有主播放器可以播放，缓冲播放器只可以缓冲
+     * <p>
+     *
+     * 主播放器权是可以交换的，但是必须在主线程内交换
+     * @see PlayerPool.exchangeMainPlayerTo
+     * <p>
+     * */
     private val players by lazy {
         mutableListOf<Player>().apply {
-            // 最后一个是主播放器，只有主播放器可以播放，其它只可以缓冲
             for (i in 1..playerPoolSize) {
                 add(
                     GLPlayer.Builder(appContext)
@@ -32,7 +44,6 @@ internal class PlayerPool(
     }
 
     internal fun prepare(playerView: PlayerView, url: String) {
-//        Log.e("TAG", "prepare: $bufferPlayerQueueHead")
         players[bufferPlayerQueueHead].run {
             playerView.setPlayer(this)
             setMediaItem(MediaItem.fromUrl(url))
@@ -41,18 +52,34 @@ internal class PlayerPool(
         bufferPlayerQueueHead = (bufferPlayerQueueHead + 1) % (playerPoolSize - 1)
     }
 
-    internal fun exchangeMainPlayer(player: Player) {
-        val index = players.indexOf(player)
-        if (index == playerMainIndex || index == -1) {
-            player.play()
+    /**
+     * 交换主播放器权
+     * */
+    internal infix fun exchangeMainPlayerTo(targetPlayer: Player) {
+        val index = players.indexOf(targetPlayer)
+        if (index == -1) {
+            throw IllegalStateException("The Player does not belong to this pool.")
+        }
+        // 若传入的播放器就是主播放器
+        if (index == playerMainIndex) {
+            targetPlayer.play()
             return
         }
-        val main = players[playerMainIndex]
-        main.playAfterLoading = false
-        players[playerMainIndex] = player
-        players[index] = main
-        player.playAfterLoading = true
-        if(!player.isPlaying()) player.play()
+        val mainPlayer = players[playerMainIndex]
+        // 暂停主播放器的播放
+        mainPlayer.playAfterLoading = false
+        if (mainPlayer.isPlaying()) {
+            mainPlayer.pause()
+        }
+        // 交换主播放器权
+        players[playerMainIndex] = targetPlayer
+        players[index] = mainPlayer
+        // 开始新主播放器的播放
+        targetPlayer.playAfterLoading = true
+        if (!targetPlayer.isPlaying()) {
+            targetPlayer.seekTo(0)
+            targetPlayer.play()
+        }
     }
 
     internal fun mainPlayerPlay() {

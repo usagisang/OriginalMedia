@@ -2,6 +2,7 @@ package com.kokomi.origin.util
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.withContext
 
 internal val main = Dispatchers.Main
@@ -21,3 +22,5 @@ internal suspend inline fun <T> main(noinline block: suspend CoroutineScope.() -
 internal suspend inline fun <T> default(noinline block: suspend CoroutineScope.() -> T): T {
     return withContext(Dispatchers.Default, block)
 }
+
+internal suspend inline infix fun <T> FlowCollector<T>.emit(value: T) = emit(value)

@@ -9,9 +9,10 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.kokomi.origin.explore.ExploreFragment
 import com.kokomi.origin.user.UserFragment
-import com.kokomi.origin.util.clearSystemWindows
+import com.kokomi.origin.util.clearSystemBar
 import com.kokomi.origin.util.keepScreenAlive
-import com.kokomi.origin.util.view
+import com.kokomi.origin.util.navigationBarHeight
+import com.kokomi.origin.util.find
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -35,26 +36,26 @@ class OriginActivity : AppCompatActivity() {
 
         appContext = applicationContext
 
-        clearSystemWindows()
+        clearSystemBar(navigationBar = find(R.id.tv_origin_navigation_bar))
 
-        view<ImageView>(R.id.iv_origin_explore) {
+        find<ImageView>(R.id.iv_origin_explore) {
             setOnClickListener { changeFragment(EXPLORE) }
         }
 
-        view<ImageView>(R.id.iv_origin_creation) {
+        find<ImageView>(R.id.iv_origin_creation) {
             setOnClickListener { changeFragment(CREATION) }
         }
 
-        view<ImageView>(R.id.iv_origin_user) {
+        find<ImageView>(R.id.iv_origin_user) {
             setOnClickListener { changeFragment(USER) }
         }
 
         changeFragment(EXPLORE)
 
         lifecycleScope.launch {
-            delay(5L)
-            view<LinearLayout>(R.id.ll_origin_navigation) {
-                navigationHeight = height
+            delay(1L)
+            find<LinearLayout>(R.id.ll_origin_navigation) {
+                navigationHeight = height + navigationBarHeight
             }
         }
     }

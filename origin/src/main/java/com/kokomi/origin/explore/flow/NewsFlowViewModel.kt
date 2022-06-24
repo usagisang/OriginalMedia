@@ -3,9 +3,9 @@ package com.kokomi.origin.explore.flow
 import androidx.lifecycle.ViewModel
 import com.kokomi.origin.entity.News
 import com.kokomi.origin.network.NewsApi
-import com.kokomi.origin.util.toast
 import com.kokomi.origin.util.toastNetworkError
 import kotlinx.coroutines.flow.Flow
+import com.kokomi.origin.util.emit
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
@@ -43,9 +43,9 @@ abstract class NewsFlowViewModel : ViewModel() {
             it.printStackTrace()
             toastNetworkError()
         }.collect {
-            _hasNext.emit(it.first)
+            _hasNext emit it.first
             val pair = _news.value
-            _news.emit(Pair(pair.first.apply { addAll(it.second) }, !pair.second))
+            _news emit Pair(pair.first.apply { addAll(it.second) }, !pair.second)
             page++
             loading = false
         }

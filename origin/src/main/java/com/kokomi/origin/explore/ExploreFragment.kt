@@ -6,13 +6,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.widget.ViewPager2
 import com.kokomi.origin.R
 import com.kokomi.origin.base.BaseFragment
-import com.kokomi.origin.util.getStatusBarHeight
-import com.kokomi.origin.util.view
+import com.kokomi.origin.util.find
+import com.kokomi.origin.util.statusBarHeight
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -35,12 +34,11 @@ class ExploreFragment : BaseFragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        val image: TextView = view find R.id.tv_explore_image
+        val mix: TextView = view find R.id.tv_explore_mix
+        val video: TextView = view find R.id.tv_explore_video
         with(view) {
-            val image = view<TextView>(R.id.tv_explore_image)
-            val mix = view<TextView>(R.id.tv_explore_mix)
-            val video = view<TextView>(R.id.tv_explore_video)
-
-            val explorePager = view<ViewPager2>(R.id.vp_explore_pager) {
+            val explorePager = find<ViewPager2>(R.id.vp_explore_pager) {
                 adapter = ExplorePagerAdapter(this@ExploreFragment)
                 registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
                     override fun onPageSelected(position: Int) {
@@ -63,26 +61,22 @@ class ExploreFragment : BaseFragment() {
                         }
                     }
                 })
-                currentItem = 2
+                currentItem = 0
             }
 
             image.setOnClickListener { explorePager.currentItem = 0 }
 
-            view<TextView>(R.id.tv_explore_mix) {
-                setOnClickListener { explorePager.currentItem = 1 }
-            }
+            mix.setOnClickListener { explorePager.currentItem = 1 }
 
-            view<TextView>(R.id.tv_explore_video) {
-                setOnClickListener { explorePager.currentItem = 2 }
-            }
+            video.setOnClickListener { explorePager.currentItem = 2 }
 
-            view<TextView>(R.id.tv_explore_status_bar) {
-                height = getStatusBarHeight()
+            find<TextView>(R.id.tv_explore_status_bar) {
+                height = statusBarHeight
             }
 
             lifecycleScope.launch {
-                delay(5L)
-                view<LinearLayout>(R.id.ll_explore_tab_bar) {
+                delay(1L)
+                find<LinearLayout>(R.id.ll_explore_tab_bar) {
                     tabBarHeight = height
                 }
             }

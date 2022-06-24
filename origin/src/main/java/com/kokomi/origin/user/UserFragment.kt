@@ -10,7 +10,7 @@ import com.kokomi.origin.R
 import com.kokomi.origin.base.BaseFragment
 import com.kokomi.origin.base.ModelFragment
 import com.kokomi.origin.navigationHeight
-import com.kokomi.origin.util.view
+import com.kokomi.origin.util.find
 
 class UserFragment : BaseFragment() {
 
@@ -26,7 +26,7 @@ class UserFragment : BaseFragment() {
             viewModel<UserViewModel> {
                 requireContext().loadUserFromDataStore()
 
-                view<ComposeView>(R.id.compose_user_content) {
+                find<ComposeView>(R.id.compose_user_content) {
                     setContent { UserContentView(requireContext(), this@viewModel) }
                 }
             }
@@ -35,7 +35,7 @@ class UserFragment : BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         with(view) {
-            view<TextView>(R.id.tv_user_navigation) {
+            find<TextView>(R.id.tv_user_navigation) {
                 height = navigationHeight
             }
         }

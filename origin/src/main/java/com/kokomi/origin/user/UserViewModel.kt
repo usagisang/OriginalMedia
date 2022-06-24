@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.kokomi.origin.datastore.*
 import com.kokomi.origin.entity.User
 import com.kokomi.origin.network.NewsApi
+import com.kokomi.origin.util.emit
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
@@ -30,23 +31,23 @@ class UserViewModel : ViewModel() {
             NewsApi.login(userName.value, password.value)
                 .catch {
                     it.printStackTrace()
-                    _user.emit(EMPTY_USER)
-                    _isLogged.emit(false)
+                    _user emit EMPTY_USER
+                    _isLogged emit false
                 }.collect { user ->
-                    context.saveUser(user)
-                    _user.emit(user)
-                    _isLogged.emit(true)
+                    context saveUser user
+                    _user emit user
+                    _isLogged emit true
                 }
         }
     }
 
     internal fun logout(context: Context) {
         viewModelScope.launch {
-            userName.emit("")
-            password.emit("")
-            _user.emit(EMPTY_USER)
+            userName emit ""
+            password emit ""
+            _user emit EMPTY_USER
             context.clearUser()
-            _isLogged.emit(false)
+            _isLogged emit false
         }
     }
 
@@ -54,11 +55,11 @@ class UserViewModel : ViewModel() {
         viewModelScope.launch {
             val user = loadUser()
             if (user != null) {
-                _user.emit(user)
-                _isLogged.emit(true)
+                _user emit user
+                _isLogged emit true
             } else {
-                _user.emit(EMPTY_USER)
-                _isLogged.emit(false)
+                _user emit EMPTY_USER
+                _isLogged emit false
             }
         }
     }

@@ -15,7 +15,7 @@ internal class ExplorePagerAdapter(
             0 -> NewsFlowFragment.newInstance<ImageFlowViewModel>()
             1 -> NewsFlowFragment.newInstance<MixFlowViewModel>()
             2 -> NewsFlowFragment.newInstance<VideoFlowViewModel>()
-            else -> TODO()
+            else -> throw IllegalStateException()
         }
     }
 

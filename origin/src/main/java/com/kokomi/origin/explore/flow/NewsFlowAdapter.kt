@@ -1,7 +1,6 @@
 package com.kokomi.origin.explore.flow
 
 import android.animation.ObjectAnimator
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,18 +12,12 @@ import com.kokomi.origin.*
 import com.kokomi.origin.entity.News
 import com.kokomi.origin.entity.TYPE_IMAGE
 import com.kokomi.origin.explore.tabBarHeight
-import com.kokomi.origin.util.getStatusBarHeight
 import com.kokomi.origin.util.html
 import com.kokomi.origin.player.PlayerPool
-import com.kokomi.origin.util.main
-import com.kokomi.origin.util.view
+import com.kokomi.origin.util.statusBarHeight
+import com.kokomi.origin.util.find
 import com.kokomi.origin.weight.OriginScrollView
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import top.gochiusa.glplayer.PlayerView
-import top.gochiusa.glplayer.listener.EventListener
-import top.gochiusa.glplayer.listener.EventListenerAdapter
 
 internal var flowCurrentItem = -1
 
@@ -79,18 +72,18 @@ internal class NewsFlowAdapter(
     }
 
     internal class ViewHolderImageImpl(root: View) : ViewHolder(root) {
-        private val scroll = root.view<OriginScrollView>(R.id.sv_image_news_scroll)
-        private val title = root.view<TextView>(R.id.tv_image_news_title)
-        private val image = root.view<ImageView>(R.id.iv_image_news_image)
-        private val content = root.view<TextView>(R.id.tv_image_news_content)
-        private val open = root.view<TextView>(R.id.tv_image_news_open)
-        private val openIcon = root.view<ImageView>(R.id.iv_image_news_open_icon)
+        private val scroll = root.find<OriginScrollView>(R.id.sv_image_news_scroll)
+        private val title = root.find<TextView>(R.id.tv_image_news_title)
+        private val image = root.find<ImageView>(R.id.iv_image_news_image)
+        private val content = root.find<TextView>(R.id.tv_image_news_content)
+        private val open = root.find<TextView>(R.id.tv_image_news_open)
+        private val openIcon = root.find<ImageView>(R.id.iv_image_news_open_icon)
 
         init {
-            root.view<TextView>(R.id.tv_image_news_status_bar) {
-                height = root.context.getStatusBarHeight() + tabBarHeight
+            root.find<TextView>(R.id.tv_image_news_status_bar) {
+                height = root.context.statusBarHeight + tabBarHeight
             }
-            root.view<TextView>(R.id.tv_image_news_navigation) {
+            root.find<TextView>(R.id.tv_image_news_navigation) {
                 height = navigationHeight
             }
         }
@@ -164,54 +157,31 @@ internal class NewsFlowAdapter(
         private val playerPool: PlayerPool,
         root: View
     ) : ViewHolder(root) {
-        private val title = root.view<TextView>(R.id.tv_video_news_title)
-        private val playerView = root.view<PlayerView>(R.id.pv_video_news_player)
+        private val title = root.find<TextView>(R.id.tv_video_news_title)
+        private val playerView = root.find<PlayerView>(R.id.pv_video_news_player)
 
         init {
-            root.view<TextView>(R.id.tv_video_news_status_bar) {
-                height = root.context.getStatusBarHeight() + tabBarHeight
+            root.find<TextView>(R.id.tv_video_news_status_bar) {
+                height = root.context.statusBarHeight + tabBarHeight
             }
-            root.view<TextView>(R.id.tv_video_news_navigation) {
+            root.find<TextView>(R.id.tv_video_news_navigation) {
                 height = navigationHeight
             }
         }
 
         override fun onBindViewHolder(new: News, position: Int) {
-//            Log.e("TAG", "onBindViewHolder: $position")
             playerPool.prepare(playerView, new.resource)
             title.text = new.title
         }
 
         override fun onDetached() {
-            Log.e("TAG", "onDetached: $bindingAdapterPosition")
             playerView.bindPlayer!!.pause()
             playerView.onPause()
         }
 
-        var count = 0
-
         override fun onAttached() {
-            Log.e("TAG", "onAttached: $bindingAdapterPosition")
             playerView.onResume()
-            if (bindingAdapterPosition == 0) {
-                playerView.bindPlayer!!.addEventListener(object : EventListenerAdapter {
-                    override fun onPlaybackStateChanged(playbackState: Int) {
-                        Log.e("TAG", "onStateChange: $playbackState")
-                    }
-                })
-            }
-            playerView.bindPlayer!!.playAfterLoading = true
-            playerView.bindPlayer!!.play()
-            count++
-            if (count == 2)
-                GlobalScope.launch {
-                    repeat(1000) {
-                        delay(3000L)
-                        main { playerView.bindPlayer!!.play() }
-                        delay(3000L)
-                        main { playerView.bindPlayer!!.pause() }
-                    }
-                }
+            playerPool exchangeMainPlayerTo playerView.bindPlayer!!
         }
     }
 

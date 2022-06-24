@@ -38,10 +38,12 @@ class OriginScrollView @JvmOverloads constructor(
                 val lastY = downY
                 downY = ev.y
                 if (topSecond && (isTop && downY - lastY > 0)) {
+                    // 到达顶部，交由父类处理触摸事件
                     parent.requestDisallowInterceptTouchEvent(false)
                     topSecond = false
                     return false
                 } else if (bottomSecond && (isBottom && downY - lastY < 0)) {
+                    // 到达底部，交由父类处理触摸事件
                     parent.requestDisallowInterceptTouchEvent(false)
                     bottomSecond = false
                     return false
@@ -55,6 +57,7 @@ class OriginScrollView @JvmOverloads constructor(
     }
 
     override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
+        // 若不可滑动，则将触摸事件交由父 View 处理，否则自己处理
         parent.requestDisallowInterceptTouchEvent(isScrollable)
         return super.onInterceptTouchEvent(ev)
     }
