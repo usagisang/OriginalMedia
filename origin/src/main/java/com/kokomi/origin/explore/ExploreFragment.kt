@@ -89,11 +89,7 @@ class ExploreFragment : BaseFragment() {
     }
 
     private fun TextView.isSelected(selected: Boolean) {
-        if (selected) {
-            setTextColor(COLOR_SELECTED)
-        } else {
-            setTextColor(COLOR_UN_SELECTED)
-        }
+        setTextColor(if (selected) COLOR_SELECTED else COLOR_UN_SELECTED)
     }
 
     companion object {
