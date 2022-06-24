@@ -40,7 +40,7 @@ interface Renderer: Receiver {
     /**
      * 发生SeekTo事件后回调
      */
-    fun onSeekTo()
+    fun onSeekTo(startPositionUs: Long)
 
     /**
      * 发生Pause事件后回调

@@ -11,8 +11,6 @@ import java.nio.ByteBuffer
 
 class MediaCodecAudioRenderer(
     renderTimeLimitMs: Long = 5L,
-    private val leadingLimitUs: Long = 1000000L,
-    private val syncLimitUs: Long = DEFAULT_AUDIO_SYNC_LIMIT,
 ): MediaCodecRenderer(Constants.TRACK_TYPE_AUDIO, renderTimeLimitMs) {
 
     private val audioClock: MediaClock by lazy { AudioClock() }
@@ -52,6 +50,8 @@ class MediaCodecAudioRenderer(
 
         newFormat = format.firstOrNull { it.isAudio() }
         if (newFormat == null) {
+            // 将播放位置重置为无效位置
+            lastPositionUs = -1L
             // 找不到音频轨道
             PlayerLog.w(
                 message = "The media file does not contain media types supported by " +
@@ -71,44 +71,34 @@ class MediaCodecAudioRenderer(
         codec: MediaCodec,
         buffer: ByteBuffer?,
         bufferIndex: Int,
-        bufferFlags: Int,
-        bufferSize: Int,
-        bufferPresentationTimeUs: Long
+        bufferInfo: MediaCodec.BufferInfo
     ): Boolean {
+        val bufferSize = bufferInfo.size
         val audioOutput = audioTrack
-        //PlayerLog.d(message = "position $positionUs, bufferTime $bufferPresentationTimeUs")
-        if (audioOutput == null || bufferSize < 0 || buffer == null) {
+        //PlayerLog.d(message = "audio position $positionUs, bufferTime ${bufferInfo.presentationTimeUs}")
+        if (audioOutput == null || bufferSize <= 0 || buffer == null) {
             buffer?.clear()
             codec.releaseOutputBuffer(bufferIndex, false)
             return true
         }
 
-        val syncLimit = if (syncLimitUs > 0) syncLimitUs else 1
+        try {
+            val writeSize = audioOutput.write(buffer.duplicate(), bufferSize,
+                AudioTrack.WRITE_NON_BLOCKING)
+            audioOutput.play()
 
-        val syncRange = (bufferPresentationTimeUs - syncLimit)..(bufferPresentationTimeUs
-                + syncLimit)
-
-        return if (positionUs in syncRange) {
-            //PlayerLog.d(message = "audio in sync range")
-
-            val byteData = ByteArray(bufferSize)
-            buffer.get(byteData)
-
-            try {
-                audioOutput.write(byteData, 0, bufferSize, AudioTrack.WRITE_NON_BLOCKING)
-                audioOutput.play()
-            } catch (e: Exception) {
-                PlayerLog.e(message = e)
+            return if (writeSize < bufferSize) {
+                bufferInfo.offset += writeSize
+                bufferInfo.size -= writeSize
+                false
+            } else {
+                codec.releaseOutputBuffer(bufferIndex, false)
+                true
             }
+        } catch (e: Exception) {
+            PlayerLog.e(message = e)
             codec.releaseOutputBuffer(bufferIndex, false)
-            true
-        } else if (bufferPresentationTimeUs in positionUs..(positionUs + leadingLimitUs)) {
-            //PlayerLog.d(message = "audio in leading range")
-            false
-        } else {
-            //PlayerLog.d(message = "audio piece loss")
-            codec.releaseOutputBuffer(bufferIndex, false)
-            true
+            return true
         }
     }
 
@@ -132,7 +122,18 @@ class MediaCodecAudioRenderer(
 
     override fun onPause() {
         runCatching {
-            audioTrack?.pause()
+            audioTrack?.run {
+                if (state == AudioTrack.STATE_INITIALIZED) {
+                    pause()
+                }
+            }
+        }
+    }
+
+    override fun onDisabled(oldSender: Sender?) {
+        super.onDisabled(oldSender)
+        runCatching {
+            audioTrack?.flush()
         }
     }
 
@@ -170,6 +171,11 @@ class MediaCodecAudioRenderer(
     }
 
     inner class AudioClock: MediaClock {
+
         override fun getPositionUs(): Long = lastPositionUs
+
+        override fun getDurationUs(): Long {
+            return audioFormat?.duration ?: -1L
+        }
     }
 }

@@ -21,8 +21,15 @@ class MediaItem {
 
     companion object {
 
+        /**
+         * 通过Url创建MediaItem，仅支持http/https协议
+         */
         fun fromUrl(url: String): MediaItem = MediaItem(url)
 
+        /**
+         * 通过[Uri]创建MediaItem
+         * [Uri]可以指向本地文件、APP内的资源文件、网络上的文件(http/https)
+         */
         fun fromUri(uri: Uri): MediaItem = MediaItem(uri)
     }
 
