@@ -8,23 +8,33 @@
         <entry key="..\:/AndroidProject/OriginalMedia/app/src/main/res/layout/bottom_bar.xml" value="0.21666666666666667" />
         <entry key="..\:/AndroidProject/OriginalMedia/app/src/main/res/layout/fragment_explore.xml" value="0.21666666666666667" />
         <entry key="..\:/AndroidProject/OriginalMedia/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.1135" />
+        <entry key="..\:/AndroidProject/OriginalMedia/origin/src/main/res/drawable/ic_add_image.xml" value="0.106" />
         <entry key="..\:/AndroidProject/OriginalMedia/origin/src/main/res/drawable/ic_app.xml" value="0.1135" />
         <entry key="..\:/AndroidProject/OriginalMedia/origin/src/main/res/drawable/ic_camera.xml" value="0.1075" />
+        <entry key="..\:/AndroidProject/OriginalMedia/origin/src/main/res/drawable/ic_complete_upload.xml" value="0.106" />
         <entry key="..\:/AndroidProject/OriginalMedia/origin/src/main/res/drawable/ic_explore.xml" value="0.1075" />
+        <entry key="..\:/AndroidProject/OriginalMedia/origin/src/main/res/drawable/ic_font_creation.xml" value="0.1135" />
+        <entry key="..\:/AndroidProject/OriginalMedia/origin/src/main/res/drawable/ic_image_creation.xml" value="0.1135" />
         <entry key="..\:/AndroidProject/OriginalMedia/origin/src/main/res/drawable/ic_launcher_background.xml" value="0.11" />
         <entry key="..\:/AndroidProject/OriginalMedia/origin/src/main/res/drawable/ic_open.xml" value="0.1135" />
+        <entry key="..\:/AndroidProject/OriginalMedia/origin/src/main/res/drawable/ic_recording_craetion.xml" value="0.106" />
         <entry key="..\:/AndroidProject/OriginalMedia/origin/src/main/res/drawable/ic_user.xml" value="0.1075" />
+        <entry key="..\:/AndroidProject/OriginalMedia/origin/src/main/res/drawable/ic_video_creation.xml" value="0.106" />
         <entry key="..\:/AndroidProject/OriginalMedia/origin/src/main/res/layout/activity_origin.xml" value="0.20208333333333334" />
         <entry key="..\:/AndroidProject/OriginalMedia/origin/src/main/res/layout/fragment_blank.xml" value="0.21666666666666667" />
+        <entry key="..\:/AndroidProject/OriginalMedia/origin/src/main/res/layout/fragment_creation_image_origin.xml" value="0.21666666666666667" />
         <entry key="..\:/AndroidProject/OriginalMedia/origin/src/main/res/layout/fragment_creation_origin.xml" value="0.215625" />
+        <entry key="..\:/AndroidProject/OriginalMedia/origin/src/main/res/layout/fragment_creation_start_origin.xml" value="0.21666666666666667" />
         <entry key="..\:/AndroidProject/OriginalMedia/origin/src/main/res/layout/fragment_explore.xml" value="0.21666666666666667" />
         <entry key="..\:/AndroidProject/OriginalMedia/origin/src/main/res/layout/fragment_explore_origin.xml" value="0.21666666666666667" />
         <entry key="..\:/AndroidProject/OriginalMedia/origin/src/main/res/layout/fragment_image.xml" value="0.21666666666666667" />
         <entry key="..\:/AndroidProject/OriginalMedia/origin/src/main/res/layout/fragment_image_flow.xml" value="0.21666666666666667" />
+        <entry key="..\:/AndroidProject/OriginalMedia/origin/src/main/res/layout/fragment_image_upload_origin.xml" value="0.21666666666666667" />
         <entry key="..\:/AndroidProject/OriginalMedia/origin/src/main/res/layout/fragment_news.xml" value="0.21666666666666667" />
         <entry key="..\:/AndroidProject/OriginalMedia/origin/src/main/res/layout/fragment_news_flow_origin.xml" value="0.21666666666666667" />
         <entry key="..\:/AndroidProject/OriginalMedia/origin/src/main/res/layout/fragment_user_origin.xml" value="0.21666666666666667" />
         <entry key="..\:/AndroidProject/OriginalMedia/origin/src/main/res/layout/fragment_video_news.xml" value="0.21666666666666667" />
+        <entry key="..\:/AndroidProject/OriginalMedia/origin/src/main/res/layout/fragment_video_upload_origin.xml" value="0.21666666666666667" />
         <entry key="..\:/AndroidProject/OriginalMedia/origin/src/main/res/layout/ic_app.xml" value="0.21666666666666667" />
         <entry key="..\:/AndroidProject/OriginalMedia/origin/src/main/res/layout/item_framelayout.xml" value="0.215625" />
         <entry key="..\:/AndroidProject/OriginalMedia/origin/src/main/res/layout/item_image_news.xml" value="0.21666666666666667" />

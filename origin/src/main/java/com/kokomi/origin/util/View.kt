@@ -6,9 +6,12 @@ import android.graphics.Color
 import android.view.View
 import android.widget.TextView
 import androidx.annotation.IdRes
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.fragment.app.Fragment
+import com.kokomi.origin.appContext
 
 internal inline infix fun <reified V : View> View.find(@IdRes id: Int) = findViewById<V>(id)
 
@@ -51,7 +54,7 @@ internal val Context.navigationBarHeight: Int
         if (resourceId > 0) {
             result = resources.getDimensionPixelSize(resourceId)
         }
-        result = if (result < 50) 0 else result
+//        result = if (result < 50) 0 else result
         navigationBarHeightInternal = result
         return result
     }
@@ -76,3 +79,6 @@ internal fun Activity.statusBarTextColor(isWhite: Boolean) {
     ViewCompat.getWindowInsetsController(window.decorView)
         ?.isAppearanceLightStatusBars = !isWhite
 }
+
+internal val Int.pxToDp: Dp
+    get() = (this / appContext.resources.displayMetrics.density + 0.5f).dp

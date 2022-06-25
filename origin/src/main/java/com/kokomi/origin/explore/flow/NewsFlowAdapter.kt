@@ -81,7 +81,7 @@ internal class NewsFlowAdapter(
 
         init {
             root.find<TextView>(R.id.tv_image_news_status_bar) {
-                height = root.context.statusBarHeight + tabBarHeight
+                height = +tabBarHeight + root.context.statusBarHeight
             }
             root.find<TextView>(R.id.tv_image_news_navigation) {
                 height = navigationHeight
@@ -162,7 +162,7 @@ internal class NewsFlowAdapter(
 
         init {
             root.find<TextView>(R.id.tv_video_news_status_bar) {
-                height = root.context.statusBarHeight + tabBarHeight
+                height = tabBarHeight + root.context.statusBarHeight
             }
             root.find<TextView>(R.id.tv_video_news_navigation) {
                 height = navigationHeight
@@ -181,7 +181,7 @@ internal class NewsFlowAdapter(
 
         override fun onAttached() {
             playerView.onResume()
-            playerPool exchangeMainPlayerTo playerView.bindPlayer!!
+            playerPool exchangeMainPlayer playerView.bindPlayer!!
         }
     }
 

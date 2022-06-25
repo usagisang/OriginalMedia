@@ -43,6 +43,7 @@ dependencies {
     implementation(project(":carver"))
     implementation(project(":glplayer"))
     implementation(project(":uploader"))
+    implementation(project(":okresult"))
     implementation(project(":video"))
 
     implementation(Deps.Coroutines.coroutinesAndroid)

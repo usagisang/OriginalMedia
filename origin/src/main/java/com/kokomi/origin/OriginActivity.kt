@@ -7,6 +7,7 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import com.kokomi.origin.creation.CreationFragment
 import com.kokomi.origin.explore.ExploreFragment
 import com.kokomi.origin.user.UserFragment
 import com.kokomi.origin.util.clearSystemBar
@@ -28,6 +29,7 @@ class OriginActivity : AppCompatActivity() {
 
     private var lastFragment: Fragment? = null
     private var exploreFragment: ExploreFragment? = null
+    private var creationFragment: CreationFragment? = null
     private var userFragment: UserFragment? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -84,7 +86,13 @@ class OriginActivity : AppCompatActivity() {
                 lastFragment = exploreFragment
             }
             CREATION -> {
-
+                if (creationFragment == null)
+                    CreationFragment().run {
+                        transaction.add(R.id.fl_origin_fragment, this)
+                        creationFragment = this
+                    }
+                else transaction.show(creationFragment!!)
+                lastFragment = creationFragment
             }
             USER -> {
                 if (userFragment == null)

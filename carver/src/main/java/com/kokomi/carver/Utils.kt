@@ -70,7 +70,7 @@ internal fun Activity.setStatusBarTextColor(isWhite: Boolean) {
 /**
  * 默认的视频文件存储路径
  * */
-internal fun Activity.defaultOutputDirectory(): File {
+fun Activity.defaultOutputDirectory(): File {
     val mediaDir = externalMediaDirs.firstOrNull()?.let {
         File(it, packageName).apply { mkdir() }
     }

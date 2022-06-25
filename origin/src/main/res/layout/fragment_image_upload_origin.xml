@@ -6,40 +6,41 @@
     android:layout_height="match_parent"
     android:background="@color/soft_black">
 
-    <com.kokomi.origin.weight.OriginScrollView
-        android:id="@+id/sv_image_news_scroll"
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@id/tv_image_news_open"
+        android:background="@color/soft_black"
         android:scrollbars="none">
 
-        <RelativeLayout
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="@color/soft_black"
             android:orientation="vertical">
 
             <TextView
-                android:id="@+id/tv_image_news_status_bar"
+                android:id="@+id/tv_image_upload_status_bar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
-            <TextView
+            <EditText
                 android:id="@+id/tv_image_news_title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/tv_image_news_status_bar"
                 android:layout_marginHorizontal="16dp"
                 android:layout_marginBottom="16dp"
-                android:text="标题"
+                android:colorControlActivated="@color/soft_black"
+                android:colorControlNormal="@color/soft_black"
+                android:hint="点击此处输入标题..."
                 android:textColor="@color/soft_white"
+                android:textColorHint="@color/soft_gray_white"
                 android:textSize="24sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:theme="@style/EditTextNoLine" />
 
             <androidx.cardview.widget.CardView
-                android:id="@+id/cv_image_news_image"
                 android:layout_width="match_parent"
                 android:layout_height="240dp"
-                android:layout_below="@id/tv_image_news_title"
                 android:layout_marginHorizontal="24dp"
                 android:layout_marginVertical="8dp"
                 app:cardBackgroundColor="@color/soft_gray_white"
@@ -50,48 +51,55 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:scaleType="center"
-                    android:src="@drawable/ic_image_creation" />
+                    android:src="@drawable/ic_add_image" />
 
             </androidx.cardview.widget.CardView>
 
-            <TextView
+            <EditText
                 android:id="@+id/tv_image_news_content"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/cv_image_news_image"
                 android:layout_marginHorizontal="24dp"
                 android:layout_marginVertical="16dp"
-                android:text="正文\n正文\n正文\n正文\n正文\n正文\n正文\n正文\n正文"
+                android:colorControlActivated="@color/soft_black"
+                android:colorControlNormal="@color/soft_black"
+                android:hint="点击此处输入正文..."
                 android:textColor="@color/soft_gray_white"
-                android:textSize="18sp" />
+                android:textColorHint="@color/soft_gray_white"
+                android:textSize="18sp"
+                android:theme="@style/EditTextNoLine" />
 
-        </RelativeLayout>
+            <TextView
+                android:id="@+id/tv_image_upload_empty_area"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
 
-    </com.kokomi.origin.weight.OriginScrollView>
+        </LinearLayout>
+
+    </ScrollView>
+
+    <ImageView
+        android:id="@+id/iv_image_upload_complete"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_above="@id/tv_image_upload_complete"
+        android:layout_marginStart="16dp"
+        android:src="@drawable/ic_complete_upload" />
 
     <TextView
-        android:id="@+id/tv_image_news_open"
-        android:layout_width="wrap_content"
+        android:id="@+id/tv_image_upload_complete"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_above="@id/tv_image_news_navigation"
-        android:layout_centerHorizontal="true"
-        android:padding="8dp"
-        android:text="展开"
+        android:layout_above="@id/tv_image_upload_navigation_bar"
+        android:layout_alignStart="@id/iv_image_upload_complete"
+        android:layout_alignEnd="@id/iv_image_upload_complete"
+        android:gravity="center"
+        android:text="上传"
         android:textColor="@color/soft_white"
         android:textSize="16sp" />
 
-    <ImageView
-        android:id="@+id/iv_image_news_open_icon"
-        android:layout_width="20dp"
-        android:layout_height="match_parent"
-        android:layout_alignTop="@id/tv_image_news_open"
-        android:layout_alignBottom="@id/tv_image_news_open"
-        android:layout_toEndOf="@id/tv_image_news_open"
-        android:padding="4dp"
-        android:src="@drawable/ic_open" />
-
     <TextView
-        android:id="@+id/tv_image_news_navigation"
+        android:id="@+id/tv_image_upload_navigation_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true" />

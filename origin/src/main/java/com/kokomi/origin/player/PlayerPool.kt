@@ -27,7 +27,7 @@ internal class PlayerPool(
      * <p>
      *
      * 主播放器权是可以交换的，但是必须在主线程内交换
-     * @see PlayerPool.exchangeMainPlayerTo
+     * @see PlayerPool.exchangeMainPlayer
      * <p>
      * */
     private val players by lazy {
@@ -55,7 +55,7 @@ internal class PlayerPool(
     /**
      * 交换主播放器权
      * */
-    internal infix fun exchangeMainPlayerTo(targetPlayer: Player) {
+    internal infix fun exchangeMainPlayer(targetPlayer: Player) {
         val index = players.indexOf(targetPlayer)
         if (index == -1) {
             throw IllegalStateException("The Player does not belong to this pool.")
