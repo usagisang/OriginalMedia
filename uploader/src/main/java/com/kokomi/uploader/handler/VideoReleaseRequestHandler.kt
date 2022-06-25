@@ -9,8 +9,8 @@ class VideoReleaseRequestHandler : RequestHandler() {
     override suspend fun request(any: Any?): ResponseBody {
         return releaseService.video(
             releaseInfo.userId.toString(),
-            any?.toString() ?: throw UploaderException("Failed to get video URL."),
-            releaseInfo.title
+            releaseInfo.title,
+            any?.toString() ?: throw UploaderException("Failed to get video URL.")
         )
     }
 
