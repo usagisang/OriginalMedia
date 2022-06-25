@@ -51,6 +51,7 @@ object OkResult {
      * @param intent [Intent] 指定要打开的活动
      * @param operation 当打开的活动结束时，回调此函数，函数传入的 [Int] 参数为 resultCode
      * */
+    @Deprecated(level = DeprecationLevel.ERROR, message = "存在bug，先不要用")
     fun ComponentActivity.startActivityForResult(
         intent: Intent,
         operation: (Int, Intent?) -> Unit
@@ -66,6 +67,7 @@ object OkResult {
      * @param intent [Intent] 指定要打开的活动
      * @param operation 当打开的活动结束时，回调此函数，函数传入的 [Int] 参数为 resultCode
      * */
+    @Deprecated(level = DeprecationLevel.ERROR, message = "存在bug，先不要用")
     fun Fragment.startActivityForResult(
         intent: Intent,
         operation: (Int, Intent?) -> Unit

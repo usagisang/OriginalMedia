@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/soft_black">
+
+    <TextView
+        android:id="@+id/tv_video_upload_status_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cv_video_upload_news_image"
+        android:layout_width="match_parent"
+        android:layout_height="240dp"
+        android:layout_below="@id/edt_video_news_title"
+        android:layout_marginHorizontal="24dp"
+        android:layout_marginVertical="8dp"
+        app:cardBackgroundColor="@color/soft_gray_white"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="0dp">
+
+        <ImageView
+            android:id="@+id/iv_video_upload_recording"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="center"
+            android:src="@drawable/ic_recording_creation" />
+
+    </androidx.cardview.widget.CardView>
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="240dp"
+        android:layout_below="@id/cv_video_upload_news_image"
+        android:layout_marginHorizontal="24dp"
+        android:layout_marginVertical="8dp"
+        app:cardBackgroundColor="@color/soft_gray_white"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="0dp">
+
+        <ImageView
+            android:id="@+id/iv_video_upload_add"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="center"
+            android:src="@drawable/ic_video_creation" />
+
+    </androidx.cardview.widget.CardView>
+
+    <View
+        android:id="@+id/v_video_upload_black_curtain"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/black"
+        android:visibility="gone" />
+
+    <top.gochiusa.glplayer.PlayerView
+        android:id="@+id/pv_video_upload_player"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone" />
+
+    <EditText
+        android:id="@+id/edt_video_news_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/tv_video_upload_status_bar"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginBottom="16dp"
+        android:colorControlActivated="@color/soft_black"
+        android:colorControlNormal="@color/soft_black"
+        android:hint="点击此处输入标题..."
+        android:textColor="@color/soft_white"
+        android:textColorHint="@color/soft_gray_white"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:theme="@style/EditTextNoLine" />
+
+    <ImageView
+        android:id="@+id/iv_video_upload_complete"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_above="@id/tv_video_upload_complete"
+        android:layout_marginStart="16dp"
+        android:src="@drawable/ic_complete_upload" />
+
+    <TextView
+        android:id="@+id/tv_video_upload_complete"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/tv_video_upload_navigation_bar"
+        android:layout_alignStart="@id/iv_video_upload_complete"
+        android:layout_alignEnd="@id/iv_video_upload_complete"
+        android:gravity="center"
+        android:text="上传"
+        android:textColor="@color/soft_white"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/tv_video_upload_navigation_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true" />
+
+    <ImageView
+        android:id="@+id/iv_video_upload_re_choose"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_above="@id/tv_video_upload_complete"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="16dp"
+        android:src="@drawable/ic_re_choose"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/tv_video_upload_re_choose"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/tv_video_upload_navigation_bar"
+        android:layout_alignStart="@id/iv_video_upload_re_choose"
+        android:layout_alignEnd="@id/iv_video_upload_re_choose"
+        android:gravity="center"
+        android:text="重选"
+        android:textColor="@color/soft_white"
+        android:textSize="16sp"
+        android:visibility="gone" />
+
+</RelativeLayout>

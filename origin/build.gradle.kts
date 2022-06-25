@@ -1,23 +1,17 @@
 plugins {
-    id("com.android.application")
+    id("com.android.library")
     id("org.jetbrains.kotlin.android")
-    id("kotlin-android-extensions")
 }
 
 android {
-    compileSdk = Build.compileSdkVersion
+    compileSdk = Build.targetSdkVersion
+
     defaultConfig {
-        applicationId = Build.applicationId
         minSdk = Build.minimumSdkVersion
         targetSdk = Build.targetSdkVersion
-        versionCode = Build.versionCode
-        versionName = Build.versionName
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-    }
-    buildFeatures {
-        dataBinding = true
-        viewBinding = true
+        consumerProguardFiles("consumer-rules.pro")
     }
 
     buildTypes {
@@ -36,11 +30,11 @@ android {
     kotlinOptions {
         jvmTarget = "1.8"
     }
-
-    packagingOptions {
-        resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
-        }
+    buildFeatures {
+        compose = true
+    }
+    composeOptions {
+        kotlinCompilerExtensionVersion = Deps.Compose.compilerVersion
     }
 }
 
@@ -49,21 +43,21 @@ dependencies {
     implementation(project(":carver"))
     implementation(project(":glplayer"))
     implementation(project(":uploader"))
+    implementation(project(":okresult"))
     implementation(project(":video"))
-    implementation(project(":origin"))
 
-    api(Deps.ImmersionBar.baseBag)
-    api(Deps.ImmersionBar.baseKTX)
-    implementation(Deps.ImmersionBar.fragmentDie)
+    implementation(Deps.Coroutines.coroutinesAndroid)
+
     implementation(Deps.glide)
     implementation(Deps.retrofit)
-    implementation(Deps.retrofitGsonConverter)
     implementation(Deps.Lifecycle.livedata)
-    implementation(Deps.Navigation.navigationUI)
-    implementation(Deps.Navigation.fragment)
-    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
+    implementation(Deps.DataStore.preferences)
 
-
+    implementation(Deps.Compose.ui)
+    implementation(Deps.Compose.material)
+    implementation(Deps.Compose.uiToolingPreview)
+    implementation(Deps.Compose.composeActivity)
+    implementation(Deps.Compose.runtime)
 
     testImplementation(TestDeps.Local.junit)
     androidTestImplementation(TestDeps.Instrumentation.espresso)

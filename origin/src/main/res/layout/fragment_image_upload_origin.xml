@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/soft_black">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/soft_black"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/soft_black"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tv_image_upload_status_bar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <EditText
+                android:id="@+id/edt_image_news_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginBottom="16dp"
+                android:colorControlActivated="@color/soft_black"
+                android:colorControlNormal="@color/soft_black"
+                android:hint="点击此处输入标题..."
+                android:textColor="@color/soft_white"
+                android:textColorHint="@color/soft_gray_white"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:theme="@style/EditTextNoLine" />
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="240dp"
+                android:layout_marginHorizontal="24dp"
+                android:layout_marginVertical="8dp"
+                app:cardBackgroundColor="@color/soft_gray_white"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp">
+
+                <ImageView
+                    android:id="@+id/iv_image_news_image"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="center"
+                    android:src="@drawable/ic_add_image" />
+
+            </androidx.cardview.widget.CardView>
+
+            <EditText
+                android:id="@+id/edt_image_news_content"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="24dp"
+                android:layout_marginVertical="16dp"
+                android:colorControlActivated="@color/soft_black"
+                android:colorControlNormal="@color/soft_black"
+                android:hint="点击此处输入正文..."
+                android:textColor="@color/soft_gray_white"
+                android:textColorHint="@color/soft_gray_white"
+                android:textSize="18sp"
+                android:theme="@style/EditTextNoLine" />
+
+            <TextView
+                android:id="@+id/tv_image_upload_empty_area"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+        </LinearLayout>
+
+    </ScrollView>
+
+    <ImageView
+        android:id="@+id/iv_image_upload_complete"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_above="@id/tv_image_upload_complete"
+        android:layout_marginStart="16dp"
+        android:src="@drawable/ic_complete_upload" />
+
+    <TextView
+        android:id="@+id/tv_image_upload_complete"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/tv_image_upload_navigation_bar"
+        android:layout_alignStart="@id/iv_image_upload_complete"
+        android:layout_alignEnd="@id/iv_image_upload_complete"
+        android:gravity="center"
+        android:text="上传"
+        android:textColor="@color/soft_white"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/tv_image_upload_navigation_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true" />
+
+</RelativeLayout>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/black">
+
+    <TextView
+        android:id="@+id/tv_video_news_status_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <top.gochiusa.glplayer.PlayerView
+        android:id="@+id/pv_video_news_player"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/tv_video_news_navigation"
+        android:layout_below="@id/tv_video_news_status_bar"
+        android:background="@color/black" />
+
+    <TextView
+        android:id="@+id/tv_video_news_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/tv_video_news_status_bar"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginBottom="16dp"
+        android:gravity="center"
+        android:maxLines="1"
+        android:text="标题"
+        android:textColor="@color/soft_white"
+        android:textSize="24sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/tv_video_news_navigation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true" />
+
+</RelativeLayout>

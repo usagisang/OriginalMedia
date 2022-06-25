@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="EditTextNoLine" parent="Theme.OriginalMedia">
+        <item name="colorControlNormal">@color/transparent</item>
+        <item name="colorControlActivated">@color/transparent</item>
+    </style>
+</resources>
