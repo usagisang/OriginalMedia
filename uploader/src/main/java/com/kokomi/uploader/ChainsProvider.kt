@@ -7,7 +7,7 @@ import com.kokomi.uploader.listener.UploaderListener
 internal fun imageChains(listener: UploaderListener): List<RequestHandler> {
     return listOf(
         TokenRequestHandler(),
-        FileUploadRequestHandler(listener),
+        DataUploadRequestHandler(listener),
         ImageReleaseRequestHandler()
     )
 }
@@ -16,7 +16,7 @@ internal fun imageChains(listener: UploaderListener): List<RequestHandler> {
 internal fun videoChains(listener: UploaderListener): List<RequestHandler> {
     return listOf(
         TokenRequestHandler(),
-        FileUploadRequestHandler(listener),
+        DataUploadRequestHandler(listener),
         VideoReleaseRequestHandler()
     )
 }
