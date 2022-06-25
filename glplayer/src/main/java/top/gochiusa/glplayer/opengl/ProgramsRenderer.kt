@@ -1,5 +1,6 @@
 package top.gochiusa.glplayer.opengl
 
+import android.graphics.Color
 import android.graphics.SurfaceTexture
 import android.opengl.GLES20.*
 import android.opengl.GLSurfaceView
@@ -14,6 +15,8 @@ import javax.microedition.khronos.opengles.GL10
 class ProgramsRenderer(
     private val glSurfaceView: VideoGLSurfaceView
 ): GLSurfaceView.Renderer {
+
+    var clearColor: Color? = null
 
     /**
      * OES纹理的id
@@ -50,6 +53,10 @@ class ProgramsRenderer(
     private var surfaceHeight: Int = -1
 
     override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
+        // 在create时尝试进行一次设置
+        clearColor?.let {
+            glClearColor(it.red(), it.green(), it.blue(), it.alpha())
+        }
         glSurfaceView.onSurfaceTextureAvailable(init())
 
         Matrix.setIdentityM(projectionMatrix, 0)
@@ -66,6 +73,10 @@ class ProgramsRenderer(
     }
 
     override fun onDrawFrame(gl: GL10?) {
+        clearColor?.let {
+            glClearColor(it.red(), it.green(), it.blue(), it.alpha())
+        }
+        // 把窗口清除为glClearColor的颜色
         glClear(GL_COLOR_BUFFER_BIT)
 
         videoShaderProgram.useProgram()

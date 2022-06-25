@@ -129,10 +129,17 @@ class MediaCodecVideoRenderer(
 
     override fun onVideoSurfaceCreated(surface: Surface) {
         setOutput(surface)
+        videoFormat?.let {
+            sender?.bindTrack(it, this)
+        }
     }
 
     override fun onVideoSurfaceDestroyed(surface: Surface?) {
         setOutput(null)
+        // 销毁Surface之后，解绑相应轨道
+        videoFormat?.let {
+            sender?.unbindTrack(it, this)
+        }
     }
 
     private fun setOutput(output: Surface?) {
