@@ -3,6 +3,7 @@ package com.kokomi.origin.user
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.kokomi.origin.base.loggedUser
 import com.kokomi.origin.datastore.*
 import com.kokomi.origin.entity.User
 import com.kokomi.origin.network.NewsApi
@@ -32,10 +33,12 @@ class UserViewModel : ViewModel() {
                 .catch {
                     it.printStackTrace()
                     _user emit EMPTY_USER
+                    loggedUser = null
                     _isLogged emit false
                 }.collect { user ->
                     context saveUser user
                     _user emit user
+                    loggedUser = user
                     _isLogged emit true
                 }
         }
@@ -47,6 +50,7 @@ class UserViewModel : ViewModel() {
             password emit ""
             _user emit EMPTY_USER
             context.clearUser()
+            loggedUser = null
             _isLogged emit false
         }
     }
@@ -56,9 +60,11 @@ class UserViewModel : ViewModel() {
             val user = loadUser()
             if (user != null) {
                 _user emit user
+                loggedUser = user
                 _isLogged emit true
             } else {
                 _user emit EMPTY_USER
+                loggedUser = null
                 _isLogged emit false
             }
         }

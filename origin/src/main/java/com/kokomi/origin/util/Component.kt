@@ -2,6 +2,7 @@ package com.kokomi.origin.util
 
 import android.app.Activity
 import android.content.ContentResolver
+import android.content.Context
 import android.net.Uri
 import android.os.FileUtils
 import android.view.View
@@ -13,6 +14,7 @@ import com.kokomi.carver.defaultOutputDirectory
 import com.kokomi.origin.appContext
 import java.io.File
 import java.io.FileOutputStream
+import java.io.InputStream
 import kotlin.random.Random
 
 private var toast: Toast? = null
@@ -35,30 +37,8 @@ internal fun Activity.keepScreenAlive(alive: Boolean = true) {
     else window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 }
 
-internal fun Activity.copyAndLoadBitmap(uri: Uri): File {
-    var file: File? = null
-    if (uri.scheme.equals(ContentResolver.SCHEME_FILE)) {
-        return File(uri.path!!)
-    }
-    if (uri.scheme.equals(ContentResolver.SCHEME_CONTENT)) {
-        val displayName = "${System.currentTimeMillis() + Random.nextLong()}" +
-                ".${
-                    MimeTypeMap.getSingleton()
-                        .getExtensionFromMimeType(
-                            contentResolver.getType(uri)
-                        )
-                }"
-        try {
-            val input = contentResolver.openInputStream(uri)!!
-            val cache = File(defaultOutputDirectory(), displayName)
-            val fos = FileOutputStream(cache)
-            FileUtils.copy(input, fos)
-            file = cache
-            fos.close()
-            input.close()
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }
-    return file!!
-}
+// 通过 uri 得到输入流信息，包括输入流和文件拓展名
+internal infix fun Context.getInputStreamInfoFrom(uri: Uri) = Pair(
+    contentResolver.openInputStream(uri)!!,
+    MimeTypeMap.getSingleton().getExtensionFromMimeType(contentResolver.getType(uri)) ?: ""
+)
