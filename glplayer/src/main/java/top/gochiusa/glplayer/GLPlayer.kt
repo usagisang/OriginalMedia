@@ -17,6 +17,7 @@ import top.gochiusa.glplayer.listener.VideoSurfaceListener
 import top.gochiusa.glplayer.mediacodec.CodecRendererFactory
 import top.gochiusa.glplayer.util.Assert
 import top.gochiusa.glplayer.util.Constants
+import top.gochiusa.glplayer.util.NetworkUnreachableException
 import top.gochiusa.glplayer.util.PlayerLog
 import java.io.IOException
 import java.util.concurrent.CopyOnWriteArraySet
@@ -337,7 +338,8 @@ private constructor(
         }.onFailure {
             // 播放源初始化失败，转入INIT状态
             mainHandler.post {
-                notifyError(SOURCE_ERROR)
+                notifyError(if (it is NetworkUnreachableException) NETWORK_UNREACHABLE_ERROR else
+                    SOURCE_ERROR)
                 changeStateUncheck(Player.STATE_INIT)
             }
         }.onSuccess {
@@ -777,5 +779,10 @@ private constructor(
         const val SOURCE_ERROR = 11
 
         const val IO_ERROR = 12
+
+        /**
+         * 无网络连接而引发的异常
+         */
+        const val NETWORK_UNREACHABLE_ERROR = 13
     }
 }
