@@ -1,6 +1,7 @@
 package top.gochiusa.glplayer.opengl
 
 import android.content.Context
+import android.graphics.Color
 import android.graphics.SurfaceTexture
 import android.opengl.GLSurfaceView
 import android.os.Handler
@@ -30,10 +31,6 @@ class VideoGLSurfaceView
 
     private var started = true
 
-    override fun setOnVideoSurfaceListener(listener: VideoSurfaceListener?) {
-        onVideoSurfaceListener = listener
-    }
-
     private val renderer: ProgramsRenderer
 
     init {
@@ -42,6 +39,16 @@ class VideoGLSurfaceView
         setRenderer(renderer)
         // 设置为DIRTY时才渲染
         renderMode = RENDERMODE_WHEN_DIRTY
+    }
+
+    fun setClearColor(color: Color) {
+        queueEvent {
+            renderer.clearColor = color
+        }
+    }
+
+    override fun setOnVideoSurfaceListener(listener: VideoSurfaceListener?) {
+        onVideoSurfaceListener = listener
     }
 
     override fun onPause() {

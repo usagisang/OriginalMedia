@@ -17,6 +17,7 @@ import top.gochiusa.glplayer.listener.VideoSurfaceListener
 import top.gochiusa.glplayer.mediacodec.CodecRendererFactory
 import top.gochiusa.glplayer.util.Assert
 import top.gochiusa.glplayer.util.Constants
+import top.gochiusa.glplayer.util.NetworkUnreachableException
 import top.gochiusa.glplayer.util.PlayerLog
 import java.io.IOException
 import java.util.concurrent.CopyOnWriteArraySet
@@ -115,25 +116,28 @@ private constructor(
         } ?.getMediaClock()
     }
 
-    override fun play() {
+    override fun play(delayTimeMs: Long) {
         Assert.verifyMainThread()
 
         when(state)  {
              Player.STATE_STOP -> {
-                 eventHandler.sendMessage(Message.obtain().apply {
-                     what = MSG_SEEK_TO
-                     obj = 0L
-                 })
+                 eventHandler.sendMessage(
+                     Message.obtain().apply {
+                         what = MSG_SEEK_TO
+                         obj = 0L
+                     }
+                 )
             }
-            Player.STATE_BUFFERING -> {
-                // may delay DELAY_FOR_DECODE_TIME or old state is pause
-                if (!eventHandler.hasMessages(MSG_PLAY)) {
-                    eventHandler.sendEmptyMessageDelayed(MSG_PLAY,
-                        DELAY_FOR_DECODE_MS * 2)
+            Player.STATE_BUFFERING, Player.STATE_PAUSE, Player.STATE_READY -> {
+                if (delayTimeMs > 0) {
+                    eventHandler.sendMessageDelayed(
+                        Message.obtain().apply {
+                            what = MSG_PLAY
+                            obj = PENDING_PLAY_TOKEN
+                        }, delayTimeMs)
+                } else {
+                    eventHandler.sendEmptyMessage(MSG_PLAY)
                 }
-            }
-            Player.STATE_PAUSE, Player.STATE_READY -> {
-                eventHandler.sendEmptyMessage(MSG_PLAY)
             }
             else -> {}
         }
@@ -142,7 +146,7 @@ private constructor(
     override fun pause() {
         Assert.verifyMainThread()
         if (state == Player.STATE_PLAYING || state == Player.STATE_BUFFERING ||
-            state == Player.STATE_LOADING) {
+            state == Player.STATE_LOADING || state == Player.STATE_READY) {
             eventHandler.sendEmptyMessage(MSG_PAUSE)
         }
     }
@@ -292,12 +296,14 @@ private constructor(
                 listener.onVideoSurfaceAttach()
             }
         }
-        renderers.forEach {
-            if (it is VideoSurfaceListener) {
-                if (videoOutput != null) {
-                    it.onVideoSurfaceCreated(videoOutput)
-                } else {
-                    it.onVideoSurfaceDestroyed(null)
+        eventHandler.post {
+            renderers.forEach {
+                if (it is VideoSurfaceListener) {
+                    if (videoOutput != null) {
+                        it.onVideoSurfaceCreated(videoOutput)
+                    } else {
+                        it.onVideoSurfaceDestroyed(null)
+                    }
                 }
             }
         }
@@ -332,7 +338,8 @@ private constructor(
         }.onFailure {
             // 播放源初始化失败，转入INIT状态
             mainHandler.post {
-                notifyError(SOURCE_ERROR)
+                notifyError(if (it is NetworkUnreachableException) NETWORK_UNREACHABLE_ERROR else
+                    SOURCE_ERROR)
                 changeStateUncheck(Player.STATE_INIT)
             }
         }.onSuccess {
@@ -356,7 +363,7 @@ private constructor(
                 eventHandler.sendMessageDelayed(
                     Message.obtain().apply {
                         what = MSG_PLAY
-                        obj = AUTO_PENDING_PLAY_TOKEN
+                        obj = PENDING_PLAY_TOKEN
                     }, DELAY_FOR_DECODE_MS)
             } else if (mayRenderFirstFrame) {
                 eventHandler.sendMessageDelayed(
@@ -503,7 +510,7 @@ private constructor(
                     eventHandler.sendMessageDelayed(
                         Message.obtain().apply {
                             what = MSG_PLAY
-                            obj = AUTO_PENDING_PLAY_TOKEN
+                            obj = PENDING_PLAY_TOKEN
                         }, DELAY_FOR_DECODE_MS)
                 }
             }
@@ -537,7 +544,7 @@ private constructor(
     private fun pauseInternal() {
         eventHandler.removeMessages(MSG_RENDER)
         // 移除seekTo和prepare发送的pending play
-        eventHandler.removeCallbacksAndMessages(AUTO_PENDING_PLAY_TOKEN)
+        eventHandler.removeCallbacksAndMessages(PENDING_PLAY_TOKEN)
         // 在Loading或Buffing期间调用的Pause，取消对第一帧的渲染
         eventHandler.removeMessages(MSG_RENDER_FRAME_ONCE)
         eventHandler.removeMessages(MSG_WAIT_FOR_CACHE)
@@ -623,19 +630,6 @@ private constructor(
             mediaSource.cacheDurationUs >= MAX_CACHE_DURATION_US
 
     /**
-     * 尝试调用[Thread.sleep]来进行阻塞式等待
-     */
-    private fun delay(delayTimeMs: Long) {
-        if (delayTimeMs > 0) {
-            try {
-                Thread.sleep(delayTimeMs)
-            } catch (e: Exception) {
-                PlayerLog.v(message = e)
-            }
-        }
-    }
-
-    /**
      * 计算当前播放位置
      */
     private fun getCurrentPosition(delayTimeMs: Long): Long {
@@ -696,7 +690,7 @@ private constructor(
         }
 
         /**
-         * 设置是否渲染视频的首帧画面
+         * 设置是否渲染视频的首帧画面，会尽最大努力尝试渲染，但不能保证成功
          */
         fun setRenderFirstFrame(enable: Boolean): Builder {
             renderFirstFrame = enable
@@ -755,9 +749,9 @@ private constructor(
         private const val DELAY_FOR_DECODE_MS = 100L
 
         /**
-         * 自动且延迟进行播放的Message所携带的Token
+         * 延迟进行播放的Message(MSG_PLAY)所携带的Token
          */
-        private val AUTO_PENDING_PLAY_TOKEN = Any()
+        private val PENDING_PLAY_TOKEN = Any()
 
         /**
          * 如果缓存时长低于此值，则应进入等待状态
@@ -785,5 +779,10 @@ private constructor(
         const val SOURCE_ERROR = 11
 
         const val IO_ERROR = 12
+
+        /**
+         * 无网络连接而引发的异常
+         */
+        const val NETWORK_UNREACHABLE_ERROR = 13
     }
 }

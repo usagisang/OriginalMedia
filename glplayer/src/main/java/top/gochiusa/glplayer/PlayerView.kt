@@ -1,6 +1,7 @@
 package top.gochiusa.glplayer
 
 import android.content.Context
+import android.graphics.Color
 import android.opengl.GLSurfaceView
 import android.util.AttributeSet
 import android.view.SurfaceView
@@ -91,6 +92,17 @@ class PlayerView
     fun unbindLifecycle() {
         lifecycle?.removeObserver(this)
         lifecycle = null
+    }
+
+    /**
+     * 修改[surfaceView]的背景颜色
+     */
+    fun setSurfaceBackground(color: Color) {
+        if (surfaceView is VideoGLSurfaceView) {
+            surfaceView.setClearColor(color)
+        } else {
+            surfaceView.setBackgroundColor(color.toArgb())
+        }
     }
 
     override fun onAttachedToWindow() {

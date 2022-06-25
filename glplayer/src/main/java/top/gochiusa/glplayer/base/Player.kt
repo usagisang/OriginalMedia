@@ -10,25 +10,33 @@ import top.gochiusa.glplayer.listener.EventListener
 interface Player {
 
     /**
-     * 播放器状态转为[Player.STATE_PLAYING]，并继续/开始媒体播放
+     * 延迟[delayTimeMs]毫秒后，继续/开始媒体播放，播放器状态转为[Player.STATE_PLAYING]
+     *
+     * [delayTimeMs]小于等于0时无延迟效果
+     *
+     * 延时对[Player.STATE_STOP]状态不生效
      */
-    fun play()
+    fun play(delayTimeMs: Long = 0L)
 
     /**
      * 播放器状态转为[Player.STATE_PAUSE]，并暂停媒体播放
      *
      * 此调用保证对[Player.STATE_LOADING]和[Player.STATE_BUFFERING]生效，状态将在稍后转为[Player.STATE_PAUSE]
+     *
+     * 此调用保证移除任何延时的[play]
      */
     fun pause()
 
     /**
      * 将播放进度设置为指定位置，播放器状态将转为[Player.STATE_BUFFERING]
+     *
      * 直到seekTo动作完成，播放器将自动回到原状态
      */
     fun seekTo(positionMs: Long)
 
     /**
      * 在主线程中的任意时刻可安全调用，释放播放器资源，播放器状态将转为[Player.STATE_RELEASE]
+     *
      * 此播放器后续不能再次用于视频播放
      */
     fun release()
@@ -40,7 +48,9 @@ interface Player {
 
     /**
      * 开始加载媒体数据，播放器状态转为[Player.STATE_LOADING]
+     *
      * 如果[playAfterLoading]属性为true，播放器的状态将在准备完毕之后转为[Player.STATE_PLAYING]，开始媒体播放；
+     *
      * 否则，播放器的状态将在准备完毕之后转为[Player.STATE_READY]，等待[play]调用后开始媒体播放
      */
     fun prepare()
@@ -87,17 +97,62 @@ interface Player {
 
     /**
      * 如果为true，允许媒体数据初次加载完成后自动播放
+     *
+     * 修改后不保证立即生效，特别是，它仅仅是一个标志位，并不具备[play]的语义，
+     * 不生效时播放器状态仍会转移到[Player.STATE_READY]
      */
     var playAfterLoading: Boolean
 
     companion object {
+        /**
+         * 播放器的初始状态，如果准备媒体资源失败(in [Player.STATE_LOADING])，则会回退到该状态
+         */
         const val STATE_INIT = 0
+
+        /**
+         * 初次加载媒体资源，解析MetaData并缓冲媒体流，如果设置了[playAfterLoading]，则准备完毕后
+         * 转入[Player.STATE_PLAYING]，否则，转入[Player.STATE_READY]
+         *
+         * 此状态可以收到调用[pause]的事件，在准备完毕后状态转入[Player.STATE_PAUSE]，此时[playAfterLoading]
+         * 和[top.gochiusa.glplayer.GLPlayer.Builder.setRenderFirstFrame]失效
+         */
         const val STATE_LOADING = 1
+
+        /**
+         * 媒体资源准备完毕而等待播放指令的状态，可以调用[play]转入[Player.STATE_PLAYING]
+         */
         const val STATE_READY = 2
+
+        /**
+         * 播放器处于播放状态，此状态下会持续渲染媒体流
+         *
+         * 在播放结束后如果未设置[top.gochiusa.glplayer.GLPlayer.Builder.setInfiniteLoop]，
+         * 则会转入[Player.STATE_STOP]
+         */
         const val STATE_PLAYING = 3
+
+        /**
+         * 媒体渲染处于暂停状态
+         *
+         * 可以通过[play]来恢复播放状态
+         *
+         * [seekTo]在此状态下可以生效，但不会自动解除暂停状态
+         */
         const val STATE_PAUSE = 4
+
+        /**
+         * 媒体源缓冲区数据不足，需要进行等待
+         */
         const val STATE_BUFFERING = 5
+
+        /**
+         * 媒体播放结束，此状态目前只能由[Player.STATE_PLAYING]自然转入。可以调用[play]或[seekTo]重新进入播放状态
+         */
         const val STATE_STOP = 6
+
+        /**
+         * 播放器终态，此状态下释放所有资源，并不能再用于媒体渲染
+         */
         const val STATE_RELEASE = 7
     }
 }
