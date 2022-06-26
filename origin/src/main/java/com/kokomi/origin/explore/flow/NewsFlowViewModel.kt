@@ -3,12 +3,9 @@ package com.kokomi.origin.explore.flow
 import androidx.lifecycle.ViewModel
 import com.kokomi.origin.entity.News
 import com.kokomi.origin.network.NewsApi
-import com.kokomi.origin.util.emit
 import com.kokomi.origin.util.toastNetworkError
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.catch
+import com.kokomi.origin.util.emit
+import kotlinx.coroutines.flow.*
 
 internal class ImageFlowViewModel : NewsFlowViewModel() {
     override suspend fun load(page: Int) = NewsApi.imageNews(page)
@@ -24,8 +21,8 @@ internal class VideoFlowViewModel : NewsFlowViewModel() {
 
 abstract class NewsFlowViewModel : ViewModel() {
 
-    private val _news = MutableStateFlow(Pair(mutableListOf<News>(), false))
-    internal val news: StateFlow<Pair<List<News>, Boolean>> = _news
+    private val _news = MutableStateFlow(Pair(mutableListOf<News>(), 0))
+    internal val news: StateFlow<Pair<List<News>, Int>> = _news
 
     private val _hasNext = MutableStateFlow(true)
 
@@ -33,30 +30,53 @@ abstract class NewsFlowViewModel : ViewModel() {
 
     private var loading = false
 
+    private var refreshing = false
+
     protected abstract suspend fun load(page: Int): Flow<Pair<Boolean, List<News>>>
 
     internal suspend fun loadMore() {
         if (loading) return
         loading = true
         if (!_hasNext.value) return
+        var p = page
         load(page).catch {
             it.printStackTrace()
             toastNetworkError()
         }.collect {
-            _hasNext emit it.first
-            val pair = _news.value
-            _news emit Pair(pair.first.apply { addAll(it.second) }, !pair.second)
-            page++
+            if (p == page) {
+                _hasNext emit it.first
+                val pair = _news.value
+                _news emit Pair(pair.first.apply { addAll(it.second) }, ++p)
+                page = p
+            }
             loading = false
         }
     }
 
-    suspend fun reset() {
-        if (!loading) {
-            page = 0
+    /**
+     * 刷新资讯流，内部会在请求成功时先清空现有的资讯列表然后再更新请求道的数据
+     *
+     * @param onFinish 当刷新完成时回调，如果刷新成功，则传入 true ，
+     * 如果刷新不成功（捕获到异常），则返回 false ，捕获到异常时，
+     * 内部已经使用 toast 提醒用户，因此不需要重复提示
+     * */
+    internal suspend fun refresh(onFinish: (Boolean) -> Unit) {
+        page = -1
+        if (refreshing) return
+        refreshing = true
+        load(0).catch {
+            it.printStackTrace()
+            toastNetworkError()
+            onFinish(false)
+        }.collect {
+            _news emit Pair(_news.value.first.apply { clear() }, -1)
+            _hasNext emit it.first
             val pair = _news.value
-            _news emit Pair(pair.first.apply { clear() }, false)
-            _hasNext.value = true
+            page++
+            _news emit Pair(pair.first.apply { addAll(it.second) }, page)
+            refreshing = false
+            onFinish(true)
         }
     }
+
 }
