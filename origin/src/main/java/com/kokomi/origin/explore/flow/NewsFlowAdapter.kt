@@ -173,6 +173,12 @@ internal class NewsFlowAdapter(
             root.find<TextView>(R.id.tv_video_news_navigation) {
                 height = navigationHeight
             }
+            playerView.setOnClickListener {
+                playerView.bindPlayer?.let { player ->
+                    if(player.isPlaying()) player.pause()
+                    else player.play()
+                }
+            }
         }
 
         override fun onBindViewHolder(new: News, position: Int) {

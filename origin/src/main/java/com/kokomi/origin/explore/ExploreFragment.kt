@@ -22,6 +22,8 @@ private const val COLOR_UN_SELECTED = 0xCCBDBDBD.toInt()
 
 class ExploreFragment : BaseFragment() {
 
+    private var exploreAdapter: ExplorePagerAdapter? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
     }
@@ -39,7 +41,8 @@ class ExploreFragment : BaseFragment() {
         val video: TextView = view find R.id.tv_explore_video
         with(view) {
             val explorePager = find<ViewPager2>(R.id.vp_explore_pager) {
-                adapter = ExplorePagerAdapter(this@ExploreFragment)
+                exploreAdapter = ExplorePagerAdapter(this@ExploreFragment)
+                adapter = exploreAdapter
                 registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
                     override fun onPageSelected(position: Int) {
                         when (position) {
@@ -81,6 +84,16 @@ class ExploreFragment : BaseFragment() {
                 }
             }
         }
+    }
+
+    private var playerShouldBeResumedIndex = -1
+
+    internal fun onHide() {
+        playerShouldBeResumedIndex = exploreAdapter?.tryPausePlayerPool() ?: -1
+    }
+
+    internal fun onShow() {
+        exploreAdapter?.tryPlayPlayPool(playerShouldBeResumedIndex)
     }
 
     private fun TextView.isSelected(selected: Boolean) {

@@ -66,28 +66,41 @@ internal class PlayerPool(
             return
         }
         val mainPlayer = players[playerMainIndex]
+        // 交换主播放器权
+        players[playerMainIndex] = targetPlayer
+        players[index] = mainPlayer
         // 暂停主播放器的播放
         mainPlayer.playAfterLoading = false
         if (mainPlayer.isPlaying()) {
             mainPlayer.pause()
         }
-        // 交换主播放器权
-        players[playerMainIndex] = targetPlayer
-        players[index] = mainPlayer
         // 开始新主播放器的播放
         targetPlayer.playAfterLoading = true
         if (!targetPlayer.isPlaying()) {
             targetPlayer.seekTo(0)
-            targetPlayer.play()
+            targetPlayer.play(1000L)
         }
     }
 
     internal fun mainPlayerPlay() {
+        val player = mainPlayer
+        player.playAfterLoading = true
         players[playerMainIndex].play()
     }
 
-    internal fun mainPlayerPause() {
-        players[playerMainIndex].pause()
+    /**
+     * @return 若主播放器此时正在播放，返回 true ，否则返回 false
+     * */
+    internal fun mainPlayerPause(): Boolean {
+        val player = mainPlayer
+        player.playAfterLoading = false
+        return if (player.isPlaying()) {
+            player.pause()
+            true
+        } else false
     }
+
+    private val mainPlayer: Player
+        get() = players[playerMainIndex]
 
 }
