@@ -313,12 +313,6 @@ class CarverActivity : AppCompatActivity() {
         setStatusBarTextColor(true)
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        if (::vm.isInitialized) {
-            vm.carver.shutdown()
-        }
-    }
 
     @Suppress("DEPRECATION")
     private fun saveVideoToMediaStore(video: File) {
