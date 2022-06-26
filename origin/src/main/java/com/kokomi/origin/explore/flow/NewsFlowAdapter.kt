@@ -8,14 +8,16 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.kokomi.origin.*
+import com.kokomi.origin.R
 import com.kokomi.origin.entity.News
 import com.kokomi.origin.entity.TYPE_IMAGE
 import com.kokomi.origin.explore.tabBarHeight
-import com.kokomi.origin.util.html
+import com.kokomi.origin.navigationHeight
 import com.kokomi.origin.player.PlayerPool
-import com.kokomi.origin.util.statusBarHeight
 import com.kokomi.origin.util.find
+import com.kokomi.origin.util.getFormatDate
+import com.kokomi.origin.util.html
+import com.kokomi.origin.util.statusBarHeight
 import com.kokomi.origin.weight.OriginScrollView
 import top.gochiusa.glplayer.PlayerView
 
@@ -24,6 +26,7 @@ internal var flowCurrentItem = -1
 private const val OPEN_TEXT = "展开"
 private const val EMPTY_TEXT = ""
 private const val CLOSE_TEXT = "收起"
+private const val DATE_SUFFIX = "发布时间  "
 
 internal class NewsFlowAdapter(
     private val news: List<News>,
@@ -78,6 +81,7 @@ internal class NewsFlowAdapter(
         private val content = root.find<TextView>(R.id.tv_image_news_content)
         private val open = root.find<TextView>(R.id.tv_image_news_open)
         private val openIcon = root.find<ImageView>(R.id.iv_image_news_open_icon)
+        private val publishTime = root.find<TextView>(R.id.tv_image_news_publish_time)
 
         init {
             root.find<TextView>(R.id.tv_image_news_status_bar) {
@@ -103,6 +107,7 @@ internal class NewsFlowAdapter(
                     close()
                 }
             }
+            publishTime.text = getFormatDate(DATE_SUFFIX, new.uploadTime)
             scroll.postDelayed({
                 val canScroll = scroll.canScroll
                 open.text = if (canScroll) {
@@ -159,6 +164,7 @@ internal class NewsFlowAdapter(
     ) : ViewHolder(root) {
         private val title = root.find<TextView>(R.id.tv_video_news_title)
         private val playerView = root.find<PlayerView>(R.id.pv_video_news_player)
+        private val publishTime = root.find<TextView>(R.id.tv_video_news_publish_time)
 
         init {
             root.find<TextView>(R.id.tv_video_news_status_bar) {
@@ -172,6 +178,7 @@ internal class NewsFlowAdapter(
         override fun onBindViewHolder(new: News, position: Int) {
             playerPool.prepare(playerView, new.resource)
             title.text = new.title
+            publishTime.text = getFormatDate(DATE_SUFFIX, new.uploadTime)
         }
 
         override fun onDetached() {
