@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import androidx.viewpager2.widget.ViewPager2
 import com.kokomi.origin.R
 import com.kokomi.origin.base.BaseFragment
@@ -14,8 +15,8 @@ import com.kokomi.origin.util.find
 import kotlinx.coroutines.launch
 
 class NewsFlowFragment<VM : NewsFlowViewModel>(
-    private val vm: Class<VM>
-) : BaseFragment() {
+    private val vm: Class<VM>,
+) : BaseFragment(), SwipeRefreshLayout.OnRefreshListener {
 
     private lateinit var imageFlowAdapter: NewsFlowAdapter
 
@@ -47,6 +48,17 @@ class NewsFlowFragment<VM : NewsFlowViewModel>(
                     }
                 })
             }
+            view.find<SwipeRefreshLayout>(R.id.srl_news_flow_refresh) {
+                setOnRefreshListener {
+                    lifecycleScope.launch {
+                        this@viewModel.apply {
+                            reset()
+                            loadMore()
+                        }
+                        this@find.isRefreshing = false
+                    }
+                }
+            }
 
             lifecycleScope.launch {
                 news.collect {
@@ -56,6 +68,10 @@ class NewsFlowFragment<VM : NewsFlowViewModel>(
 
             lifecycleScope.launch { loadMore() }
         }
+    }
+
+    override fun onRefresh() {
+
     }
 
     private fun ViewPager2.setViewPager2CacheSize(size: Int) {
