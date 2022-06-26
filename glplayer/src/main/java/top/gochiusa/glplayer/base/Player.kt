@@ -81,6 +81,16 @@ interface Player {
     fun isPlaying(): Boolean
 
     /**
+     * 检查状态[state]是否允许执行[seekTo]
+     */
+    fun canSeekTo(state: Int): Boolean
+
+    /**
+     * 检查状态[state]是否允许执行[pause]
+     */
+    fun canPause(state: Int): Boolean
+
+    /**
      * 媒体的总时长，单位为毫秒，如果尚未加载媒体信息，返回负值
      */
     val durationMs: Long
@@ -104,6 +114,11 @@ interface Player {
      * 修改该标志位不保证立即生效
      */
     var playAfterLoading: Boolean
+
+    /**
+     * 播放器的当前状态
+     */
+    val playerState: Int
 
     companion object {
         /**
