@@ -241,6 +241,7 @@ private constructor(
 
     override fun addEventListener(eventListener: EventListener) {
         eventListenerSet.add(eventListener)
+        eventListener.onPlaybackStateChanged(state)
     }
 
     override fun removeEventListener(eventListener: EventListener) {
