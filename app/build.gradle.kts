@@ -61,7 +61,7 @@ dependencies {
     implementation(Deps.Lifecycle.livedata)
     implementation(Deps.Navigation.navigationUI)
     implementation(Deps.Navigation.fragment)
-    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
+    implementation(Deps.swipeRefreshLayout)
 
 
 

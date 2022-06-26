@@ -154,6 +154,7 @@ object Deps {
 
     const val kspVersion = "1.6.21-1.0.5"
 
+    const val swipeRefreshLayout = "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"
 }
 
 object TestDeps {

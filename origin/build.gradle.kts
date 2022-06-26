@@ -44,7 +44,6 @@ dependencies {
     implementation(project(":glplayer"))
     implementation(project(":uploader"))
     implementation(project(":okresult"))
-    implementation(project(":video"))
 
     implementation(Deps.Coroutines.coroutinesAndroid)
 
@@ -52,6 +51,8 @@ dependencies {
     implementation(Deps.retrofit)
     implementation(Deps.Lifecycle.livedata)
     implementation(Deps.DataStore.preferences)
+
+    implementation(Deps.swipeRefreshLayout)
 
     implementation(Deps.Compose.ui)
     implementation(Deps.Compose.material)
