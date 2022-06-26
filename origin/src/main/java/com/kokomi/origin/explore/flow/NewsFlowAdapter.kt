@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.lifecycle.Lifecycle
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.kokomi.origin.R
@@ -31,6 +32,7 @@ private const val DATE_SUFFIX = "发布时间  "
 internal class NewsFlowAdapter(
     private val news: List<News>,
     private val playerPool: PlayerPool,
+    private val lifecycle: Lifecycle,
     private val loadMore: () -> Unit
 ) : RecyclerView.Adapter<NewsFlowAdapter.ViewHolder>() {
 
@@ -43,6 +45,7 @@ internal class NewsFlowAdapter(
         } else {
             ViewHolderVideoImpl(
                 playerPool,
+                lifecycle,
                 LayoutInflater.from(parent.context)
                     .inflate(R.layout.item_video_news_origin, parent, false)
             )
@@ -160,6 +163,7 @@ internal class NewsFlowAdapter(
 
     internal class ViewHolderVideoImpl(
         private val playerPool: PlayerPool,
+        lifecycle: Lifecycle,
         root: View
     ) : ViewHolder(root) {
         private val title = root.find<TextView>(R.id.tv_video_news_title)
@@ -173,9 +177,10 @@ internal class NewsFlowAdapter(
             root.find<TextView>(R.id.tv_video_news_navigation) {
                 height = navigationHeight
             }
+            playerView.bindLifecycle(lifecycle)
             playerView.setOnClickListener {
                 playerView.bindPlayer?.let { player ->
-                    if(player.isPlaying()) player.pause()
+                    if (player.isPlaying()) player.pause()
                     else player.play()
                 }
             }

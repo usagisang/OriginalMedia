@@ -35,14 +35,12 @@ internal class ExplorePagerAdapter(
      * @return 若存在主播放器正在播放而被暂停，则返回被暂停的播放器的索引，
      * 若没有，则返回 -1
      * */
-    internal fun tryPausePlayerPool(): Int {
-        fragmentMap.map {
-            if (it.value.pausePlayerPool()) return it.key
-        }
+    internal fun tryPause(): Int {
+        fragmentMap.map { if (it.value.pausePlayerPool()) return it.key }
         return -1
     }
 
-    internal fun tryPlayPlayPool(position: Int) {
+    internal fun tryPlay(position: Int) {
         fragmentMap[position]?.playPlayerPool()
     }
 

@@ -65,11 +65,13 @@ class OriginActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         keepScreenAlive(true)
+        if (lastFragment !is ExploreFragment) exploreFragment?.onShow()
     }
 
     override fun onPause() {
         super.onPause()
         keepScreenAlive(false)
+        if (lastFragment !is ExploreFragment) exploreFragment?.onHide()
     }
 
     private fun changeFragment(tag: String) {
