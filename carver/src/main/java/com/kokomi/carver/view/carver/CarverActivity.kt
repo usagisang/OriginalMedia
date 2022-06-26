@@ -320,11 +320,6 @@ class CarverActivity : AppCompatActivity() {
         setStatusBarTextColor(true)
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        vm.carver.shutdown()
-    }
-
     @Suppress("DEPRECATION")
     private fun saveVideoToMediaStore(video: File) {
         val time = System.currentTimeMillis()
