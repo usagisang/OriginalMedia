@@ -639,10 +639,8 @@ private constructor(
         val clock = syncClock ?: return realTime
         val time: Long = clock.getPositionUs()
 
-        return if (time < 0) {
+        return if (time == MediaClock.END_OF_RENDER || time < 0) {
             realTime
-        } else if (time >= clock.getDurationUs()) {
-            mediaSource.durationUs
         } else {
             time.coerceAtMost(realTime)
         }
