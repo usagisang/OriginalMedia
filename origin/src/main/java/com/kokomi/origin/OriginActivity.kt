@@ -105,6 +105,8 @@ class OriginActivity : AppCompatActivity() {
             }
             else -> {}
         }
+        if (lastFragment !is ExploreFragment) exploreFragment!!.onHide()
+        else exploreFragment!!.onShow()
         transaction.commit()
     }
 

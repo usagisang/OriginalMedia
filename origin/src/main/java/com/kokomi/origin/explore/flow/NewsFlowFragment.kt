@@ -19,6 +19,8 @@ class NewsFlowFragment<VM : NewsFlowViewModel>(
 
     private lateinit var imageFlowAdapter: NewsFlowAdapter
 
+    private val playerPool = PlayerPool(5)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
     }
@@ -35,7 +37,7 @@ class NewsFlowFragment<VM : NewsFlowViewModel>(
             view.find<ViewPager2>(R.id.vp_news_flow_pager) {
                 imageFlowAdapter = NewsFlowAdapter(
                     news.value.first,
-                    PlayerPool()
+                    playerPool
                 ) { lifecycleScope.launch { loadMore() } }
                 adapter = imageFlowAdapter
                 setViewPager2CacheSize(5)
@@ -62,6 +64,10 @@ class NewsFlowFragment<VM : NewsFlowViewModel>(
         val recyclerView = field.get(this) as RecyclerView
         recyclerView.setItemViewCacheSize(size)
     }
+
+    internal fun pausePlayerPool() = playerPool.mainPlayerPause()
+
+    internal fun playPlayerPool() = playerPool.mainPlayerPlay()
 
     companion object {
         @JvmStatic
