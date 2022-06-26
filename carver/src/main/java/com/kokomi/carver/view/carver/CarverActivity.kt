@@ -3,7 +3,6 @@ package com.kokomi.carver.view.carver
 import android.animation.ObjectAnimator
 import android.content.ContentValues
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
@@ -12,23 +11,17 @@ import android.view.animation.OvershootInterpolator
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.view.PreviewView
 import androidx.cardview.widget.CardView
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.kokomi.carver.*
-import com.kokomi.carver.clearSystemWindows
-import com.kokomi.carver.core.*
+import com.kokomi.carver.core.CarverStatus
 import com.kokomi.carver.core.camerax.CameraXVideoCaptorImpl
 import com.kokomi.carver.core.camerax.getSupportedQualities
 import com.kokomi.carver.core.camerax.qualityFormatter
-import com.kokomi.carver.formatRecordingTime
-import com.kokomi.carver.setStatusBarTextColor
 import com.kokomi.carver.view.setting.*
-import com.kokomi.carver.view.setting.BIT_RATE
-import com.kokomi.carver.view.setting.I_FRAME_INTERVAL
-import com.kokomi.carver.view.setting.QUALITY
-import com.kokomi.carver.view.setting.VIDEO_FRAME_RATE
 import com.kokomi.carver.weight.CircleProgressBar
 import com.kokomi.carver.weight.GestureView
 import com.kokomi.okpremission.OkResult.requirePermission
@@ -322,7 +315,9 @@ class CarverActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        vm.carver.shutdown()
+        if (::vm.isInitialized) {
+            vm.carver.shutdown()
+        }
     }
 
     @Suppress("DEPRECATION")
