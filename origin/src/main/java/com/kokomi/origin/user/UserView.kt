@@ -104,9 +104,9 @@ private fun UserView(context: Context, vm: UserViewModel) {
 @Composable
 private fun NotLoggedView(vm: UserViewModel) {
     BigText(text = "用户名")
-    TextFieldBox(stateFlow = vm.userName, false)
+    TextFieldBox(hint = "用户名", stateFlow = vm.userName, hide = false)
     BigText(text = "密码")
-    TextFieldBox(stateFlow = vm.password, true)
+    TextFieldBox(hint = "密码", stateFlow = vm.password, hide = true)
 }
 
 @Composable
@@ -115,7 +115,7 @@ private fun LoggedView(vm: UserViewModel) {
 }
 
 @Composable
-private fun TextFieldBox(stateFlow: MutableStateFlow<String>, hide: Boolean) {
+private fun TextFieldBox(hint: String, stateFlow: MutableStateFlow<String>, hide: Boolean) {
     val value by stateFlow.collectAsState()
     TextField(
         value = value,
@@ -132,7 +132,7 @@ private fun TextFieldBox(stateFlow: MutableStateFlow<String>, hide: Boolean) {
         ),
         placeholder = {
             Text(
-                text = "用户名",
+                text = hint,
                 color = HintTextColor,
                 modifier = Modifier.fillMaxWidth(),
                 fontSize = 18.sp,

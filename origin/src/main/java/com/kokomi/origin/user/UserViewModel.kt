@@ -7,11 +7,12 @@ import com.kokomi.origin.base.loggedUser
 import com.kokomi.origin.datastore.*
 import com.kokomi.origin.entity.User
 import com.kokomi.origin.network.NewsApi
-import com.kokomi.origin.util.emit
+import com.kokomi.origin.util.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
+import java.net.SocketTimeoutException
 
 private val EMPTY_USER = User("", -1, "")
 
@@ -35,6 +36,11 @@ class UserViewModel : ViewModel() {
                     _user emit EMPTY_USER
                     loggedUser = null
                     _isLogged emit false
+                    if (it is SocketTimeoutException) {
+                        toastNetworkError()
+                    } else {
+                        toast("登陆失败")
+                    }
                 }.collect { user ->
                     context saveUser user
                     _user emit user
@@ -57,15 +63,12 @@ class UserViewModel : ViewModel() {
 
     internal fun Context.loadUserFromDataStore() {
         viewModelScope.launch {
-            val user = loadUser()
-            if (user != null) {
-                _user emit user
-                loggedUser = user
-                _isLogged emit true
-            } else {
-                _user emit EMPTY_USER
-                loggedUser = null
-                _isLogged emit false
+            loadUser().collect { user ->
+                user?.let {
+                    _user emit user
+                    loggedUser = user
+                    _isLogged emit true
+                }
             }
         }
     }

@@ -67,11 +67,23 @@ class ExploreFragment : BaseFragment() {
                 currentItem = 0
             }
 
-            image.setOnClickListener { explorePager.currentItem = 0 }
+            image.setOnClickListener {
+                if (explorePager.currentItem == 0) {
+                    exploreAdapter?.refresh(0)
+                } else explorePager.currentItem = 0
+            }
 
-            mix.setOnClickListener { explorePager.currentItem = 1 }
+            mix.setOnClickListener {
+                if (explorePager.currentItem == 1) {
+                    exploreAdapter?.refresh(1)
+                } else explorePager.currentItem = 1
+            }
 
-            video.setOnClickListener { explorePager.currentItem = 2 }
+            video.setOnClickListener {
+                if (explorePager.currentItem == 2) {
+                    exploreAdapter?.refresh(2)
+                } else explorePager.currentItem = 2
+            }
 
             find<TextView>(R.id.tv_explore_status_bar) {
                 height = statusBarHeight

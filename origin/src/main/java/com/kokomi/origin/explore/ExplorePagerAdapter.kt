@@ -44,4 +44,8 @@ internal class ExplorePagerAdapter(
         fragmentMap[position]?.playPlayerPool()
     }
 
+    internal fun refresh(position: Int) {
+        fragmentMap[position]?.refresh()
+    }
+
 }
