@@ -73,7 +73,7 @@
         android:id="@+id/tv_image_news_open"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@id/tv_image_news_navigation"
+        android:layout_above="@id/tv_image_news_publish_time"
         android:layout_centerHorizontal="true"
         android:padding="8dp"
         android:text="展开"
@@ -89,6 +89,17 @@
         android:layout_toEndOf="@id/tv_image_news_open"
         android:padding="4dp"
         android:src="@drawable/ic_open" />
+
+    <TextView
+        android:id="@+id/tv_image_news_publish_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/tv_image_news_navigation"
+        android:layout_alignParentEnd="true"
+        android:paddingHorizontal="20dp"
+        android:paddingBottom="5dp"
+        android:textColor="@color/soft_white_transparent"
+        tools:text="发布时间  2022年02月02日" />
 
     <TextView
         android:id="@+id/tv_image_news_navigation"
