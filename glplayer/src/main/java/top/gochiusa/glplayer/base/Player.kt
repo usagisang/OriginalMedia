@@ -98,8 +98,10 @@ interface Player {
     /**
      * 如果为true，允许媒体数据初次加载完成后自动播放
      *
-     * 修改后不保证立即生效，特别是，它仅仅是一个标志位，并不具备[play]的语义，
-     * 不生效时播放器状态仍会转移到[Player.STATE_READY]
+     * 此标记位仅在[Player.STATE_LOADING]期间检查，如果为true，则转入至[Player.STATE_PLAYING]，
+     * 否则转入[Player.STATE_READY]
+     *
+     * 修改该标志位不保证立即生效
      */
     var playAfterLoading: Boolean
 

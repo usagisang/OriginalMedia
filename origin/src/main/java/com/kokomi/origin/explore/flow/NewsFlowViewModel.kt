@@ -3,9 +3,9 @@ package com.kokomi.origin.explore.flow
 import androidx.lifecycle.ViewModel
 import com.kokomi.origin.entity.News
 import com.kokomi.origin.network.NewsApi
+import com.kokomi.origin.util.emit
 import com.kokomi.origin.util.toastNetworkError
 import kotlinx.coroutines.flow.Flow
-import com.kokomi.origin.util.emit
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
@@ -51,4 +51,12 @@ abstract class NewsFlowViewModel : ViewModel() {
         }
     }
 
+    suspend fun reset() {
+        if (!loading) {
+            page = 0
+            val pair = _news.value
+            _news emit Pair(pair.first.apply { clear() }, false)
+            _hasNext.value = true
+        }
+    }
 }

@@ -137,6 +137,13 @@ class MediaCodecAudioRenderer(
         }
     }
 
+    override fun onSeekTo(startPositionUs: Long) {
+        super.onSeekTo(startPositionUs)
+        runCatching {
+            audioTrack?.flush()
+        }
+    }
+
     private fun releaseAudioTrack() {
         audioTrack?.release()
         audioTrack = null
