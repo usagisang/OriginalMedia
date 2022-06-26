@@ -53,7 +53,7 @@ class ImageUploadViewModel : ViewModel() {
         isUploading = true
         viewModelScope.launch {
             Uploader.uploadImage(
-                ReleaseInfo(user.userId, title, content, inputStreamInfo = inputStreamInfo),
+                ReleaseInfo(user.userId, title, transformContent(content), inputStreamInfo = inputStreamInfo),
                 object : UploaderListener {
                     override fun onUploading(name: String, progress: Int) {
                         viewModelScope.launch { _uploadProgress emit progress }
@@ -66,4 +66,9 @@ class ImageUploadViewModel : ViewModel() {
         }
     }
 
+    /**
+     * 对文章内容进行一定的处理
+     */
+    private fun transformContent(content: String): String =
+        content.replace("\n", "<br>", true)
 }
