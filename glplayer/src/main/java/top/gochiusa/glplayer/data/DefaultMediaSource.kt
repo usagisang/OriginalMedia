@@ -2,12 +2,15 @@ package top.gochiusa.glplayer.data
 
 import android.content.Context
 import android.media.MediaExtractor
+import android.net.ConnectivityManager
 import top.gochiusa.glplayer.base.Receiver
 import top.gochiusa.glplayer.base.Sample
 import top.gochiusa.glplayer.entity.Format
 import top.gochiusa.glplayer.entity.MediaItem
 import top.gochiusa.glplayer.entity.SampleData
+import top.gochiusa.glplayer.util.NetworkUnreachableException
 import top.gochiusa.glplayer.util.PlayerLog
+import top.gochiusa.glplayer.util.getActiveNetworkCompat
 import java.io.IOException
 import java.nio.ByteBuffer
 
@@ -35,10 +38,20 @@ class DefaultMediaSource(
 
     private lateinit var mediaItem: MediaItem
 
+    private var connectivityManager: ConnectivityManager? =
+        context?.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
+
 
     override fun bindTrack(format: Format, receiver: Receiver) {
         mediaExtractor?.selectTrack(format.trackIndex)
         receiverMap[format.trackIndex] = receiver
+    }
+
+    override fun unbindTrack(format: Format, receiver: Receiver) {
+        if (receiverMap.containsKey(format.trackIndex)) {
+            mediaExtractor?.unselectTrack(format.trackIndex)
+            receiverMap.remove(format.trackIndex)
+        }
     }
 
     override fun sendData(): Boolean {
@@ -66,19 +79,20 @@ class DefaultMediaSource(
         return consumed
     }
 
-    override fun unbindTrack(format: Format, receiver: Receiver) {
-        mediaExtractor?.unselectTrack(format.trackIndex)
-        receiverMap.remove(format.trackIndex)
-    }
-
 
     override fun setDataSource(
         mediaItem: MediaItem,
         requestHeaders: Map<String, String>?
     ) {
+        releaseOldMediaExtractor()
         this.mediaItem = mediaItem
         val mediaExtractor = MediaExtractor()
-        _durationUs = -1L
+
+        connectivityManager?.run {
+            if (getActiveNetworkCompat() == null) {
+                throw NetworkUnreachableException("network is unreachable, try setDataSource later")
+            }
+        }
 
         // may block
         mediaItem.uri?.let {
@@ -94,6 +108,8 @@ class DefaultMediaSource(
 
     override fun release() {
         mediaExtractor?.release()
+        context = null
+        connectivityManager = null
     }
 
     override fun seekTo(positionUs: Long, seekMode: SeekMode): Long {
@@ -125,6 +141,17 @@ class DefaultMediaSource(
             if (_durationUs < 0) {
                 _durationUs = format.duration
             }
+        }
+    }
+
+    private fun releaseOldMediaExtractor() {
+        runCatching {
+            mediaExtractor?.release()
+            mediaExtractor = null
+            // 清除与旧的MediaExtractor相关的数据
+            _durationUs = -1L
+            hasNext = true
+            receiverMap.clear()
         }
     }
 

@@ -50,6 +50,7 @@ dependencies {
     implementation(project(":glplayer"))
     implementation(project(":uploader"))
     implementation(project(":video"))
+    implementation(project(":origin"))
 
     api(Deps.ImmersionBar.baseBag)
     api(Deps.ImmersionBar.baseKTX)
@@ -60,7 +61,7 @@ dependencies {
     implementation(Deps.Lifecycle.livedata)
     implementation(Deps.Navigation.navigationUI)
     implementation(Deps.Navigation.fragment)
-    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
+    implementation(Deps.swipeRefreshLayout)
 
 
 

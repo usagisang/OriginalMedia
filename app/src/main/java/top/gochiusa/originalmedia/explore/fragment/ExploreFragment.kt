@@ -8,7 +8,6 @@ import com.google.android.material.tabs.TabLayout
 import kotlinx.android.synthetic.main.fragment_explore.*
 import top.gochiusa.originalmedia.R
 import top.gochiusa.originalmedia.base.BaseFragment
-import top.gochiusa.originalmedia.databinding.FragmentExploreBinding
 import top.gochiusa.originalmedia.explore.adapter.PageAdapter
 
 

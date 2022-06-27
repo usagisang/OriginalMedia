@@ -1,6 +1,7 @@
 package top.gochiusa.glplayer.opengl
 
 import android.content.Context
+import android.graphics.Color
 import android.graphics.SurfaceTexture
 import android.opengl.GLSurfaceView
 import android.os.Handler
@@ -11,6 +12,7 @@ import top.gochiusa.glplayer.base.SurfaceProvider
 import top.gochiusa.glplayer.entity.Format
 import top.gochiusa.glplayer.listener.VideoMetadataListener
 import top.gochiusa.glplayer.listener.VideoSurfaceListener
+import top.gochiusa.glplayer.util.PlayerLog
 
 class VideoGLSurfaceView
 @JvmOverloads constructor(
@@ -27,9 +29,7 @@ class VideoGLSurfaceView
     override var surface: Surface? = null
         private set
 
-    override fun setOnVideoSurfaceListener(listener: VideoSurfaceListener?) {
-        onVideoSurfaceListener = listener
-    }
+    private var started = true
 
     private val renderer: ProgramsRenderer
 
@@ -41,6 +41,25 @@ class VideoGLSurfaceView
         renderMode = RENDERMODE_WHEN_DIRTY
     }
 
+    fun setClearColor(color: Color) {
+        queueEvent {
+            renderer.clearColor = color
+        }
+    }
+
+    override fun setOnVideoSurfaceListener(listener: VideoSurfaceListener?) {
+        onVideoSurfaceListener = listener
+    }
+
+    override fun onPause() {
+        super.onPause()
+        started = false
+    }
+
+    override fun onResume() {
+        super.onResume()
+        started = true
+    }
 
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
@@ -86,10 +105,16 @@ class VideoGLSurfaceView
     }
 
     override fun onFrameAvailable(surfaceTexture: SurfaceTexture?) {
-        queueEvent {
-            surfaceTexture?.updateTexImage()
-            if (surfaceTexture != null) {
-                requestRender()
+        if (started) {
+            queueEvent {
+                surfaceTexture?.apply {
+                    runCatching {
+                        updateTexImage()
+                    }.onFailure {
+                        PlayerLog.e(message = it)
+                    }
+                    requestRender()
+                }
             }
         }
     }

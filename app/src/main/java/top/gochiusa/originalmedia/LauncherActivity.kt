@@ -30,17 +30,18 @@ class LauncherActivity : BaseActivity<ActivityLauncherBinding>() {
 
 
     private fun init() {
+        //startActivity(Intent(this, OriginActivity::class.java))
 
-        println("$iv_bottom_explore 为什么我我我我 ")
-        iv_bottom_explore.setOnClickListener {
-            setFragment(0)
-        }
-        iv_bottom_creation.setOnClickListener {
-            setFragment(1)
-        }
-        iv_bottom_personal.setOnClickListener {
-            setFragment(2)
-        }
+//        println("$iv_bottom_explore 为什么我我我我 ")
+//        iv_bottom_explore.setOnClickListener {
+//            setFragment(0)
+//        }
+//        iv_bottom_creation.setOnClickListener {
+//            setFragment(1)
+//        }
+//        iv_bottom_personal.setOnClickListener {
+//            setFragment(2)
+//        }
     }
 
     private fun setFragment(index: Int) {
@@ -121,7 +122,7 @@ class LauncherActivity : BaseActivity<ActivityLauncherBinding>() {
             ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
         val readPermission =
             ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
-        if (permission != PackageManager.PERMISSION_GRANTED ||readPermission != PackageManager.PERMISSION_GRANTED) {
+        if (permission != PackageManager.PERMISSION_GRANTED || readPermission != PackageManager.PERMISSION_GRANTED) {
             // 请求权限
             ActivityCompat.requestPermissions(
                 this,

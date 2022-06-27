@@ -61,7 +61,7 @@ class DefaultVideoViewModel(
     }
 
     override fun onPlayerError(errorCode: Int) {
-        if (errorCode == GLPlayer.SOURCE_ERROR) {
+        if (errorCode == GLPlayer.SOURCE_ERROR || errorCode == GLPlayer.NETWORK_UNREACHABLE_ERROR) {
             _videoState.value = VideoState.Error
         }
     }

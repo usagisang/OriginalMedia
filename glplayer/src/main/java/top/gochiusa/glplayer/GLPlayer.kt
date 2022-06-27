@@ -4,10 +4,7 @@ import android.content.Context
 import android.os.*
 import android.view.Surface
 import android.view.SurfaceView
-import top.gochiusa.glplayer.base.Player
-import top.gochiusa.glplayer.base.Renderer
-import top.gochiusa.glplayer.base.RendererFactory
-import top.gochiusa.glplayer.base.SurfaceProvider
+import top.gochiusa.glplayer.base.*
 import top.gochiusa.glplayer.data.DefaultMediaSourceFactory
 import top.gochiusa.glplayer.data.MediaSource
 import top.gochiusa.glplayer.data.MediaSourceFactory
@@ -20,12 +17,31 @@ import top.gochiusa.glplayer.listener.VideoSurfaceListener
 import top.gochiusa.glplayer.mediacodec.CodecRendererFactory
 import top.gochiusa.glplayer.util.Assert
 import top.gochiusa.glplayer.util.Constants
+import top.gochiusa.glplayer.util.NetworkUnreachableException
 import top.gochiusa.glplayer.util.PlayerLog
 import java.io.IOException
 import java.util.concurrent.CopyOnWriteArraySet
 
 /**
  * 播放器实现类
+ *
+ * <b>快速使用:</b>
+ *
+ * ```
+ * val glPlayer: Player = GLPlayer.Builder(context).setPlayAfterLoading(true).build()
+ *
+ * findViewById<PlayerView>(R.id.player_view).setPlayer(glPlayer)
+ *
+ * glPlayer.setMediaItem(MediaItem.fromUrl(videoUrl))
+ *
+ * glPlayer.prepare()
+ *
+ * ```
+ * 如果应用退出到后台，则必须调用[Player.pause]或[PlayerView.onPause]两个函数之一，否则视频流渲染
+ * 将会因为 EGL Display 被释放而异常终止
+ *
+ * [PlayerView]提供了绑定到[androidx.lifecycle.Lifecycle]的函数[PlayerView.bindLifecycle]，
+ * 能够免去手动调用[PlayerView.onPause]的繁琐
  */
 class GLPlayer
 private constructor(
@@ -38,6 +54,13 @@ private constructor(
         get() = _currentPositionUs / 1000
     override val cacheDurationMs: Long
         get() = if (mediaSource.cacheDurationUs > 0) mediaSource.cacheDurationUs / 1000 else -1L
+
+    /**
+     * 播放器展示给外部检阅的当前状态
+     * 规定只能在主线程更改播放器状态并通知相应的监听器
+     */
+    override var playerState: Int = Player.STATE_INIT
+        private set
 
     @Volatile
     override var playAfterLoading: Boolean = builder.playAfterLoading
@@ -71,12 +94,12 @@ private constructor(
 
     private var mediaItem: MediaItem? = null
 
+    private var syncClock: MediaClock? = null
+
     /**
-     * 播放器当前状态
-     * 规定只能在主线程更改播放器状态并通知相应的监听器
+     * 播放器内部状态
      */
-    @Volatile
-    private var state: Int = Player.STATE_INIT
+    private var innerState: Int = Player.STATE_INIT
 
     /**
      * 播放器的上一个状态，目前只用于seekTo的状态保存
@@ -92,35 +115,51 @@ private constructor(
         renderers = (builder.rendererFactory ?: CodecRendererFactory()).createRenders(
             eventHandler, componentListener)
         requestHeaders = builder.requestHeader
+
+        syncClock = renderers.firstOrNull {
+            it.getTrackType() == Constants.TRACK_TYPE_AUDIO
+        } ?.getMediaClock()
     }
 
-    override fun play() {
+    override fun play(delayTimeMs: Long) {
         Assert.verifyMainThread()
 
-        when(state)  {
+        when(playerState)  {
              Player.STATE_STOP -> {
-                 eventHandler.sendMessage(Message.obtain().apply {
-                     what = MSG_SEEK_TO
-                     obj = 0L
-                 })
+                 eventHandler.sendMessage(
+                     Message.obtain().apply {
+                         what = MSG_SEEK_TO
+                         obj = 0L
+                     }
+                 )
             }
-            Player.STATE_BUFFERING -> {
-                // may delay DELAY_FOR_DECODE_TIME or old state is pause
-                if (!eventHandler.hasMessages(MSG_PLAY)) {
-                    eventHandler.sendEmptyMessageDelayed(MSG_PLAY,
-                        DELAY_FOR_DECODE_MS * 2)
+            Player.STATE_BUFFERING, Player.STATE_PAUSE, Player.STATE_READY -> {
+                if (delayTimeMs > 0) {
+                    eventHandler.sendMessageDelayed(
+                        Message.obtain().apply {
+                            what = MSG_PLAY
+                            obj = PENDING_PLAY_TOKEN
+                        }, delayTimeMs)
+                } else {
+                    eventHandler.sendEmptyMessage(MSG_PLAY)
                 }
-            }
-            Player.STATE_PAUSE, Player.STATE_READY -> {
-                eventHandler.sendEmptyMessage(MSG_PLAY)
             }
             else -> {}
         }
     }
 
+    override fun canPause(state: Int): Boolean =
+        state == Player.STATE_PLAYING || state == Player.STATE_BUFFERING ||
+                state == Player.STATE_LOADING
+
+    override fun canSeekTo(state: Int): Boolean =
+        state == Player.STATE_PLAYING || state == Player.STATE_PAUSE
+                || state == Player.STATE_STOP || state == Player.STATE_BUFFERING
+
+
     override fun pause() {
         Assert.verifyMainThread()
-        if (state == Player.STATE_PLAYING || state == Player.STATE_BUFFERING) {
+        if (canPause(playerState) || playerState == Player.STATE_READY) {
             eventHandler.sendEmptyMessage(MSG_PAUSE)
         }
     }
@@ -131,8 +170,7 @@ private constructor(
         if (positionMs > durationMs || positionMs == currentPositionMs) {
             return
         }
-        if (state == Player.STATE_PLAYING || state == Player.STATE_PAUSE
-            || state == Player.STATE_STOP || state == Player.STATE_BUFFERING) {
+        if (canSeekTo(playerState)) {
             eventHandler.sendMessage(Message.obtain().apply {
                 what = MSG_SEEK_TO
                 obj = positionMs
@@ -143,8 +181,8 @@ private constructor(
     override fun release() {
         Assert.verifyMainThread()
 
-        if (state != Player.STATE_RELEASE) {
-            state = Player.STATE_RELEASE
+        if (playerState != Player.STATE_RELEASE) {
+            playerState = Player.STATE_RELEASE
             eventHandler.removeCallbacksAndMessages(null)
             playbackThread.quit()
             renderers.forEach {
@@ -154,7 +192,7 @@ private constructor(
             mediaSource.release()
             videoOutput = null
             eventListenerSet.forEach {
-                it.onPlaybackStateChanged(state)
+                it.onPlaybackStateChanged(playerState)
             }
             eventListenerSet.clear()
         }
@@ -165,18 +203,21 @@ private constructor(
     }
 
     override fun prepare() {
-        if (mediaItem != null && state != Player.STATE_RELEASE) {
-            eventHandler.sendMessage(Message.obtain().apply {
-                what = MSG_PREPARE
-                obj = mediaItem
-            })
+        Assert.verifyMainThread("Player:prepare is accessed on the wrong thread")
+        if (playerState != Player.STATE_RELEASE) {
+            mediaItem?.let {
+                eventHandler.sendMessage(Message.obtain().apply {
+                    what = MSG_PREPARE
+                    obj = it
+                })
+            }
         }
     }
 
     override fun setVideoSurfaceView(surfaceView: SurfaceView) {
         Assert.verifyMainThread()
 
-        if (state == Player.STATE_RELEASE) {
+        if (playerState == Player.STATE_RELEASE) {
             return
         }
 
@@ -212,13 +253,14 @@ private constructor(
 
     override fun addEventListener(eventListener: EventListener) {
         eventListenerSet.add(eventListener)
+        eventListener.onPlaybackStateChanged(playerState)
     }
 
     override fun removeEventListener(eventListener: EventListener) {
         eventListenerSet.remove(eventListener)
     }
 
-    override fun isPlaying(): Boolean = state == Player.STATE_PLAYING
+    override fun isPlaying(): Boolean = playerState == Player.STATE_PLAYING
 
     override fun handleMessage(msg: Message): Boolean {
         return when (msg.what) {
@@ -243,11 +285,12 @@ private constructor(
                 true
             }
             MSG_WAIT_FOR_CACHE -> {
-                waitForCacheInternal(
-                    msg.obj?.let {
-                        it as Long
-                    } ?: WAIT_TIME_AS_START_MS
-                )
+                waitForCacheInternal(msg.obj?.let { it as Long }
+                    ?: WAIT_TIME_AS_START_MS)
+                true
+            }
+            MSG_RENDER_FRAME_ONCE -> {
+                renderFirstFrameInternal(msg.arg1, msg.obj as Long)
                 true
             }
             else -> {
@@ -266,19 +309,32 @@ private constructor(
                 listener.onVideoSurfaceAttach()
             }
         }
-        renderers.forEach {
-            if (it is VideoSurfaceListener) {
-                if (videoOutput != null) {
-                    it.onVideoSurfaceCreated(videoOutput)
-                } else {
-                    it.onVideoSurfaceDestroyed(null)
+        eventHandler.post {
+            renderers.forEach {
+                if (it is VideoSurfaceListener) {
+                    if (videoOutput != null) {
+                        it.onVideoSurfaceCreated(videoOutput)
+                    } else {
+                        it.onVideoSurfaceDestroyed(null)
+                    }
                 }
             }
         }
     }
 
     private fun prepareInternal(mediaItem: MediaItem) {
+        if (eventHandler.hasMessages(MSG_PREPARE)) {
+            return
+        }
+        // 移除除了本身和pause之外的其他message
         eventHandler.removeMessages(MSG_RENDER)
+        eventHandler.removeMessages(MSG_PLAY)
+        eventHandler.removeMessages(MSG_WAIT_FOR_CACHE)
+        eventHandler.removeMessages(MSG_SEEK_TO)
+        // 取消首帧渲染
+        eventHandler.removeMessages(MSG_RENDER_FRAME_ONCE)
+
+        innerState = Player.STATE_LOADING
         mainHandler.post {
             changeStateUncheck(Player.STATE_LOADING)
         }
@@ -294,35 +350,52 @@ private constructor(
         runCatching {
             mediaSource.setDataSource(mediaItem, requestHeaders)
         }.onFailure {
+            // 播放源初始化失败，转入INIT状态
+            innerState = Player.STATE_INIT
             mainHandler.post {
-                notifyError(SOURCE_ERROR)
+                notifyError(if (it is NetworkUnreachableException) NETWORK_UNREACHABLE_ERROR else
+                    SOURCE_ERROR)
                 changeStateUncheck(Player.STATE_INIT)
             }
         }.onSuccess {
+            // check again
+            if (eventHandler.hasMessages(MSG_PREPARE)) {
+                return
+            }
             val formats = mediaSource.format
             renderers.forEach { renderer ->
                 renderer.enable(formats, mediaSource, 0L)
             }
 
-            loopSendData()
+            loopSendData(block = { !eventHandler.hasMessages(MSG_PREPARE) })
+
+            // check again
+            if (eventHandler.hasMessages(MSG_PREPARE)) {
+                return
+            }
+
             if (playAfterLoading) {
-                eventHandler.sendEmptyMessageDelayed(MSG_PLAY, DELAY_FOR_DECODE_MS)
-            } else {
-                if (mayRenderFirstFrame) {
-                    delay(DELAY_FOR_DECODE_MS)
-                    renderVideoFrame(0L)
-                }
-                mainHandler.post {
-                    changeStateUncheck(Player.STATE_READY)
-                }
+                eventHandler.sendMessageDelayed(
+                    Message.obtain().apply {
+                        what = MSG_PLAY
+                        obj = PENDING_PLAY_TOKEN
+                    }, DELAY_FOR_DECODE_MS)
+            } else if (mayRenderFirstFrame) {
+                eventHandler.sendMessageDelayed(
+                    eventHandler.obtainMessage().apply {
+                        what = MSG_RENDER_FRAME_ONCE
+                        arg1 = Player.STATE_READY
+                        obj = 0L
+                    }, DELAY_FOR_DECODE_MS
+                )
             }
         }
     }
 
     // call in main thread
     private fun changeStateUncheck(newValue: Int) {
-        if (state != Player.STATE_RELEASE) {
-            state = newValue
+        if (playerState != Player.STATE_RELEASE && playerState != newValue) {
+            playerState = newValue
             eventListenerSet.forEach {
                 it.onPlaybackStateChanged(newValue)
             }
@@ -331,7 +404,7 @@ private constructor(
 
     // call in main thread
     private fun notifyError(errorCode: Int) {
-        if (state != Player.STATE_RELEASE) {
+        if (playerState != Player.STATE_RELEASE) {
             eventListenerSet.forEach {
                 it.onPlayerError(errorCode)
             }
@@ -365,6 +438,7 @@ private constructor(
                     obj = 0L
                 })
             } else {
+                innerState = Player.STATE_STOP
                 mainHandler.post {
                     changeStateUncheck(Player.STATE_STOP)
                 }
@@ -372,11 +446,10 @@ private constructor(
             return
         }
 
-        val delayTimeMs = (5L - SystemClock.elapsedRealtime() + loopStart).coerceAtLeast(1)
-        _currentPositionUs = ((SystemClock.elapsedRealtime() - startRenderTimeMs) * 1000
-                + delayTimeMs).coerceAtMost(mediaSource.durationUs)
-        /*_currentPositionUs = ((SystemClock.elapsedRealtime() - startRenderTimeMs) * 1000)
-            .coerceAtMost(mediaSource.durationUs)*/
+        val delayTimeMs = (10L - SystemClock.elapsedRealtime() + loopStart).coerceAtLeast(1)
+        /*_currentPositionUs = ((SystemClock.elapsedRealtime() - startRenderTimeMs) * 1000
+                + delayTimeMs).coerceAtMost(mediaSource.durationUs)*/
+        _currentPositionUs = getCurrentPosition(delayTimeMs)
 
         // 如果数据源缓存不足
         if (shouldWaitForCache()) {
@@ -384,6 +457,7 @@ private constructor(
                 what = MSG_WAIT_FOR_CACHE
                 obj = WAIT_TIME_AS_START_MS
             })
+            innerState = Player.STATE_BUFFERING
             mainHandler.post {
                 changeStateUncheck(Player.STATE_BUFFERING)
             }
@@ -397,19 +471,6 @@ private constructor(
         }
     }
 
-    private fun renderVideoFrame(positionUs: Long) {
-        val startRenderTime = SystemClock.elapsedRealtime()
-        renderers.forEach {
-            if (it.getTrackType() == Constants.TRACK_TYPE_VIDEO) {
-                runCatching {
-                    it.render(positionUs, startRenderTime)
-                }.onFailure { throwable ->
-                    PlayerLog.d(message = throwable)
-                }
-            }
-        }
-    }
-
     private fun seekToInternal(positionMs: Long) {
         // 如果存在较新的seekTo操作，取消本次操作
         if (eventHandler.hasMessages(MSG_SEEK_TO)) {
@@ -418,18 +479,21 @@ private constructor(
         // 取消缓存等待
         eventHandler.removeMessages(MSG_WAIT_FOR_CACHE)
         eventHandler.removeMessages(MSG_RENDER)
+        // 取消首帧渲染
+        eventHandler.removeMessages(MSG_RENDER_FRAME_ONCE)
         val positionUs = positionMs * 1000
 
         // 缓存Buffing状态之前的状态，结束seekTo操作后需要自动恢复该状态
-        var oldState = state
+        var oldState = innerState
         if (oldState != Player.STATE_BUFFERING) {
+            innerState = Player.STATE_BUFFERING
             mainHandler.post {
                 changeStateUncheck(Player.STATE_BUFFERING)
             }
         }
 
         renderers.forEach {
-            it.onSeekTo()
+            it.onSeekTo(positionUs)
         }
         val syncTime = mediaSource.seekTo(positionUs, SeekMode.CLOSEST_SYNC)
         //_currentPositionUs = if (syncTime < 0) positionUs else syncTime
@@ -461,16 +525,20 @@ private constructor(
                         obj = WAIT_TIME_AS_START_MS
                     })
                 } else {
-                    eventHandler.sendEmptyMessageDelayed(MSG_PLAY, DELAY_FOR_DECODE_MS)
+                    eventHandler.sendMessageDelayed(
+                        Message.obtain().apply {
+                            what = MSG_PLAY
+                            obj = PENDING_PLAY_TOKEN
+                        }, DELAY_FOR_DECODE_MS)
                 }
             }
             Player.STATE_PAUSE -> {
-                delay(DELAY_FOR_DECODE_MS)
-                renderVideoFrame(syncTime)
-                // 重新进入Pause状态
-                mainHandler.post {
-                    changeStateUncheck(Player.STATE_PAUSE)
-                }
+                eventHandler.sendMessageDelayed(
+                    eventHandler.obtainMessage().apply {
+                        what = MSG_RENDER_FRAME_ONCE
+                        arg1 = Player.STATE_PAUSE
+                        obj = syncTime
+                    }, DELAY_FOR_DECODE_MS)
             }
         }
     }
@@ -481,25 +549,35 @@ private constructor(
         eventHandler.removeMessages(MSG_PLAY)
         // 取消缓存等待
         eventHandler.removeMessages(MSG_WAIT_FOR_CACHE)
+        // 取消渲染以避免状态转换至PAUSE(seekTo中)
+        eventHandler.removeMessages(MSG_RENDER_FRAME_ONCE)
         // 更新起始时间
         startRenderTimeMs = SystemClock.elapsedRealtime() - _currentPositionUs / 1000
         eventHandler.sendEmptyMessage(MSG_RENDER)
+        innerState = Player.STATE_PLAYING
         mainHandler.post {
             changeStateUncheck(Player.STATE_PLAYING)
         }
     }
 
     private fun pauseInternal() {
-        // 检查是否已经自动恢复到Pause状态(seekTo中)
-        if (state != Player.STATE_PAUSE) {
-            eventHandler.removeMessages(MSG_RENDER)
-            eventHandler.removeMessages(MSG_PLAY)
-            eventHandler.removeMessages(MSG_WAIT_FOR_CACHE)
-            mainHandler.post {
-                changeStateUncheck(Player.STATE_PAUSE)
-            }
+        eventHandler.removeMessages(MSG_RENDER)
+        // 移除seekTo和prepare发送的pending play
+        eventHandler.removeCallbacksAndMessages(PENDING_PLAY_TOKEN)
+        // 在Loading或Buffing期间调用的Pause，取消对第一帧的渲染
+        eventHandler.removeMessages(MSG_RENDER_FRAME_ONCE)
+        eventHandler.removeMessages(MSG_WAIT_FOR_CACHE)
+
+        // Ready状态不应当转入Pause状态
+        if (innerState != Player.STATE_READY) {
+            innerState = Player.STATE_PAUSE
             renderers.forEach {
                 it.onPause()
+            }
+        }
+        mainHandler.post {
+            if (playerState != Player.STATE_READY) {
+                changeStateUncheck(Player.STATE_PAUSE)
             }
         }
     }
@@ -520,10 +598,34 @@ private constructor(
         }
     }
 
-    private fun loopSendData() {
+    private fun renderFirstFrameInternal(nextState: Int, renderTime: Long) {
+        renderVideoFrame(renderTime)
+        innerState = nextState
+        mainHandler.post {
+            changeStateUncheck(nextState)
+        }
+    }
+
+    private fun renderVideoFrame(positionUs: Long) {
+        val startRenderTime = SystemClock.elapsedRealtime()
+        renderers.forEach {
+            if (it.getTrackType() == Constants.TRACK_TYPE_VIDEO) {
+                runCatching {
+                    it.render(positionUs, startRenderTime)
+                }.onFailure { throwable ->
+                    PlayerLog.d(message = throwable)
+                }
+            }
+        }
+    }
+
+    /**
+     * 循环调用[MediaSource.sendData]，直到发送失败或[block]返回false
+     */
+    private fun loopSendData(block: () -> Boolean = { true }) {
         try {
             var sendData = true
-            while (sendData) {
+            while (sendData && block()) {
                 sendData = mediaSource.sendData()
             }
         } catch (e: IOException) {
@@ -549,15 +651,18 @@ private constructor(
             mediaSource.cacheDurationUs >= MAX_CACHE_DURATION_US
 
     /**
-     * 尝试调用[Thread.sleep]来进行阻塞式等待
+     * 计算当前播放位置
      */
-    private fun delay(delayTimeMs: Long) {
-        if (delayTimeMs > 0) {
-            try {
-                Thread.sleep(delayTimeMs)
-            } catch (e: Exception) {
-                PlayerLog.v(message = e)
-            }
+    private fun getCurrentPosition(delayTimeMs: Long): Long {
+        val realTime = ((SystemClock.elapsedRealtime() - startRenderTimeMs) * 1000
+                + delayTimeMs).coerceAtMost(mediaSource.durationUs)
+        val clock = syncClock ?: return realTime
+        val time: Long = clock.getPositionUs()
+
+        return if (time == MediaClock.END_OF_RENDER || time < 0) {
+            realTime
+        } else {
+            time.coerceAtMost(realTime)
         }
     }
 
@@ -604,7 +709,7 @@ private constructor(
         }
 
         /**
-         * 设置是否渲染视频的首帧画面
+         * 设置是否渲染视频的首帧画面，会尽最大努力尝试渲染，但不能保证成功
          */
         fun setRenderFirstFrame(enable: Boolean): Builder {
             renderFirstFrame = enable
@@ -658,8 +763,14 @@ private constructor(
         private const val MSG_PLAY = 4
         private const val MSG_PAUSE = 5
         private const val MSG_WAIT_FOR_CACHE = 6
+        private const val MSG_RENDER_FRAME_ONCE = 7
 
         private const val DELAY_FOR_DECODE_MS = 100L
+
+        /**
+         * 延迟进行播放的Message(MSG_PLAY)所携带的Token
+         */
+        private val PENDING_PLAY_TOKEN = Any()
 
         /**
          * 如果缓存时长低于此值，则应进入等待状态
@@ -687,5 +798,10 @@ private constructor(
         const val SOURCE_ERROR = 11
 
         const val IO_ERROR = 12
+
+        /**
+         * 无网络连接而引发的异常
+         */
+        const val NETWORK_UNREACHABLE_ERROR = 13
     }
 }

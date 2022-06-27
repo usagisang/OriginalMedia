@@ -7,9 +7,9 @@ import java.security.NoSuchAlgorithmException
 import kotlin.math.abs
 import kotlin.random.Random
 
-internal fun fileKey(userId: Long, file: File): String {
+internal fun fileKey(userId: Long, extension: String): String {
     val str = "${userId}${System.currentTimeMillis()}${abs(Random.nextInt())}"
-    return "${str.encryptMD5() ?: str}.${file.extension}"
+    return "${str.encryptMD5() ?: str}.$extension"
 }
 
 private fun String.encryptMD5(): String? {

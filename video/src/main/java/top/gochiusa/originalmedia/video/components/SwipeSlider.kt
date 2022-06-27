@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.dp
 
 
 @Composable
-fun SwipeSlider(
+internal fun SwipeSlider(
     modifier: Modifier = Modifier,
     value: Float,
     onValueChange: (Float) -> Unit,

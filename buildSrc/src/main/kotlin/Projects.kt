@@ -5,12 +5,12 @@ object Build {
     const val targetSdkVersion = 31
     const val minimumSdkVersion = 21
 
-    const val versionCode = 1
-    const val versionName = "0.1.0"
+    const val versionCode = 2
+    const val versionName = "0.2.0"
 }
 
 object Deps {
-    object ImmersionBar{
+    object ImmersionBar {
         const val version = "3.2.2"
         const val baseBag = "com.geyifeng.immersionbar:immersionbar:$version"
         const val baseKTX = "com.geyifeng.immersionbar:immersionbar-ktx:$version"
@@ -42,7 +42,7 @@ object Deps {
 
     object Lifecycle {
         const val version = "2.4.1"
-        const val livedata ="androidx.lifecycle:lifecycle-livedata-ktx:$version"
+        const val livedata = "androidx.lifecycle:lifecycle-livedata-ktx:$version"
         const val viewModelCompose = "androidx.lifecycle:lifecycle-viewmodel-compose:$version"
         const val viewModelKtx = "androidx.lifecycle:lifecycle-viewmodel-ktx:$version"
         const val runtimeKtx = "androidx.lifecycle:lifecycle-runtime-ktx:$version"
@@ -121,6 +121,13 @@ object Deps {
         const val video = "androidx.camera:camera-video:$version"
     }
 
+    object DataStore {
+        private const val version = "1.0.0-rc01"
+
+        const val core = "androidx.datastore:datastore-core:$version"
+        const val preferences = "androidx.datastore:datastore-preferences:$version"
+    }
+
     const val qiNiu = "com.qiniu:qiniu-android-sdk:8.4.4"
 
     const val appCompat = "androidx.appcompat:appcompat:1.4.1"
@@ -128,7 +135,7 @@ object Deps {
     const val material = "com.google.android.material:material:1.6.0"
 
     const val okhttp = "com.squareup.okhttp3:okhttp:4.9.3"
-    const val matisse= "com.zhihu.android:matisse:0.5.1"
+    const val matisse = "com.zhihu.android:matisse:0.5.1"
     const val retrofit = "com.squareup.retrofit2:retrofit:2.9.0"
 
     // Retrofit的gson转换器
@@ -147,6 +154,7 @@ object Deps {
 
     const val kspVersion = "1.6.21-1.0.5"
 
+    const val swipeRefreshLayout = "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"
 }
 
 object TestDeps {
