@@ -81,12 +81,12 @@ interface Player {
     fun isPlaying(): Boolean
 
     /**
-     * 检查状态[state]是否允许执行[seekTo]
+     * 检查状态[state]是否允许转入状态[Player.STATE_PAUSE]
      */
     fun canSeekTo(state: Int): Boolean
 
     /**
-     * 检查状态[state]是否允许执行[pause]
+     * 检查状态[state]是否允许转入状态[Player.STATE_PAUSE]
      */
     fun canPause(state: Int): Boolean
 
