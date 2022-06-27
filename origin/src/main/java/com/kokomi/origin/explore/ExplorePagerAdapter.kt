@@ -36,12 +36,15 @@ internal class ExplorePagerAdapter(
      * 若没有，则返回 -1
      * */
     internal fun tryPause(): Int {
-        fragmentMap.map { if (it.value.pausePlayerPool()) return it.key }
+        fragmentMap.map {
+            if (it.value.pausePlayerPool())
+                return it.key
+        }
         return -1
     }
 
-    internal fun tryPlay(position: Int) {
-        fragmentMap[position]?.playPlayerPool()
+    internal fun tryResume(position: Int) {
+        fragmentMap[position]?.resumePlayerPool()
     }
 
     internal fun refresh(position: Int) {

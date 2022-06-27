@@ -16,6 +16,8 @@ internal class PlayerPool(
 
     private var bufferPlayerQueueHead = 0
 
+    private val eventListener by lazy { PlayerEventListener() }
+
     /**
      * 最后一个是主播放器(MainPlayer)
      * <p>
@@ -27,7 +29,7 @@ internal class PlayerPool(
      * <p>
      *
      * 主播放器权是可以交换的，但是必须在主线程内交换
-     * @see PlayerPool.exchangeMainPlayer
+     * @see PlayerPool.exchange
      * <p>
      * */
     private val players by lazy {
@@ -55,49 +57,60 @@ internal class PlayerPool(
     /**
      * 交换主播放器权
      * */
-    internal infix fun exchangeMainPlayer(targetPlayer: Player) {
+    internal infix fun exchange(targetPlayer: Player) {
         val index = players.indexOf(targetPlayer)
         if (index == -1) {
             throw IllegalStateException("The Player does not belong to this pool.")
         }
-        // 若传入的播放器就是主播放器
-        if (index == playerMainIndex) {
-            targetPlayer.play()
-            return
-        }
+
         val mainPlayer = players[playerMainIndex]
+
+        // 解除主播放器的事件监听器
+        if (eventListener.bindPlayer != null) {
+            mainPlayer.removeEventListener(eventListener)
+            // 若正在播放，则立即停止
+            if (mainPlayer.isPlaying()) mainPlayer.pause()
+            eventListener.bindPlayer = null
+        }
+
         // 交换主播放器权
         players[playerMainIndex] = targetPlayer
         players[index] = mainPlayer
-        // 暂停主播放器的播放
-        mainPlayer.playAfterLoading = false
-        if (mainPlayer.isPlaying()) {
-            mainPlayer.pause()
-        }
-        // 开始新主播放器的播放
-        targetPlayer.playAfterLoading = true
-        if (!targetPlayer.isPlaying()) {
-            targetPlayer.seekTo(0)
-            targetPlayer.play(1000L)
-        }
-    }
 
-    internal fun mainPlayerPlay() {
-        val player = mainPlayer
-        player.playAfterLoading = true
-        players[playerMainIndex].play()
+        // 开始新主播放器的播放
+        eventListener.bindPlayer = targetPlayer
+        eventListener.autoPlay = true
+        eventListener.autoSeekToStart = true
+        targetPlayer.addEventListener(eventListener)
     }
 
     /**
+     * 恢复绑定播放器的事件监听器
+     * */
+    internal fun resumePool() {
+        val player = mainPlayer
+        // 重新绑定
+        eventListener.bindPlayer = player
+        player.addEventListener(eventListener)
+    }
+
+    /**
+     * 解绑事件监听器并暂停播放
+     *
      * @return 若主播放器此时正在播放，返回 true ，否则返回 false
      * */
-    internal fun mainPlayerPause(): Boolean {
+    internal fun pausePool(): Boolean {
         val player = mainPlayer
-        player.playAfterLoading = false
-        return if (player.isPlaying()) {
+        // 解绑
+        player.removeEventListener(eventListener)
+        eventListener.bindPlayer = null
+        eventListener.autoSeekToStart = false
+        // 若可以暂停，则暂停
+        if (player.canPause(player.playerState)) {
             player.pause()
-            true
-        } else false
+        }
+        eventListener.autoPlay = player.playerState != STATE_PAUSE
+        return player.isPlaying()
     }
 
     private val mainPlayer: Player

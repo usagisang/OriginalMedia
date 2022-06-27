@@ -105,7 +105,7 @@ class ExploreFragment : BaseFragment() {
     }
 
     internal fun onShow() {
-        exploreAdapter?.tryPlay(playerShouldBeResumedIndex)
+        exploreAdapter?.tryResume(playerShouldBeResumedIndex)
     }
 
     private fun TextView.isSelected(selected: Boolean) {

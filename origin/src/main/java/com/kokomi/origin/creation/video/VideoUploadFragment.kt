@@ -68,6 +68,8 @@ class VideoUploadFragment : BaseFragment() {
 
     private lateinit var playerView: PlayerView
     private lateinit var title: EditText
+    private lateinit var recording: ImageView
+    private lateinit var add: ImageView
     private lateinit var reChoose: ImageView
     private lateinit var reChooseText: TextView
     private lateinit var curtain: View
@@ -84,6 +86,8 @@ class VideoUploadFragment : BaseFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         playerView = view find R.id.pv_video_upload_player
         title = view find R.id.edt_video_news_title
+        recording = view find R.id.iv_video_upload_recording
+        add = view find R.id.iv_video_upload_add
         reChoose = view find R.id.iv_video_upload_re_choose
         reChooseText = view find R.id.tv_video_upload_re_choose
         curtain = view find R.id.v_video_upload_black_curtain
@@ -103,34 +107,26 @@ class VideoUploadFragment : BaseFragment() {
 
                         progressBar.visibility = View.VISIBLE
 
-                        val job = lifecycleScope.launch {
+                        lifecycleScope.launch {
                             uploadProgress.collect {
-                                progressBar.progress = when(it) {
+                                progressBar.progress = when (it) {
                                     0 -> 0F
                                     100 -> 1F
-                                    else -> { it.toFloat() / 100F }
+                                    else -> {
+                                        it.toFloat() / 100F
+                                    }
                                 }
                             }
                         }
-                        upload(loggedUser, title.text.toString(), info) {
-                            job.cancel()
-                            progressBar.visibility = View.GONE
-                        }
+                        upload(loggedUser, title.text.toString(), info,
+                            {
+                                progressBar.visibility = View.GONE
+                            }, {
+                                progressBar.visibility = View.GONE
+                                title.setText("")
+                                reChoose()
+                            })
                     }
-                }
-            }
-
-            reChoose.setOnClickListener { reChoose() }
-
-            find<ImageView>(R.id.iv_video_upload_recording) {
-                setOnClickListener {
-                    carverAction.launch(Intent(requireContext(), CarverActivity::class.java))
-                }
-            }
-
-            find<ImageView>(R.id.iv_video_upload_add) {
-                setOnClickListener {
-                    pickAction.launch(Intent(Intent.ACTION_PICK, ACTION_PICK_VIDEO))
                 }
             }
 
@@ -142,12 +138,40 @@ class VideoUploadFragment : BaseFragment() {
                 height = navigationHeight
             }
         }
+
+        reChoose.setOnClickListener { reChoose() }
+
+        playerView.setOnClickListener {
+            if (player.isPlaying()) player.pause()
+            else player.play()
+        }
+
+        recording.setOnClickListener {
+            carverAction.launch(Intent(requireContext(), CarverActivity::class.java))
+        }
+
+        add.setOnClickListener {
+            pickAction.launch(Intent(Intent.ACTION_PICK, ACTION_PICK_VIDEO))
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        player.pause()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        player.pause()
+        player.release()
     }
 
     private fun selectUri(uri: Uri) {
         videoUri = uri
         curtain.visibility = View.VISIBLE
         playerView.visibility = View.VISIBLE
+        recording.visibility = View.GONE
+        add.visibility = View.GONE
         reChoose.visibility = View.VISIBLE
         reChooseText.visibility = View.VISIBLE
         slider.visibility = View.VISIBLE
@@ -160,10 +184,12 @@ class VideoUploadFragment : BaseFragment() {
 
     private fun reChoose() {
         videoUri = null
-        playerView.bindPlayer?.pause()
+        if (player.isPlaying()) player.pause()
         playerView.onPause()
         curtain.visibility = View.GONE
         playerView.visibility = View.GONE
+        recording.visibility = View.VISIBLE
+        add.visibility = View.VISIBLE
         reChoose.visibility = View.GONE
         reChooseText.visibility = View.GONE
         slider.visibility = View.GONE

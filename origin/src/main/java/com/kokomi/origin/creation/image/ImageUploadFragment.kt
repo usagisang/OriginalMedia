@@ -11,6 +11,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.kokomi.origin.R
 import com.kokomi.origin.base.BaseFragment
@@ -21,6 +22,8 @@ import com.kokomi.origin.util.find
 import com.kokomi.origin.util.getInputStreamInfoFrom
 import com.kokomi.origin.util.statusBarHeight
 import com.kokomi.origin.util.toast
+import com.kokomi.origin.weight.ProgressButton
+import kotlinx.coroutines.launch
 
 private val ACTION_PICK_IMAGE = android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI
 
@@ -52,11 +55,14 @@ class ImageUploadFragment : BaseFragment() {
     }
 
     private lateinit var image: ImageView
+    private lateinit var progressBar: ProgressButton
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         val title: EditText = view find R.id.edt_image_news_title
         image = view find R.id.iv_image_news_image
         val content: EditText = view find R.id.edt_image_news_content
+        progressBar = view find R.id.btn_image_upload_progress
+
         with(view) {
             image.setOnClickListener {
                 pickAction.launch(Intent(Intent.ACTION_PICK, ACTION_PICK_IMAGE))
@@ -71,7 +77,33 @@ class ImageUploadFragment : BaseFragment() {
                             return@setOnClickListener
                         }
                         val info = requireContext() getInputStreamInfoFrom uri
-                        upload(loggedUser, title.text.toString(), content.text.toString(), info)
+                        progressBar.visibility = View.VISIBLE
+
+                        lifecycleScope.launch {
+                            uploadProgress.collect {
+                                progressBar.progress = when (it) {
+                                    0 -> 0F
+                                    100 -> 1F
+                                    else -> {
+                                        it.toFloat() / 100F
+                                    }
+                                }
+                            }
+                        }
+
+                        upload(loggedUser, title.text.toString(), content.text.toString(), info,
+                            {
+                                progressBar.visibility = View.GONE
+                            }, {
+                                progressBar.visibility = View.GONE
+                                title.setText("")
+                                content.setText("")
+                                imageUri = null
+                                image.scaleType = ImageView.ScaleType.CENTER
+                                Glide.with(this)
+                                    .load(R.drawable.ic_image_creation)
+                                    .into(image)
+                            })
                     }
                 }
             }
