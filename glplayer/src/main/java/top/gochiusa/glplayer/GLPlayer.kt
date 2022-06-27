@@ -54,8 +54,13 @@ private constructor(
         get() = _currentPositionUs / 1000
     override val cacheDurationMs: Long
         get() = if (mediaSource.cacheDurationUs > 0) mediaSource.cacheDurationUs / 1000 else -1L
-    override val playerState: Int
-        get() = state
+
+    /**
+     * 播放器展示给外部检阅的当前状态
+     * 规定只能在主线程更改播放器状态并通知相应的监听器
+     */
+    override var playerState: Int = Player.STATE_INIT
+        private set
 
     @Volatile
     override var playAfterLoading: Boolean = builder.playAfterLoading
@@ -92,11 +97,9 @@ private constructor(
     private var syncClock: MediaClock? = null
 
     /**
-     * 播放器当前状态
-     * 规定只能在主线程更改播放器状态并通知相应的监听器
+     * 播放器内部状态
      */
-    @Volatile
-    private var state: Int = Player.STATE_INIT
+    private var innerState: Int = Player.STATE_INIT
 
     /**
      * 播放器的上一个状态，目前只用于seekTo的状态保存
@@ -121,7 +124,7 @@ private constructor(
     override fun play(delayTimeMs: Long) {
         Assert.verifyMainThread()
 
-        when(state)  {
+        when(playerState)  {
              Player.STATE_STOP -> {
                  eventHandler.sendMessage(
                      Message.obtain().apply {
@@ -147,7 +150,7 @@ private constructor(
 
     override fun canPause(state: Int): Boolean =
         state == Player.STATE_PLAYING || state == Player.STATE_BUFFERING ||
-                state == Player.STATE_LOADING || state == Player.STATE_READY
+                state == Player.STATE_LOADING
 
     override fun canSeekTo(state: Int): Boolean =
         state == Player.STATE_PLAYING || state == Player.STATE_PAUSE
@@ -156,7 +159,7 @@ private constructor(
 
     override fun pause() {
         Assert.verifyMainThread()
-        if (canPause(state)) {
+        if (canPause(playerState) || playerState == Player.STATE_READY) {
             eventHandler.sendEmptyMessage(MSG_PAUSE)
         }
     }
@@ -167,7 +170,7 @@ private constructor(
         if (positionMs > durationMs || positionMs == currentPositionMs) {
             return
         }
-        if (canSeekTo(state)) {
+        if (canSeekTo(playerState)) {
             eventHandler.sendMessage(Message.obtain().apply {
                 what = MSG_SEEK_TO
                 obj = positionMs
@@ -178,8 +181,8 @@ private constructor(
     override fun release() {
         Assert.verifyMainThread()
 
-        if (state != Player.STATE_RELEASE) {
-            state = Player.STATE_RELEASE
+        if (playerState != Player.STATE_RELEASE) {
+            playerState = Player.STATE_RELEASE
             eventHandler.removeCallbacksAndMessages(null)
             playbackThread.quit()
             renderers.forEach {
@@ -189,7 +192,7 @@ private constructor(
             mediaSource.release()
             videoOutput = null
             eventListenerSet.forEach {
-                it.onPlaybackStateChanged(state)
+                it.onPlaybackStateChanged(playerState)
             }
             eventListenerSet.clear()
         }
@@ -201,7 +204,7 @@ private constructor(
 
     override fun prepare() {
         Assert.verifyMainThread("Player:prepare is accessed on the wrong thread")
-        if (state != Player.STATE_RELEASE) {
+        if (playerState != Player.STATE_RELEASE) {
             mediaItem?.let {
                 eventHandler.sendMessage(Message.obtain().apply {
                     what = MSG_PREPARE
@@ -214,7 +217,7 @@ private constructor(
     override fun setVideoSurfaceView(surfaceView: SurfaceView) {
         Assert.verifyMainThread()
 
-        if (state == Player.STATE_RELEASE) {
+        if (playerState == Player.STATE_RELEASE) {
             return
         }
 
@@ -250,14 +253,14 @@ private constructor(
 
     override fun addEventListener(eventListener: EventListener) {
         eventListenerSet.add(eventListener)
-        eventListener.onPlaybackStateChanged(state)
+        eventListener.onPlaybackStateChanged(playerState)
     }
 
     override fun removeEventListener(eventListener: EventListener) {
         eventListenerSet.remove(eventListener)
     }
 
-    override fun isPlaying(): Boolean = state == Player.STATE_PLAYING
+    override fun isPlaying(): Boolean = playerState == Player.STATE_PLAYING
 
     override fun handleMessage(msg: Message): Boolean {
         return when (msg.what) {
@@ -331,6 +334,7 @@ private constructor(
         // 取消首帧渲染
         eventHandler.removeMessages(MSG_RENDER_FRAME_ONCE)
 
+        innerState = Player.STATE_LOADING
         mainHandler.post {
             changeStateUncheck(Player.STATE_LOADING)
         }
@@ -347,6 +351,7 @@ private constructor(
             mediaSource.setDataSource(mediaItem, requestHeaders)
         }.onFailure {
             // 播放源初始化失败，转入INIT状态
+            innerState = Player.STATE_INIT
             mainHandler.post {
                 notifyError(if (it is NetworkUnreachableException) NETWORK_UNREACHABLE_ERROR else
                     SOURCE_ERROR)
@@ -389,8 +394,8 @@ private constructor(
 
     // call in main thread
     private fun changeStateUncheck(newValue: Int) {
-        if (state != Player.STATE_RELEASE && state != newValue) {
-            state = newValue
+        if (playerState != Player.STATE_RELEASE && playerState != newValue) {
+            playerState = newValue
             eventListenerSet.forEach {
                 it.onPlaybackStateChanged(newValue)
             }
@@ -399,7 +404,7 @@ private constructor(
 
     // call in main thread
     private fun notifyError(errorCode: Int) {
-        if (state != Player.STATE_RELEASE) {
+        if (playerState != Player.STATE_RELEASE) {
             eventListenerSet.forEach {
                 it.onPlayerError(errorCode)
             }
@@ -433,6 +438,7 @@ private constructor(
                     obj = 0L
                 })
             } else {
+                innerState = Player.STATE_STOP
                 mainHandler.post {
                     changeStateUncheck(Player.STATE_STOP)
                 }
@@ -451,6 +457,7 @@ private constructor(
                 what = MSG_WAIT_FOR_CACHE
                 obj = WAIT_TIME_AS_START_MS
             })
+            innerState = Player.STATE_BUFFERING
             mainHandler.post {
                 changeStateUncheck(Player.STATE_BUFFERING)
             }
@@ -477,8 +484,9 @@ private constructor(
         val positionUs = positionMs * 1000
 
         // 缓存Buffing状态之前的状态，结束seekTo操作后需要自动恢复该状态
-        var oldState = state
+        var oldState = innerState
         if (oldState != Player.STATE_BUFFERING) {
+            innerState = Player.STATE_BUFFERING
             mainHandler.post {
                 changeStateUncheck(Player.STATE_BUFFERING)
             }
@@ -546,6 +554,7 @@ private constructor(
         // 更新起始时间
         startRenderTimeMs = SystemClock.elapsedRealtime() - _currentPositionUs / 1000
         eventHandler.sendEmptyMessage(MSG_RENDER)
+        innerState = Player.STATE_PLAYING
         mainHandler.post {
             changeStateUncheck(Player.STATE_PLAYING)
         }
@@ -560,13 +569,14 @@ private constructor(
         eventHandler.removeMessages(MSG_WAIT_FOR_CACHE)
 
         // Ready状态不应当转入Pause状态
-        if (state != Player.STATE_READY) {
+        if (innerState != Player.STATE_READY) {
+            innerState = Player.STATE_PAUSE
             renderers.forEach {
                 it.onPause()
             }
         }
         mainHandler.post {
-            if (state != Player.STATE_READY) {
+            if (playerState != Player.STATE_READY) {
                 changeStateUncheck(Player.STATE_PAUSE)
             }
         }
@@ -590,6 +600,7 @@ private constructor(
 
     private fun renderFirstFrameInternal(nextState: Int, renderTime: Long) {
         renderVideoFrame(renderTime)
+        innerState = nextState
         mainHandler.post {
             changeStateUncheck(nextState)
         }
