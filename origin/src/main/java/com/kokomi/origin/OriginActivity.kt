@@ -7,13 +7,17 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.viewModelScope
+import com.kokomi.origin.base.loggedUser
 import com.kokomi.origin.creation.CreationFragment
+import com.kokomi.origin.datastore.loadUser
 import com.kokomi.origin.explore.ExploreFragment
 import com.kokomi.origin.user.UserFragment
+import com.kokomi.origin.util.*
 import com.kokomi.origin.util.clearSystemBar
+import com.kokomi.origin.util.find
 import com.kokomi.origin.util.keepScreenAlive
 import com.kokomi.origin.util.navigationBarHeight
-import com.kokomi.origin.util.find
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -60,18 +64,20 @@ class OriginActivity : AppCompatActivity() {
                 navigationHeight = height + navigationBarHeight
             }
         }
+
+        loadUserFromDataStore()
     }
 
     override fun onResume() {
         super.onResume()
         keepScreenAlive(true)
-        if (lastFragment !is ExploreFragment) exploreFragment?.onShow()
+        if (lastFragment is ExploreFragment) exploreFragment?.onShow()
     }
 
     override fun onPause() {
         super.onPause()
         keepScreenAlive(false)
-        if (lastFragment !is ExploreFragment) exploreFragment?.onHide()
+        if (lastFragment is ExploreFragment) exploreFragment?.onHide()
     }
 
     private fun changeFragment(tag: String) {
@@ -110,6 +116,14 @@ class OriginActivity : AppCompatActivity() {
         if (lastFragment !is ExploreFragment) exploreFragment!!.onHide()
         else exploreFragment!!.onShow()
         transaction.commit()
+    }
+
+    private fun loadUserFromDataStore() {
+        lifecycleScope.launch {
+            loadUser().collect { user ->
+                user?.let { loggedUser = user }
+            }
+        }
     }
 
 }

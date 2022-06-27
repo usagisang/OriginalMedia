@@ -61,14 +61,15 @@ class UserViewModel : ViewModel() {
         }
     }
 
-    internal fun Context.loadUserFromDataStore() {
+    internal fun loadUser() {
         viewModelScope.launch {
-            loadUser().collect { user ->
-                user?.let {
-                    _user emit user
-                    loggedUser = user
-                    _isLogged emit true
-                }
+            val user = loggedUser
+            if (user == null) {
+                _user emit EMPTY_USER
+                _isLogged emit false
+            } else {
+                _user emit user
+                _isLogged emit true
             }
         }
     }

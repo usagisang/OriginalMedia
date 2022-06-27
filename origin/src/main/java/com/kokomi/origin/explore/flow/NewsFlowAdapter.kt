@@ -201,13 +201,14 @@ internal class NewsFlowAdapter(
         }
 
         override fun onDetached() {
-            playerView.bindPlayer!!.pause()
             playerView.onPause()
         }
 
         override fun onAttached() {
             playerView.onResume()
-            playerPool exchangeMainPlayer playerView.bindPlayer!!
+            playerView.bindPlayer?.let { player ->
+                playerPool exchange player
+            }
         }
     }
 

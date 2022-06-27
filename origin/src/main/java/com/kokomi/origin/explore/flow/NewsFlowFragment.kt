@@ -76,12 +76,12 @@ class NewsFlowFragment<VM : NewsFlowViewModel>(
 
     override fun onResume() {
         super.onResume()
-        if (shouldResumePlay) playerPool.mainPlayerPlay()
+        if (shouldResumePlay) playerPool.resumePool()
     }
 
     override fun onPause() {
         super.onPause()
-        shouldResumePlay = playerPool.mainPlayerPause()
+        shouldResumePlay = playerPool.pausePool()
     }
 
     private fun ViewPager2.setViewPager2CacheSize(size: Int) {
@@ -99,9 +99,9 @@ class NewsFlowFragment<VM : NewsFlowViewModel>(
         }
     }
 
-    internal fun pausePlayerPool() = playerPool.mainPlayerPause()
+    internal fun pausePlayerPool() = playerPool.pausePool()
 
-    internal fun playPlayerPool() = playerPool.mainPlayerPlay()
+    internal fun resumePlayerPool() = playerPool.resumePool()
 
     companion object {
         @JvmStatic
