@@ -194,7 +194,7 @@ internal class NewsFlowAdapter(
 
         override fun onBindViewHolder(new: News, position: Int) {
             playerPool.prepare(playerView, new.resource)
-            slider.player = playerView.bindPlayer
+            slider.bindPlayer(playerView.bindPlayer)
             title.text = new.title
             publishTime.text = getFormatDate(DATE_SUFFIX, new.uploadTime)
         }

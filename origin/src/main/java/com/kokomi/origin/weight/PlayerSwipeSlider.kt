@@ -20,10 +20,12 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.platform.AbstractComposeView
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.kokomi.origin.R
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.flow
@@ -37,32 +39,21 @@ internal class PlayerSwipeSlider
     defStyle: Int = 0
 ): AbstractComposeView(context, attr, defStyle) {
 
-    var player by mutableStateOf<Player?>(null)
+    private var player by mutableStateOf<Player?>(null)
 
     private var dragListener: OnDragSliderListener? = null
 
-    private var dragging = false
+    private var dragging by mutableStateOf(false)
 
-    private val progressFlow = flow {
-        while (player != null) {
-            player?.run {
-                // 只有在状态为正在播放、未拖动时才更新进度
-                if (isPlaying() && !dragging) {
-                    emit(
-                        if (durationMs != 0L) {
-                            (currentPositionMs.toFloat()) / (durationMs.toFloat())
-                        } else {
-                            0F
-                        }
-                    )
-                }
-            }
-            delay(200L)
-        }
-    }.conflate()
+    private var progressFlow = createProgressFlow()
 
     fun setOnDragSliderListener(listener: OnDragSliderListener?) {
         dragListener = listener
+    }
+
+    fun bindPlayer(player: Player?) {
+        this.player = player
+        progressFlow = createProgressFlow()
     }
 
     @Composable
@@ -73,6 +64,8 @@ internal class PlayerSwipeSlider
         val isLoading = (state == Player.STATE_LOADING || state == Player.STATE_BUFFERING)
 
         val alphaAnim = remember { Animatable(1F) }
+
+        val strokeWidth by animateDpAsState(targetValue = if (dragging) 6.dp else 2.dp)
 
         LaunchedEffect(isLoading) {
             if (isLoading) {
@@ -113,6 +106,7 @@ internal class PlayerSwipeSlider
                 dragging = false
             },
             color = colorResource(id = R.color.soft_white),
+            strokeWidth = strokeWidth
         )
     }
 
@@ -133,6 +127,29 @@ internal class PlayerSwipeSlider
                 realPlayer.removeEventListener(eventListener)
             }
         }
+    }
+
+    private fun createProgressFlow(): Flow<Float> {
+        return flow {
+            while (player != null) {
+                player?.run {
+                    // 只有在状态为正在播放、未拖动时才更新进度
+                    if (isPlaying() && !dragging) {
+                        emit(
+                            if (durationMs != 0L) {
+                                (currentPositionMs.toFloat()) / (durationMs.toFloat())
+                            } else {
+                                0F
+                            }
+                        )
+                    }
+                }
+                delay(200L)
+            }
+            if (player == null) {
+                emit(0F)
+            }
+        }.conflate()
     }
 }
 
@@ -155,6 +172,7 @@ private fun SwipeSlider(
     valueRange: ClosedFloatingPointRange<Float> = 0f..1f,
     onValueChangeFinished: (() -> Unit)? = null,
     color: Color = Color.Black,
+    strokeWidth: Dp,
 ) {
     Box(
         modifier = modifier,
@@ -174,7 +192,8 @@ private fun SwipeSlider(
             progressRange = valueRange,
             backgroundColor = Color.Transparent,
             color = color,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            height = strokeWidth
         )
     }
 }
@@ -185,12 +204,13 @@ private fun RoundLinearProgressIndicator(
     progressRange: ClosedFloatingPointRange<Float> = 0f..1f,
     modifier: Modifier = Modifier,
     color: Color = MaterialTheme.colors.primary,
-    backgroundColor: Color = Color.Transparent
+    backgroundColor: Color = Color.Transparent,
+    height: Dp,
 ) {
     Canvas(
         modifier
             .progressSemantics(progress, progressRange)
-            .size(240.dp, 4.dp)
+            .size(240.dp, height)
     ) {
         val strokeWidth = size.height
         val endFraction = if (progressRange.endInclusive == 0F) 0F else
