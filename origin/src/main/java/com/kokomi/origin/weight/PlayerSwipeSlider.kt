@@ -63,12 +63,17 @@ internal class PlayerSwipeSlider
 
         val isLoading = (state == Player.STATE_LOADING || state == Player.STATE_BUFFERING)
 
+        val enable = player?.canSeekTo(state) == true
+
         val alphaAnim = remember { Animatable(1F) }
 
         val strokeWidth by animateDpAsState(targetValue = if (dragging) 6.dp else 2.dp)
 
         LaunchedEffect(isLoading) {
             if (isLoading) {
+                if (state == Player.STATE_LOADING) {
+                    value = 1F
+                }
                 alphaAnim.animateTo(
                     targetValue = 0.3F,
                     animationSpec = infiniteRepeatable(
@@ -106,7 +111,8 @@ internal class PlayerSwipeSlider
                 dragging = false
             },
             color = colorResource(id = R.color.soft_white),
-            strokeWidth = strokeWidth
+            strokeWidth = strokeWidth,
+            enable = enable
         )
     }
 
@@ -173,6 +179,7 @@ private fun SwipeSlider(
     onValueChangeFinished: (() -> Unit)? = null,
     color: Color = Color.Black,
     strokeWidth: Dp,
+    enable: Boolean = true
 ) {
     Box(
         modifier = modifier,
@@ -186,6 +193,7 @@ private fun SwipeSlider(
             modifier = Modifier
                 .alpha(0F)
                 .fillMaxWidth(),
+            enabled = enable
         )
         RoundLinearProgressIndicator(
             progress = value,
