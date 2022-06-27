@@ -1,13 +1,11 @@
 package top.gochiusa.originalmedia
 
 import android.Manifest
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
-import com.kokomi.origin.OriginActivity
 import kotlinx.android.synthetic.main.bottom_bar.*
 import top.gochiusa.originalmedia.account.fragment.AccountFragment
 import top.gochiusa.originalmedia.base.BaseActivity
@@ -32,7 +30,7 @@ class LauncherActivity : BaseActivity<ActivityLauncherBinding>() {
 
 
     private fun init() {
-        startActivity(Intent(this, OriginActivity::class.java))
+        //startActivity(Intent(this, OriginActivity::class.java))
 
 //        println("$iv_bottom_explore 为什么我我我我 ")
 //        iv_bottom_explore.setOnClickListener {
