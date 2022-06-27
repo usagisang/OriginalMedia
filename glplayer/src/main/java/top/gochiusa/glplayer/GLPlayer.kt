@@ -54,6 +54,8 @@ private constructor(
         get() = _currentPositionUs / 1000
     override val cacheDurationMs: Long
         get() = if (mediaSource.cacheDurationUs > 0) mediaSource.cacheDurationUs / 1000 else -1L
+    override val playerState: Int
+        get() = state
 
     @Volatile
     override var playAfterLoading: Boolean = builder.playAfterLoading
@@ -143,10 +145,18 @@ private constructor(
         }
     }
 
+    override fun canPause(state: Int): Boolean =
+        state == Player.STATE_PLAYING || state == Player.STATE_BUFFERING ||
+                state == Player.STATE_LOADING || state == Player.STATE_READY
+
+    override fun canSeekTo(state: Int): Boolean =
+        state == Player.STATE_PLAYING || state == Player.STATE_PAUSE
+                || state == Player.STATE_STOP || state == Player.STATE_BUFFERING
+
+
     override fun pause() {
         Assert.verifyMainThread()
-        if (state == Player.STATE_PLAYING || state == Player.STATE_BUFFERING ||
-            state == Player.STATE_LOADING || state == Player.STATE_READY) {
+        if (canPause(state)) {
             eventHandler.sendEmptyMessage(MSG_PAUSE)
         }
     }
@@ -157,8 +167,7 @@ private constructor(
         if (positionMs > durationMs || positionMs == currentPositionMs) {
             return
         }
-        if (state == Player.STATE_PLAYING || state == Player.STATE_PAUSE
-            || state == Player.STATE_STOP || state == Player.STATE_BUFFERING) {
+        if (canSeekTo(state)) {
             eventHandler.sendMessage(Message.obtain().apply {
                 what = MSG_SEEK_TO
                 obj = positionMs
@@ -639,10 +648,8 @@ private constructor(
         val clock = syncClock ?: return realTime
         val time: Long = clock.getPositionUs()
 
-        return if (time < 0) {
+        return if (time == MediaClock.END_OF_RENDER || time < 0) {
             realTime
-        } else if (time >= clock.getDurationUs()) {
-            mediaSource.durationUs
         } else {
             time.coerceAtMost(realTime)
         }

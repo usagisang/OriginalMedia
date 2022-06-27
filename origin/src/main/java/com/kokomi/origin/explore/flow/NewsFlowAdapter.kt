@@ -15,11 +15,9 @@ import com.kokomi.origin.entity.TYPE_IMAGE
 import com.kokomi.origin.explore.tabBarHeight
 import com.kokomi.origin.navigationHeight
 import com.kokomi.origin.player.PlayerPool
-import com.kokomi.origin.util.find
-import com.kokomi.origin.util.getFormatDate
-import com.kokomi.origin.util.html
-import com.kokomi.origin.util.statusBarHeight
+import com.kokomi.origin.util.*
 import com.kokomi.origin.weight.OriginScrollView
+import com.kokomi.origin.weight.PlayerSwipeSlider
 import top.gochiusa.glplayer.PlayerView
 
 internal var flowCurrentItem = -1
@@ -82,6 +80,7 @@ internal class NewsFlowAdapter(
         private val title = root.find<TextView>(R.id.tv_image_news_title)
         private val image = root.find<ImageView>(R.id.iv_image_news_image)
         private val content = root.find<TextView>(R.id.tv_image_news_content)
+        private val openLayout = root.find<View>(R.id.ll_image_news_open)
         private val open = root.find<TextView>(R.id.tv_image_news_open)
         private val openIcon = root.find<ImageView>(R.id.iv_image_news_open_icon)
         private val publishTime = root.find<TextView>(R.id.tv_image_news_publish_time)
@@ -103,7 +102,7 @@ internal class NewsFlowAdapter(
             content.text = new.content.html
             scroll.scrollTo(0, 0)
             scroll.isScrollable = false
-            open.setOnClickListener {
+            openLayout.setOnClickListener {
                 if (open.text == OPEN_TEXT) {
                     open()
                 } else if (open.text == CLOSE_TEXT) {
@@ -169,6 +168,8 @@ internal class NewsFlowAdapter(
         private val title = root.find<TextView>(R.id.tv_video_news_title)
         private val playerView = root.find<PlayerView>(R.id.pv_video_news_player)
         private val publishTime = root.find<TextView>(R.id.tv_video_news_publish_time)
+        private val slider = root.find<PlayerSwipeSlider>(R.id.slider_video_news_progress)
+        private val progress = root.find<TextView>(R.id.tv_video_news_progress)
 
         init {
             root.find<TextView>(R.id.tv_video_news_status_bar) {
@@ -176,6 +177,12 @@ internal class NewsFlowAdapter(
             }
             root.find<TextView>(R.id.tv_video_news_navigation) {
                 height = navigationHeight
+            }
+            slider.setOnDragSliderListener { end, value, duration ->
+                if (duration != null) {
+                    progress.text = "${toTimeText(value * duration)}  /  ${toTimeText(duration)}"
+                    progress.visibility = if (end) View.GONE else View.VISIBLE
+                }
             }
             playerView.bindLifecycle(lifecycle)
             playerView.setOnClickListener {
@@ -188,6 +195,7 @@ internal class NewsFlowAdapter(
 
         override fun onBindViewHolder(new: News, position: Int) {
             playerPool.prepare(playerView, new.resource)
+            slider.bindPlayer(playerView.bindPlayer)
             title.text = new.title
             publishTime.text = getFormatDate(DATE_SUFFIX, new.uploadTime)
         }

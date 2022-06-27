@@ -23,7 +23,8 @@ class VideoUploadViewModel : ViewModel() {
     internal fun upload(
         user: User?,
         title: String,
-        inputStreamInfo: Pair<InputStream, String>
+        inputStreamInfo: Pair<InputStream, String>,
+        onFinish: () -> Unit = {}
     ) {
         if (user == null) {
             toast("请先登录")
@@ -52,6 +53,7 @@ class VideoUploadViewModel : ViewModel() {
                 }
             ).collect {
                 toast("上传成功")
+                onFinish()
                 isUploading = false
             }
         }

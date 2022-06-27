@@ -3,6 +3,7 @@ package top.gochiusa.glplayer.mediacodec
 import android.media.MediaCodec
 import android.os.SystemClock
 import top.gochiusa.glplayer.base.BaseRenderer
+import top.gochiusa.glplayer.base.MediaClock
 import top.gochiusa.glplayer.base.Sample
 import top.gochiusa.glplayer.base.Sender
 import top.gochiusa.glplayer.entity.Format
@@ -216,6 +217,8 @@ abstract class MediaCodecRenderer(
             val hasNext = (info.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM) == 0
             if (hasNext) {
                 return true
+            } else {
+                lastPositionUs = MediaClock.END_OF_RENDER
             }
         }
         return false

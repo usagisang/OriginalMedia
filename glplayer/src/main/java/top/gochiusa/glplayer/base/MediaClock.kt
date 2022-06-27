@@ -14,4 +14,8 @@ interface MediaClock {
      * 返回[Renderer]渲染的轨道的时长
      */
     fun getDurationUs(): Long
+
+    companion object {
+        const val END_OF_RENDER = Long.MIN_VALUE
+    }
 }

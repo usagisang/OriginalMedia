@@ -14,7 +14,7 @@ interface EventListener {
     fun onPlayerError(errorCode: Int)
 
     /**
-     * 当[Player]的状态发生修改时回调，保证此回调函数运行在主线程
+     * 当[Player]的状态发生修改时或者首次注册该监听器时回调，状态发生修改时，保证此回调函数运行在主线程
      */
     fun onPlaybackStateChanged(playbackState: Int)
 
