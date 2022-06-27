@@ -80,6 +80,7 @@ internal class NewsFlowAdapter(
         private val title = root.find<TextView>(R.id.tv_image_news_title)
         private val image = root.find<ImageView>(R.id.iv_image_news_image)
         private val content = root.find<TextView>(R.id.tv_image_news_content)
+        private val openLayout = root.find<View>(R.id.ll_image_news_open)
         private val open = root.find<TextView>(R.id.tv_image_news_open)
         private val openIcon = root.find<ImageView>(R.id.iv_image_news_open_icon)
         private val publishTime = root.find<TextView>(R.id.tv_image_news_publish_time)
@@ -101,7 +102,7 @@ internal class NewsFlowAdapter(
             content.text = new.content.html
             scroll.scrollTo(0, 0)
             scroll.isScrollable = false
-            open.setOnClickListener {
+            openLayout.setOnClickListener {
                 if (open.text == OPEN_TEXT) {
                     open()
                 } else if (open.text == CLOSE_TEXT) {

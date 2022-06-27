@@ -10,7 +10,7 @@
         android:id="@+id/sv_image_news_scroll"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@id/tv_image_news_open"
+        android:layout_above="@id/ll_image_news_open"
         android:scrollbars="none">
 
         <RelativeLayout
@@ -69,26 +69,29 @@
 
     </com.kokomi.origin.weight.OriginScrollView>
 
-    <TextView
-        android:id="@+id/tv_image_news_open"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:id="@+id/ll_image_news_open"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:orientation="horizontal"
         android:layout_above="@id/tv_image_news_publish_time"
-        android:layout_centerHorizontal="true"
-        android:padding="8dp"
-        android:text="展开"
-        android:textColor="@color/soft_white"
-        android:textSize="16sp" />
+        android:gravity="center_horizontal">
+        <TextView
+            android:id="@+id/tv_image_news_open"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="8dp"
+            android:text="展开"
+            android:textColor="@color/soft_white"
+            android:textSize="16sp" />
 
-    <ImageView
-        android:id="@+id/iv_image_news_open_icon"
-        android:layout_width="20dp"
-        android:layout_height="match_parent"
-        android:layout_alignTop="@id/tv_image_news_open"
-        android:layout_alignBottom="@id/tv_image_news_open"
-        android:layout_toEndOf="@id/tv_image_news_open"
-        android:padding="4dp"
-        android:src="@drawable/ic_open" />
+        <ImageView
+            android:id="@+id/iv_image_news_open_icon"
+            android:layout_width="20dp"
+            android:layout_height="match_parent"
+            android:padding="4dp"
+            android:src="@drawable/ic_open" />
+    </LinearLayout>
 
     <TextView
         android:id="@+id/tv_image_news_publish_time"
