@@ -11,6 +11,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.kokomi.carver.view.carver.CarverActivity
 import com.kokomi.origin.R
 import com.kokomi.origin.base.BaseFragment
@@ -21,6 +22,9 @@ import com.kokomi.origin.util.find
 import com.kokomi.origin.util.getInputStreamInfoFrom
 import com.kokomi.origin.util.statusBarHeight
 import com.kokomi.origin.util.toast
+import com.kokomi.origin.weight.PlayerSwipeSlider
+import com.kokomi.origin.weight.ProgressButton
+import kotlinx.coroutines.launch
 import top.gochiusa.glplayer.GLPlayer
 import top.gochiusa.glplayer.PlayerView
 import top.gochiusa.glplayer.base.Player
@@ -67,6 +71,8 @@ class VideoUploadFragment : BaseFragment() {
     private lateinit var reChoose: ImageView
     private lateinit var reChooseText: TextView
     private lateinit var curtain: View
+    private lateinit var slider: PlayerSwipeSlider
+    private lateinit var progressBar: ProgressButton
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -81,6 +87,9 @@ class VideoUploadFragment : BaseFragment() {
         reChoose = view find R.id.iv_video_upload_re_choose
         reChooseText = view find R.id.tv_video_upload_re_choose
         curtain = view find R.id.v_video_upload_black_curtain
+        slider = view find R.id.slider_video_upload_play_progress
+        progressBar = view find R.id.btn_video_upload_progress
+
         with(view) {
             viewModel<VideoUploadViewModel> {
                 find<ImageView>(R.id.iv_video_upload_complete) {
@@ -91,7 +100,22 @@ class VideoUploadFragment : BaseFragment() {
                             return@setOnClickListener
                         }
                         val info = requireContext() getInputStreamInfoFrom uri
-                        upload(loggedUser, title.text.toString(), info)
+
+                        progressBar.visibility = View.VISIBLE
+
+                        val job = lifecycleScope.launch {
+                            uploadProgress.collect {
+                                progressBar.progress = when(it) {
+                                    0 -> 0F
+                                    100 -> 1F
+                                    else -> { it.toFloat() / 100F }
+                                }
+                            }
+                        }
+                        upload(loggedUser, title.text.toString(), info) {
+                            job.cancel()
+                            progressBar.visibility = View.GONE
+                        }
                     }
                 }
             }
@@ -126,8 +150,10 @@ class VideoUploadFragment : BaseFragment() {
         playerView.visibility = View.VISIBLE
         reChoose.visibility = View.VISIBLE
         reChooseText.visibility = View.VISIBLE
+        slider.visibility = View.VISIBLE
         playerView.onResume()
         playerView.setPlayer(player)
+        slider.bindPlayer(player)
         player.setMediaItem(MediaItem.fromUri(uri))
         player.prepare()
     }
@@ -140,6 +166,7 @@ class VideoUploadFragment : BaseFragment() {
         playerView.visibility = View.GONE
         reChoose.visibility = View.GONE
         reChooseText.visibility = View.GONE
+        slider.visibility = View.GONE
     }
 
     companion object {
