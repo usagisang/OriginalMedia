@@ -25,7 +25,7 @@ import com.kokomi.origin.util.toast
 import com.kokomi.origin.weight.PlayerSwipeSlider
 import com.kokomi.origin.weight.ProgressButton
 import kotlinx.coroutines.launch
-import top.gochiusa.glplayer.GLPlayer
+import top.gochiusa.glplayer.GLPlayerBuilder
 import top.gochiusa.glplayer.PlayerView
 import top.gochiusa.glplayer.base.Player
 import top.gochiusa.glplayer.entity.MediaItem
@@ -38,7 +38,7 @@ class VideoUploadFragment : BaseFragment() {
     private var videoUri: Uri? = null
 
     private val player: Player by lazy {
-        GLPlayer.Builder(requireContext())
+        GLPlayerBuilder(requireContext())
             .setRenderFirstFrame(true)
             .setInfiniteLoop(true)
             .setPlayAfterLoading(true)

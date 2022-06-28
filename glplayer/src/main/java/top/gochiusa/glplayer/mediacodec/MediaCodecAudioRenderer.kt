@@ -7,17 +7,21 @@ import top.gochiusa.glplayer.entity.Format
 import top.gochiusa.glplayer.entity.MediaCodecConfiguration
 import top.gochiusa.glplayer.util.Constants
 import top.gochiusa.glplayer.util.PlayerLog
+import java.lang.reflect.Method
 import java.nio.ByteBuffer
 
 class MediaCodecAudioRenderer(
-    renderTimeLimitMs: Long = 5L,
+    renderTimeLimitMs: Long = 0L,
 ): MediaCodecRenderer(Constants.TRACK_TYPE_AUDIO, renderTimeLimitMs) {
 
-    private val audioClock: MediaClock by lazy { AudioClock() }
+    private val audioClock: AudioClock by lazy { AudioClock() }
 
     private var audioTrack: AudioTrack? = null
 
     private var audioFormat: Format? = null
+
+    private var bufferSize: Int = 0
+    private var outputPcmFrameSize: Int = 0
 
     override fun onSenderChanged(
         format: List<Format>,
@@ -26,6 +30,7 @@ class MediaCodecAudioRenderer(
         startPositionUs: Long
     ) {
         super.onSenderChanged(format, oldSender, newSender, startPositionUs)
+        audioClock.reset()
         val cacheFormat = audioFormat
         var newFormat: Format?
         if (cacheFormat != null) {
@@ -75,7 +80,6 @@ class MediaCodecAudioRenderer(
     ): Boolean {
         val bufferSize = bufferInfo.size
         val audioOutput = audioTrack
-        //PlayerLog.d(message = "audio position $positionUs, bufferTime ${bufferInfo.presentationTimeUs}")
         if (audioOutput == null || bufferSize <= 0 || buffer == null) {
             buffer?.clear()
             codec.releaseOutputBuffer(bufferIndex, false)
@@ -133,6 +137,7 @@ class MediaCodecAudioRenderer(
     override fun onDisabled(oldSender: Sender?) {
         super.onDisabled(oldSender)
         runCatching {
+            audioClock.reset()
             audioTrack?.flush()
         }
     }
@@ -140,7 +145,12 @@ class MediaCodecAudioRenderer(
     override fun onSeekTo(startPositionUs: Long) {
         super.onSeekTo(startPositionUs)
         runCatching {
-            audioTrack?.flush()
+            audioClock.onSeekTo(startPositionUs)
+            audioTrack?.run {
+                flush()
+                // 为了彻底清除playbackHeadPosition的计数
+                stop()
+            }
         }
     }
 
@@ -154,6 +164,7 @@ class MediaCodecAudioRenderer(
             val channelConfiguration = if (format.channelCount == 1)
                 AudioFormat.CHANNEL_OUT_MONO else AudioFormat.CHANNEL_OUT_STEREO
             val encoding = AudioFormat.ENCODING_PCM_16BIT
+            outputPcmFrameSize = format.channelCount * 2
 
             val minSize = AudioTrack.getMinBufferSize(
                 format.sampleRate,
@@ -170,19 +181,96 @@ class MediaCodecAudioRenderer(
                 .setEncoding(encoding)
                 .build()
 
+            bufferSize = minSize * 2
+
             audioTrack = AudioTrack(
-                attribute, audioFormat, minSize * 2,
+                attribute, audioFormat, bufferSize,
                 AudioTrack.MODE_STREAM, AudioManager.AUDIO_SESSION_ID_GENERATE
-            )
+            ).apply {
+                this.playbackHeadPosition
+            }
         }
     }
 
-    inner class AudioClock: MediaClock {
+    inner class AudioClock : MediaClock {
 
-        override fun getPositionUs(): Long = lastPositionUs
+        private var lastRawPlaybackHeadPosition: Long = 0L
+        private var rawPlaybackHeadWrapCount: Long = 0L
+        private var positionOffsetUs: Long = 0L
+
+        private val getLatencyMethod: Method = AudioTrack::class.java.getMethod("getLatency")
+
+        override fun getPositionUs(durationUs: Long): Long {
+            // TODO 考虑支持更精细的计算方式
+            /*val position = audioTrack?.getPlaybackPosition()
+
+            return if(lastPositionUs >= durationUs) {
+                MediaClock.END_OF_RENDER
+            } else if (position != null && lastPositionUs > 0) {
+                (position + positionOffsetUs)
+            } else {
+                lastPositionUs
+            }*/
+            val audioTrack = audioTrack ?: return -1L
+            return if (lastPositionUs >= durationUs) {
+                 MediaClock.END_OF_RENDER
+            } else if (lastPositionUs > 0) {
+                (lastPositionUs - audioTrack.getLatency()).coerceAtLeast(0L)
+            } else {
+                lastPositionUs
+            }
+        }
 
         override fun getDurationUs(): Long {
             return audioFormat?.duration ?: -1L
         }
+
+        internal fun reset() {
+            positionOffsetUs = 0L
+            lastRawPlaybackHeadPosition = 0L
+            rawPlaybackHeadWrapCount = 0L
+        }
+
+        internal fun onSeekTo(startPositionUs: Long) {
+            positionOffsetUs = startPositionUs
+            lastRawPlaybackHeadPosition = 0L
+        }
+
+        private fun framesToDurationUs(frameCount: Long, sampleRate: Int): Long {
+            return frameCount * 1000000L / sampleRate
+        }
+
+        /**
+         * 获取AudioTrack输出的帧计数
+         */
+        private fun AudioTrack.getPlaybackFramePosition(): Long {
+            val rawPlaybackHeadPosition = 0xFFFFFFFFL and playbackHeadPosition.toLong()
+
+            if (lastRawPlaybackHeadPosition > rawPlaybackHeadPosition) {
+                // The value must have wrapped around.
+                rawPlaybackHeadWrapCount++
+            }
+            lastRawPlaybackHeadPosition = rawPlaybackHeadPosition
+            return rawPlaybackHeadPosition + (rawPlaybackHeadWrapCount shl 32)
+        }
+
+        /**
+         * 根据[getPlaybackFramePosition]来估算[AudioTrack]的播放位置
+         */
+        private fun AudioTrack.getPlaybackPosition(): Long {
+            return (framesToDurationUs(getPlaybackFramePosition(),
+                sampleRate) - getLatencyWithoutBuffer()).coerceAtLeast(0L)
+        }
+
+        private fun AudioTrack.getLatencyWithoutBuffer(): Long {
+            val bufferSizeUs = framesToDurationUs(
+                bufferSize.toLong() / outputPcmFrameSize, sampleRate)
+            return getLatency() - bufferSizeUs
+        }
+
+        /**
+         * 根据隐藏的方法来获取AudioTrack的时间延迟信息
+         */
+        private fun AudioTrack.getLatency(): Long = getLatencyMethod.invoke(this) as Int * 1000L
     }
 }

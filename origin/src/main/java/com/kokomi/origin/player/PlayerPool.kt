@@ -2,7 +2,7 @@ package com.kokomi.origin.player
 
 import androidx.annotation.MainThread
 import com.kokomi.origin.appContext
-import top.gochiusa.glplayer.GLPlayer
+import top.gochiusa.glplayer.GLPlayerBuilder
 import top.gochiusa.glplayer.PlayerView
 import top.gochiusa.glplayer.base.Player
 import top.gochiusa.glplayer.entity.MediaItem
@@ -36,7 +36,7 @@ internal class PlayerPool(
         mutableListOf<Player>().apply {
             for (i in 1..playerPoolSize) {
                 add(
-                    GLPlayer.Builder(appContext)
+                    GLPlayerBuilder(appContext)
                         .setInfiniteLoop(true)
                         .setRenderFirstFrame(true)
                         .build()
