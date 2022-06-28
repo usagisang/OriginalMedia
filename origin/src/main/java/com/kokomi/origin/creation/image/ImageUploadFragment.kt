@@ -43,10 +43,6 @@ class ImageUploadFragment : BaseFragment() {
             }
         }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -109,7 +105,9 @@ class ImageUploadFragment : BaseFragment() {
             }
 
             find<TextView>(R.id.tv_image_upload_status_bar) {
-                height = statusBarHeight + tabBarHeight
+                lifecycleScope.launch {
+                    tabBarHeight.collect { height = it + statusBarHeight }
+                }
             }
 
             find<TextView>(R.id.tv_image_upload_empty_area) {
@@ -117,7 +115,9 @@ class ImageUploadFragment : BaseFragment() {
             }
 
             find<TextView>(R.id.tv_image_upload_navigation_bar) {
-                height = navigationHeight
+                lifecycleScope.launch {
+                    navigationHeight.collect { height = it }
+                }
             }
         }
     }

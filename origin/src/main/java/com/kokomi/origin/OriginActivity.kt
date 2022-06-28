@@ -3,11 +3,11 @@ package com.kokomi.origin
 import android.content.Context
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.ViewTreeObserver
 import android.widget.ImageView
 import android.widget.LinearLayout
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.viewModelScope
 import com.kokomi.origin.base.loggedUser
 import com.kokomi.origin.creation.CreationFragment
 import com.kokomi.origin.datastore.loadUser
@@ -18,14 +18,16 @@ import com.kokomi.origin.util.clearSystemBar
 import com.kokomi.origin.util.find
 import com.kokomi.origin.util.keepScreenAlive
 import com.kokomi.origin.util.navigationBarHeight
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 private const val EXPLORE = "explore"
 private const val CREATION = "creation"
 private const val USER = "user"
 
-internal var navigationHeight = 0
+private val _navigationHeight = MutableStateFlow(0)
+internal var navigationHeight: StateFlow<Int> = _navigationHeight
 
 internal lateinit var appContext: Context
 
@@ -36,9 +38,13 @@ class OriginActivity : AppCompatActivity() {
     private var creationFragment: CreationFragment? = null
     private var userFragment: UserFragment? = null
 
+    private lateinit var navigation: LinearLayout
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_origin)
+
+        navigation = this find R.id.ll_origin_navigation
 
         appContext = applicationContext
 
@@ -56,16 +62,17 @@ class OriginActivity : AppCompatActivity() {
             setOnClickListener { changeFragment(USER) }
         }
 
+        navigation.viewTreeObserver
+            .addOnGlobalLayoutListener {
+                lifecycleScope.launch {
+                    _navigationHeight emit navigation.height + navigationBarHeight
+                }
+            }
+
         changeFragment(EXPLORE)
 
-        lifecycleScope.launch {
-            delay(1L)
-            find<LinearLayout>(R.id.ll_origin_navigation) {
-                navigationHeight = height + navigationBarHeight
-            }
-        }
-
         loadUserFromDataStore()
+
     }
 
     override fun onResume() {
