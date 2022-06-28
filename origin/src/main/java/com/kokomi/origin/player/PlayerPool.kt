@@ -54,6 +54,12 @@ internal class PlayerPool(
         bufferPlayerQueueHead = (bufferPlayerQueueHead + 1) % (playerPoolSize - 1)
     }
 
+    internal fun pauseIfNecessary(targetPlayer: Player) {
+        targetPlayer.removeEventListener(eventListener)
+        if (targetPlayer.canPause(targetPlayer.playerState)) targetPlayer.pause()
+        eventListener.bindPlayer = null
+    }
+
     /**
      * 交换主播放器权
      * */
@@ -63,21 +69,13 @@ internal class PlayerPool(
             throw IllegalStateException("The Player does not belong to this pool.")
         }
 
-        val mainPlayer = players[playerMainIndex]
-
-        // 解除主播放器的事件监听器
-        if (eventListener.bindPlayer != null) {
-            mainPlayer.removeEventListener(eventListener)
-            // 若正在播放，则立即停止
-            if (mainPlayer.isPlaying()) mainPlayer.pause()
-            eventListener.bindPlayer = null
-        }
+        val mainPlayer = mainPlayer
 
         // 交换主播放器权
         players[playerMainIndex] = targetPlayer
         players[index] = mainPlayer
 
-        // 开始新主播放器的播放
+        // 开始新主播放器的播放，旧的监听器由旧的主播放器自行解除
         eventListener.bindPlayer = targetPlayer
         eventListener.autoPlay = true
         eventListener.autoSeekToStart = true
