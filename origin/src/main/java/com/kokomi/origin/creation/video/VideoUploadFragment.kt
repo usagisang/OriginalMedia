@@ -62,10 +62,6 @@ class VideoUploadFragment : BaseFragment() {
             }
         }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
-
     private lateinit var playerView: PlayerView
     private lateinit var title: EditText
     private lateinit var recording: ImageView
@@ -131,11 +127,15 @@ class VideoUploadFragment : BaseFragment() {
             }
 
             find<TextView>(R.id.tv_video_upload_status_bar) {
-                height = statusBarHeight + tabBarHeight
+                lifecycleScope.launch {
+                    tabBarHeight.collect { height = it + statusBarHeight }
+                }
             }
 
             find<TextView>(R.id.tv_video_upload_navigation_bar) {
-                height = navigationHeight
+                lifecycleScope.launch {
+                    navigationHeight.collect { height = it }
+                }
             }
         }
 

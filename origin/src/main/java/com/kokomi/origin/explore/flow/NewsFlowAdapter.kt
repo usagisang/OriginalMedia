@@ -18,6 +18,8 @@ import com.kokomi.origin.player.PlayerPool
 import com.kokomi.origin.util.*
 import com.kokomi.origin.weight.OriginScrollView
 import com.kokomi.origin.weight.PlayerSwipeSlider
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import top.gochiusa.glplayer.PlayerView
 
 internal var flowCurrentItem = -1
@@ -31,12 +33,14 @@ internal class NewsFlowAdapter(
     private val news: List<News>,
     private val playerPool: PlayerPool,
     private val lifecycle: Lifecycle,
+    private val lifecycleScope: CoroutineScope,
     private val loadMore: () -> Unit
 ) : RecyclerView.Adapter<NewsFlowAdapter.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         return if (viewType == TYPE_IMAGE) {
             ViewHolderImageImpl(
+                lifecycleScope,
                 LayoutInflater.from(parent.context)
                     .inflate(R.layout.item_image_news_origin, parent, false)
             )
@@ -44,6 +48,7 @@ internal class NewsFlowAdapter(
             ViewHolderVideoImpl(
                 playerPool,
                 lifecycle,
+                lifecycleScope,
                 LayoutInflater.from(parent.context)
                     .inflate(R.layout.item_video_news_origin, parent, false)
             )
@@ -75,7 +80,10 @@ internal class NewsFlowAdapter(
         internal abstract fun onAttached()
     }
 
-    internal class ViewHolderImageImpl(root: View) : ViewHolder(root) {
+    internal class ViewHolderImageImpl(
+        lifecycleScope: CoroutineScope,
+        root: View
+    ) : ViewHolder(root) {
         private val scroll = root.find<OriginScrollView>(R.id.sv_image_news_scroll)
         private val title = root.find<TextView>(R.id.tv_image_news_title)
         private val image = root.find<ImageView>(R.id.iv_image_news_image)
@@ -87,10 +95,14 @@ internal class NewsFlowAdapter(
 
         init {
             root.find<TextView>(R.id.tv_image_news_status_bar) {
-                height = +tabBarHeight + root.context.statusBarHeight
+                lifecycleScope.launch {
+                    tabBarHeight.collect { height = it + root.context.statusBarHeight }
+                }
             }
             root.find<TextView>(R.id.tv_image_news_navigation) {
-                height = navigationHeight
+                lifecycleScope.launch {
+                    navigationHeight.collect { height = it }
+                }
             }
         }
 
@@ -163,6 +175,7 @@ internal class NewsFlowAdapter(
     internal class ViewHolderVideoImpl(
         private val playerPool: PlayerPool,
         lifecycle: Lifecycle,
+        lifecycleScope: CoroutineScope,
         root: View
     ) : ViewHolder(root) {
         private val title = root.find<TextView>(R.id.tv_video_news_title)
@@ -173,10 +186,14 @@ internal class NewsFlowAdapter(
 
         init {
             root.find<TextView>(R.id.tv_video_news_status_bar) {
-                height = tabBarHeight + root.context.statusBarHeight
+                lifecycleScope.launch {
+                    tabBarHeight.collect { height = it + root.context.statusBarHeight }
+                }
             }
             root.find<TextView>(R.id.tv_video_news_navigation) {
-                height = navigationHeight
+                lifecycleScope.launch {
+                    navigationHeight.collect { height = it }
+                }
             }
             slider.setOnDragSliderListener { end, value, duration ->
                 if (duration != null) {

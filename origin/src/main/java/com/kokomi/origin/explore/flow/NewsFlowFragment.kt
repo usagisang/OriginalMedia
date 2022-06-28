@@ -26,10 +26,6 @@ class NewsFlowFragment<VM : NewsFlowViewModel>(
 
     private lateinit var viewModel: VM
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
-
     private lateinit var pager2: ViewPager2
 
     override fun onCreateView(
@@ -48,7 +44,8 @@ class NewsFlowFragment<VM : NewsFlowViewModel>(
                 flowAdapter = NewsFlowAdapter(
                     news.value.first,
                     playerPool,
-                    lifecycle
+                    lifecycle,
+                    lifecycleScope
                 ) { lifecycleScope.launch { loadMore() } }
                 adapter = flowAdapter
                 setViewPager2CacheSize(5)

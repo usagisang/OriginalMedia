@@ -8,8 +8,6 @@ import android.widget.TextView
 import androidx.compose.ui.platform.ComposeView
 import com.kokomi.origin.R
 import com.kokomi.origin.base.BaseFragment
-import com.kokomi.origin.explore.tabBarHeight
-import com.kokomi.origin.navigationHeight
 import com.kokomi.origin.util.find
 import com.kokomi.origin.util.navigationBarHeight
 import com.kokomi.origin.util.statusBarHeight

@@ -6,17 +6,15 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.compose.ui.platform.ComposeView
+import androidx.lifecycle.lifecycleScope
 import com.kokomi.origin.R
 import com.kokomi.origin.base.BaseFragment
 import com.kokomi.origin.base.ModelFragment
 import com.kokomi.origin.navigationHeight
 import com.kokomi.origin.util.find
+import kotlinx.coroutines.launch
 
 class UserFragment : BaseFragment() {
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -36,7 +34,9 @@ class UserFragment : BaseFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         with(view) {
             find<TextView>(R.id.tv_user_navigation) {
-                height = navigationHeight
+                lifecycleScope.launch {
+                    navigationHeight.collect { height = it }
+                }
             }
         }
     }

@@ -1,6 +1,8 @@
 package com.kokomi.origin.user
 
 import android.content.Context
+import android.graphics.BitmapFactory
+import android.graphics.drawable.BitmapDrawable
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -13,8 +15,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -25,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kokomi.origin.R
 import kotlinx.coroutines.flow.MutableStateFlow
+
 
 private val SoftBlack = Color(0xFF212121)
 private val SoftWhite = Color(0xFFF5F5F5)
@@ -42,9 +46,15 @@ internal fun UserContentView(context: Context, vm: UserViewModel) {
 @Composable
 private fun UserView(context: Context, vm: UserViewModel) {
     val isLogged by vm.isLogged.collectAsState()
+    val painter =
+        BitmapPainter(
+            context.getBlurBitmap(
+                context.getBitmap(R.drawable.ic_app), 25f
+            ).asImageBitmap()
+        )
     Box {
         Image(
-            painter = painterResource(id = R.drawable.ic_app),
+            painter = painter,
             modifier = Modifier
                 .blur(25.dp)
                 .fillMaxWidth()
