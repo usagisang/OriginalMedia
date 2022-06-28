@@ -13,6 +13,7 @@ import top.gochiusa.glplayer.data.SeekMode
 import top.gochiusa.glplayer.entity.Format
 import top.gochiusa.glplayer.entity.MediaItem
 import top.gochiusa.glplayer.listener.EventListener
+import top.gochiusa.glplayer.listener.VideoFrameListener
 import top.gochiusa.glplayer.listener.VideoMetadataListener
 import top.gochiusa.glplayer.listener.VideoSurfaceListener
 import top.gochiusa.glplayer.util.Assert
@@ -112,7 +113,9 @@ internal constructor(
         componentListener = ComponentListener()
 
         mediaSource = builder.sourceFactory.createMediaSource(applicationContext)
-        renderers = builder.rendererFactory.createRenders(eventHandler, componentListener)
+        componentListener.let {
+            renderers = builder.rendererFactory.createRenders(eventHandler, it, it)
+        }
         requestHeaders = builder.requestHeader
 
         syncClock = renderers.firstOrNull {
@@ -391,25 +394,6 @@ internal constructor(
         }
     }
 
-    // call in main thread
-    private fun changeStateUncheck(newValue: Int) {
-        if (playerState != Player.STATE_RELEASE && playerState != newValue) {
-            playerState = newValue
-            eventListenerSet.forEach {
-                it.onPlaybackStateChanged(newValue)
-            }
-        }
-    }
-
-    // call in main thread
-    private fun notifyError(errorCode: Int) {
-        if (playerState != Player.STATE_RELEASE) {
-            eventListenerSet.forEach {
-                it.onPlayerError(errorCode)
-            }
-        }
-    }
-
     private fun renderInternal(loop: Boolean) {
         val loopStart = SystemClock.elapsedRealtime()
         loopSendData()
@@ -431,6 +415,11 @@ internal constructor(
 
         // 如果已经到达末尾
         if (currentPositionMs >= durationMs) {
+            componentListener.run {
+                PlayerLog.i(message = "FrameCount: ${totalLose + totalRelease}, FrameLose: " +
+                        "$totalLose, ratio: ${totalLose.toFloat() / (totalLose + totalRelease)}")
+                resetFrameCount()
+            }
             if (infiniteLoop) {
                 eventHandler.sendMessage(Message.obtain().apply {
                     what = MSG_SEEK_TO
@@ -618,6 +607,25 @@ internal constructor(
         }
     }
 
+    // call in main thread
+    private fun changeStateUncheck(newValue: Int) {
+        if (playerState != Player.STATE_RELEASE && playerState != newValue) {
+            playerState = newValue
+            eventListenerSet.forEach {
+                it.onPlaybackStateChanged(newValue)
+            }
+        }
+    }
+
+    // call in main thread
+    private fun notifyError(errorCode: Int) {
+        if (playerState != Player.STATE_RELEASE) {
+            eventListenerSet.forEach {
+                it.onPlayerError(errorCode)
+            }
+        }
+    }
+
     /**
      * 循环调用[MediaSource.sendData]，直到发送失败或[block]返回false
      */
@@ -653,10 +661,11 @@ internal constructor(
      * 计算当前播放位置
      */
     private fun getCurrentPosition(delayTimeMs: Long): Long {
+        val durationUs = mediaSource.durationUs
         val realTime = ((SystemClock.elapsedRealtime() - startRenderTimeMs) * 1000
-                + delayTimeMs).coerceAtMost(mediaSource.durationUs)
+                + delayTimeMs).coerceAtMost(durationUs)
         val clock = syncClock ?: return realTime
-        val time: Long = clock.getPositionUs()
+        val time: Long = clock.getPositionUs(durationUs)
 
         return if (time == MediaClock.END_OF_RENDER || time < 0) {
             realTime
@@ -665,7 +674,8 @@ internal constructor(
         }
     }
 
-    private inner class ComponentListener : VideoSurfaceListener, VideoMetadataListener {
+    private inner class ComponentListener
+        : VideoSurfaceListener, VideoMetadataListener, VideoFrameListener {
         var internalVideoMetadataListener: VideoMetadataListener? = null
             set(value) {
                 field = value
@@ -674,6 +684,9 @@ internal constructor(
                 }
             }
         lateinit var cacheFormat: Format
+
+        var totalLose: Int = 0
+        var totalRelease: Int = 0
 
         override fun onVideoSurfaceCreated(surface: Surface) {
             setVideoOutputInternal(surface)
@@ -689,6 +702,18 @@ internal constructor(
             cacheFormat = format
         }
 
+        override fun onFrameRelease() {
+            totalRelease ++
+        }
+
+        override fun onFrameLose() {
+            totalLose ++
+        }
+
+        fun resetFrameCount() {
+            totalRelease = 0
+            totalLose = 0
+        }
     }
 
     companion object {
