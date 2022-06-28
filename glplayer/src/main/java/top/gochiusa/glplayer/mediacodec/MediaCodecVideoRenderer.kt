@@ -7,6 +7,7 @@ import top.gochiusa.glplayer.base.MediaClock
 import top.gochiusa.glplayer.base.Sender
 import top.gochiusa.glplayer.entity.Format
 import top.gochiusa.glplayer.entity.MediaCodecConfiguration
+import top.gochiusa.glplayer.listener.VideoFrameListener
 import top.gochiusa.glplayer.listener.VideoMetadataListener
 import top.gochiusa.glplayer.listener.VideoSurfaceListener
 import top.gochiusa.glplayer.util.Constants
@@ -17,15 +18,14 @@ class MediaCodecVideoRenderer(
     private val leadingLimitUs: Long = 1000000L,
     renderTimeLimitMs: Long = LIMIT_NOT_SET,
     private val syncLimitUs: Long = DEFAULT_VIDEO_SYNC_LIMIT,
-    private var videoMetadataListener: VideoMetadataListener? = null
+    private var videoMetadataListener: VideoMetadataListener? = null,
+    private var videoFrameListener: VideoFrameListener? = null
 ): MediaCodecRenderer(Constants.TRACK_TYPE_VIDEO, renderTimeLimitMs), VideoSurfaceListener {
 
     private val videoClock: MediaClock by lazy { VideoClock() }
 
     private var surface: Surface? = null
     private var videoFormat: Format? = null
-
-    private var frameLossCount = 0
 
     override fun onSenderChanged(
         format: List<Format>,
@@ -34,8 +34,6 @@ class MediaCodecVideoRenderer(
         startPositionUs: Long
     ) {
         super.onSenderChanged(format, oldSender, newSender, startPositionUs)
-
-        frameLossCount = 0
 
         videoFormat?.let {
             oldSender?.unbindTrack(it, this)
@@ -82,21 +80,19 @@ class MediaCodecVideoRenderer(
                 + syncLimit)
         // 当前播放位置处于可同步的范围内(不超出此帧的PTS前后syncLimitMs内)
         return if (positionUs in syncRange) {
-            //PlayerLog.d(message = "Frame in syncRange")
             try {
                 codec.releaseOutputBuffer(bufferIndex, true)
+                videoFrameListener?.onFrameRelease()
             } catch (error: MediaCodec.CodecException) {
                 // 如果报出MediaCodec.CodecException，有可能是释放了一个不完整的帧
                 PlayerLog.e(message = error)
             }
             true
         } else if (presentationTimeUs in positionUs..(positionUs + leadingLimitUs)) {
-            //PlayerLog.d(message = "frame pending release")
             // 此帧超前，但不超过leadingLimitMs指定的最大限度
             false
         } else {
-            //PlayerLog.d(message = "Frame loss.")
-            frameLossCount++
+            videoFrameListener?.onFrameLose()
             codec.releaseOutputBuffer(bufferIndex, false)
             true
         }
@@ -158,7 +154,7 @@ class MediaCodecVideoRenderer(
     }
 
     inner class VideoClock: MediaClock {
-        override fun getPositionUs(): Long = lastPositionUs
+        override fun getPositionUs(durationUs: Long): Long = lastPositionUs
 
         override fun getDurationUs(): Long {
             return videoFormat?.duration ?: -1L
