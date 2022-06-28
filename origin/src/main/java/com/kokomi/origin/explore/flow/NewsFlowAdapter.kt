@@ -201,6 +201,7 @@ internal class NewsFlowAdapter(
         }
 
         override fun onDetached() {
+            playerPool.pauseIfNecessary(playerView.bindPlayer!!)
             playerView.onPause()
         }
 
