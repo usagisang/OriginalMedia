@@ -65,7 +65,9 @@ class VideoUploadFragment : BaseFragment() {
     private lateinit var playerView: PlayerView
     private lateinit var title: EditText
     private lateinit var recording: ImageView
+    private lateinit var recordingText: TextView
     private lateinit var add: ImageView
+    private lateinit var addText: TextView
     private lateinit var reChoose: ImageView
     private lateinit var reChooseText: TextView
     private lateinit var curtain: View
@@ -83,7 +85,9 @@ class VideoUploadFragment : BaseFragment() {
         playerView = view find R.id.pv_video_upload_player
         title = view find R.id.edt_video_news_title
         recording = view find R.id.iv_video_upload_recording
+        recordingText = view find R.id.tv_video_upload_recording_text
         add = view find R.id.iv_video_upload_add
+        addText = view find R.id.tv_video_upload_add_text
         reChoose = view find R.id.iv_video_upload_re_choose
         reChooseText = view find R.id.tv_video_upload_re_choose
         curtain = view find R.id.v_video_upload_black_curtain
@@ -171,7 +175,9 @@ class VideoUploadFragment : BaseFragment() {
         curtain.visibility = View.VISIBLE
         playerView.visibility = View.VISIBLE
         recording.visibility = View.GONE
+        reChooseText.visibility = View.GONE
         add.visibility = View.GONE
+        addText.visibility = View.GONE
         reChoose.visibility = View.VISIBLE
         reChooseText.visibility = View.VISIBLE
         slider.visibility = View.VISIBLE
@@ -189,7 +195,9 @@ class VideoUploadFragment : BaseFragment() {
         curtain.visibility = View.GONE
         playerView.visibility = View.GONE
         recording.visibility = View.VISIBLE
+        recordingText.visibility = View.VISIBLE
         add.visibility = View.VISIBLE
+        addText.visibility = View.VISIBLE
         reChoose.visibility = View.GONE
         reChooseText.visibility = View.GONE
         slider.visibility = View.GONE

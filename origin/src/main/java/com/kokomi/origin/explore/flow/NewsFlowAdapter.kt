@@ -19,10 +19,10 @@ import com.kokomi.origin.util.*
 import com.kokomi.origin.weight.OriginScrollView
 import com.kokomi.origin.weight.PlayerSwipeSlider
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import top.gochiusa.glplayer.PlayerView
-
-internal var flowCurrentItem = -1
+import top.gochiusa.glplayer.base.Player
 
 private const val OPEN_TEXT = "展开"
 private const val EMPTY_TEXT = ""
@@ -34,13 +34,15 @@ internal class NewsFlowAdapter(
     private val playerPool: PlayerPool,
     private val lifecycle: Lifecycle,
     private val lifecycleScope: CoroutineScope,
-    private val loadMore: () -> Unit
+    private val flowCurrentItem: StateFlow<Pair<Int, Boolean>>
 ) : RecyclerView.Adapter<NewsFlowAdapter.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         return if (viewType == TYPE_IMAGE) {
             ViewHolderImageImpl(
+                playerPool,
                 lifecycleScope,
+                flowCurrentItem,
                 LayoutInflater.from(parent.context)
                     .inflate(R.layout.item_image_news_origin, parent, false)
             )
@@ -49,6 +51,7 @@ internal class NewsFlowAdapter(
                 playerPool,
                 lifecycle,
                 lifecycleScope,
+                flowCurrentItem,
                 LayoutInflater.from(parent.context)
                     .inflate(R.layout.item_video_news_origin, parent, false)
             )
@@ -57,7 +60,6 @@ internal class NewsFlowAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.onBindViewHolder(news[position], position)
-        if (position == news.size - 3 || position == news.size - 1) loadMore()
     }
 
     override fun getItemViewType(position: Int) = news[position].type
@@ -81,7 +83,9 @@ internal class NewsFlowAdapter(
     }
 
     internal class ViewHolderImageImpl(
+        private val playerPool: PlayerPool,
         lifecycleScope: CoroutineScope,
+        flowCurrentItem: StateFlow<Pair<Int, Boolean>>,
         root: View
     ) : ViewHolder(root) {
         private val scroll = root.find<OriginScrollView>(R.id.sv_image_news_scroll)
@@ -102,6 +106,13 @@ internal class NewsFlowAdapter(
             root.find<TextView>(R.id.tv_image_news_navigation) {
                 lifecycleScope.launch {
                     navigationHeight.collect { height = it }
+                }
+            }
+            lifecycleScope.launch {
+                flowCurrentItem.collect {
+                    if (it.first == adapterPosition) {
+                        playerPool exchange null
+                    }
                 }
             }
         }
@@ -176,6 +187,7 @@ internal class NewsFlowAdapter(
         private val playerPool: PlayerPool,
         lifecycle: Lifecycle,
         lifecycleScope: CoroutineScope,
+        flowCurrentItem: StateFlow<Pair<Int, Boolean>>,
         root: View
     ) : ViewHolder(root) {
         private val title = root.find<TextView>(R.id.tv_video_news_title)
@@ -204,8 +216,19 @@ internal class NewsFlowAdapter(
             playerView.bindLifecycle(lifecycle)
             playerView.setOnClickListener {
                 playerView.bindPlayer?.let { player ->
-                    if (player.isPlaying()) player.pause()
-                    else player.play()
+                    if (player.playerState == Player.STATE_PLAYING) player.pause()
+                    else if (player.playerState == Player.STATE_PAUSE) player.play()
+                }
+            }
+            lifecycleScope.launch {
+                flowCurrentItem.collect {
+                    if (it.first == adapterPosition) {
+                        playerPool exchange playerView.bindPlayer
+                        playerView.onResume()
+                    } else {
+                        playerPool.pauseMain(playerView.bindPlayer)
+                        playerView.onPause()
+                    }
                 }
             }
         }
@@ -218,15 +241,11 @@ internal class NewsFlowAdapter(
         }
 
         override fun onDetached() {
-            playerPool.pauseIfNecessary(playerView.bindPlayer!!)
-            playerView.onPause()
+//            playerPool.pauseMain()
+//            playerView.onPause()
         }
 
         override fun onAttached() {
-            playerView.onResume()
-            playerView.bindPlayer?.let { player ->
-                playerPool exchange player
-            }
         }
     }
 

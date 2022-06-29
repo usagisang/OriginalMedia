@@ -3,7 +3,6 @@ package com.kokomi.origin
 import android.content.Context
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.view.ViewTreeObserver
 import android.widget.ImageView
 import android.widget.LinearLayout
 import androidx.fragment.app.Fragment
@@ -38,12 +37,18 @@ class OriginActivity : AppCompatActivity() {
     private var creationFragment: CreationFragment? = null
     private var userFragment: UserFragment? = null
 
+    private lateinit var explore: ImageView
+    private lateinit var creation: ImageView
+    private lateinit var user: ImageView
     private lateinit var navigation: LinearLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_origin)
 
+        explore = this find R.id.iv_origin_explore
+        creation = this find R.id.iv_origin_creation
+        user = this find R.id.iv_origin_user
         navigation = this find R.id.ll_origin_navigation
 
         appContext = applicationContext
@@ -99,6 +104,9 @@ class OriginActivity : AppCompatActivity() {
                     }
                 else transaction.show(exploreFragment!!)
                 lastFragment = exploreFragment
+                explore.setImageResource(R.drawable.ic_explore)
+                creation.setImageResource(R.drawable.ic_camera_gray)
+                user.setImageResource(R.drawable.ic_user_gray)
             }
             CREATION -> {
                 if (creationFragment == null)
@@ -108,6 +116,9 @@ class OriginActivity : AppCompatActivity() {
                     }
                 else transaction.show(creationFragment!!)
                 lastFragment = creationFragment
+                explore.setImageResource(R.drawable.ic_explore_gray)
+                creation.setImageResource(R.drawable.ic_camera)
+                user.setImageResource(R.drawable.ic_user_gray)
             }
             USER -> {
                 if (userFragment == null)
@@ -117,6 +128,9 @@ class OriginActivity : AppCompatActivity() {
                     }
                 else transaction.show(userFragment!!)
                 lastFragment = userFragment
+                explore.setImageResource(R.drawable.ic_explore_gray)
+                creation.setImageResource(R.drawable.ic_camera_gray)
+                user.setImageResource(R.drawable.ic_user)
             }
             else -> {}
         }

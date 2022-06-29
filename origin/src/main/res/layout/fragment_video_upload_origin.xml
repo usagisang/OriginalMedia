@@ -21,6 +21,16 @@
         app:cardCornerRadius="16dp"
         app:cardElevation="0dp">
 
+        <TextView
+            android:id="@+id/tv_video_upload_recording_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal|bottom"
+            android:paddingBottom="24dp"
+            android:text="现在录制！"
+            android:textColor="@color/soft_black"
+            android:textSize="20sp" />
+
         <ImageView
             android:id="@+id/iv_video_upload_recording"
             android:layout_width="match_parent"
@@ -40,6 +50,16 @@
         app:cardBackgroundColor="@color/soft_gray_white"
         app:cardCornerRadius="16dp"
         app:cardElevation="0dp">
+
+        <TextView
+            android:id="@+id/tv_video_upload_add_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal|bottom"
+            android:paddingBottom="24dp"
+            android:text="点击此处选择视频"
+            android:textColor="@color/soft_black"
+            android:textSize="20sp" />
 
         <ImageView
             android:id="@+id/iv_video_upload_add"
