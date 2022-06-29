@@ -41,7 +41,7 @@ internal fun Context.readStringFromRaw(@RawRes resId: Int): String {
 internal fun Context.isDebugVersion(): Boolean =
     runCatching {
         (applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
-    }.getOrDefault(false)
+    }.getOrDefault(true)
 
 
 

@@ -16,10 +16,7 @@ import top.gochiusa.glplayer.listener.EventListener
 import top.gochiusa.glplayer.listener.VideoFrameListener
 import top.gochiusa.glplayer.listener.VideoMetadataListener
 import top.gochiusa.glplayer.listener.VideoSurfaceListener
-import top.gochiusa.glplayer.util.Assert
-import top.gochiusa.glplayer.util.Constants
-import top.gochiusa.glplayer.util.NetworkUnreachableException
-import top.gochiusa.glplayer.util.PlayerLog
+import top.gochiusa.glplayer.util.*
 import java.io.IOException
 import java.util.concurrent.CopyOnWriteArraySet
 
@@ -45,9 +42,7 @@ import java.util.concurrent.CopyOnWriteArraySet
  * 能够免去手动调用[PlayerView.onPause]的繁琐
  */
 class GLPlayer
-internal constructor(
-    builder: GLPlayerBuilder
-) : Player, Handler.Callback {
+internal constructor(builder: GLPlayerBuilder) : Player, Handler.Callback {
 
     override val durationMs: Long
         get() = if (mediaSource.durationUs > 0) mediaSource.durationUs / 1000 else -1L
@@ -108,6 +103,7 @@ internal constructor(
     private var lastState: Int = Player.STATE_INIT
 
     init {
+        PlayerLog.show = builder.context.isDebugVersion()
         playbackThread.start()
         eventHandler = Handler(playbackThread.looper, this)
         componentListener = ComponentListener()
@@ -390,6 +386,11 @@ internal constructor(
                         obj = 0L
                     }, DELAY_FOR_DECODE_MS
                 )
+            } else {
+                innerState = Player.STATE_READY
+                mainHandler.post {
+                    changeStateUncheck(Player.STATE_READY)
+                }
             }
         }
     }
@@ -397,7 +398,6 @@ internal constructor(
     private fun renderInternal(loop: Boolean) {
         val loopStart = SystemClock.elapsedRealtime()
         loopSendData()
-        //PlayerLog.d(message = "loopSendData spend time ${SystemClock.elapsedRealtime() - loopStart}")
 
         val startTimeMs: Long = SystemClock.elapsedRealtime()
         renderers.forEach {
@@ -452,10 +452,8 @@ internal constructor(
             return
         }
 
-        //PlayerLog.d(message = "delay time $delayTimeMs")
         if (loop) {
             eventHandler.sendEmptyMessageDelayed(MSG_RENDER, delayTimeMs)
-            //eventHandler.sendEmptyMessage(MSG_RENDER)
         }
     }
 
