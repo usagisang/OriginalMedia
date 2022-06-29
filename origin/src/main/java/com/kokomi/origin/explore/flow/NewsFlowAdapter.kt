@@ -228,6 +228,7 @@ internal class NewsFlowAdapter(
             }
             lifecycleScope.launch {
                 flowCurrentItem.collect {
+                    start.visibility = View.GONE
                     if (it.first == adapterPosition) {
                         playerPool exchange playerView.bindPlayer
                         playerView.onResume()
