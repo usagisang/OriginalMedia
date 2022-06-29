@@ -15,7 +15,7 @@ import com.kokomi.origin.R
 import com.kokomi.origin.base.BaseFragment
 import com.kokomi.origin.player.PlayerPool
 import com.kokomi.origin.util.find
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 
 class NewsFlowFragment<VM : NewsFlowViewModel>(
@@ -40,7 +40,7 @@ class NewsFlowFragment<VM : NewsFlowViewModel>(
 
     private lateinit var swipe: SwipeRefreshLayout
 
-    private val flowCurrentItem = MutableStateFlow(Pair(-1, false))
+    private val flowCurrentItem = MutableSharedFlow<Int>(1, 0)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         viewModel(vm) {
@@ -56,15 +56,31 @@ class NewsFlowFragment<VM : NewsFlowViewModel>(
                 adapter = flowAdapter
                 recyclerViewConfig(5) { loadMore() }
                 registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
-                    override fun onPageSelected(position: Int) {
+                    private var last = -1
+                    override fun onPageScrolled(
+                        position: Int,
+                        positionOffset: Float,
+                        positionOffsetPixels: Int
+                    ) {
+//                        Log.e(TAG, "onPageSelected: $positionOffset")
+//                        Log.e(TAG, "onPageSelected: $position")
                         lifecycleScope.launch {
-                            Log.i(TAG, "onPageSelected: $position")
-                            flowCurrentItem emit Pair(position, !flowCurrentItem.value.second)
-                            if(refresh) {
+                            if (refresh) {
+                                flowCurrentItem emit position
                                 refresh = false
                                 pager2.isUserInputEnabled = true
+                                last = position
+                            } else {
+                                if (last != position) {
+                                    flowCurrentItem emit position
+                                    last = position
+                                }
                             }
                         }
+                    }
+
+                    override fun onPageSelected(position: Int) {
+
                     }
                 })
             }
@@ -88,11 +104,13 @@ class NewsFlowFragment<VM : NewsFlowViewModel>(
 
     override fun onResume() {
         super.onResume()
+        Log.i(TAG, "onResume")
         playerPool.resumePool()
     }
 
     override fun onPause() {
         super.onPause()
+        Log.i(TAG, "onPause")
         playerPool.pausePool()
     }
 

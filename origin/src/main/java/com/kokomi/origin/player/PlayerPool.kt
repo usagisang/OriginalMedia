@@ -1,5 +1,6 @@
 package com.kokomi.origin.player
 
+import android.os.Looper
 import android.util.Log
 import androidx.annotation.MainThread
 import com.kokomi.origin.appContext
@@ -10,7 +11,7 @@ import top.gochiusa.glplayer.entity.MediaItem
 
 @MainThread
 class PlayerPool(
-    private val size: Int = 5
+    private val size: Int
 ) {
 
     companion object {
@@ -23,7 +24,6 @@ class PlayerPool(
         for (i in -1 until size - 1) {
             val player = GLPlayerBuilder(appContext)
                 .setInfiniteLoop(true)
-                .setRenderFirstFrame(true)
                 .build()
             map[i] = player
         }
@@ -64,18 +64,20 @@ class PlayerPool(
     internal fun resumePool() {
         Log.i(TAG, "resume - autoResume = $autoResume")
         mainPlayer?.let { player ->
-            // 恢复状态，根据 autoResume 来恢复
+//             恢复状态，根据 autoResume 来恢复
             if (autoResume) {
-                if (player.playerState == Player.STATE_LOADING) {
+                if (player.playerState == Player.STATE_LOADING
+                    || player.playerState == Player.STATE_BUFFERING
+                ) {
                     listener.autoPlay = autoPlay
                 } else {
-                    player.play(300L)
+                    player.play()
                 }
             }
         }
     }
 
-    internal fun pauseMain(player: Player?) {
+    internal fun pause(player: Player?) {
         player ?: return
         // 暂停
         if (player.canPause()) player.pause()
@@ -86,10 +88,10 @@ class PlayerPool(
             Log.i(TAG, "exchange - main state = ${main.playerState}")
             if (listener.bindPlayer == null) return@let
             // 禁止自动播放
+            listener.bindPlayer = null
             listener.autoPlay = false
             // 解绑
             main.removeEventListener(listener)
-            listener.bindPlayer = null
             // 暂停
             if (main.canPause()) main.pause()
         }
@@ -106,10 +108,7 @@ class PlayerPool(
             playerMap[index] = main!!
             Log.i(TAG, "exchange - target state = ${target.playerState}")
             when (target.playerState) {
-                Player.STATE_READY -> {
-                    target.play()
-                }
-                Player.STATE_LOADING, Player.STATE_INIT -> {
+                Player.STATE_READY, Player.STATE_LOADING, Player.STATE_INIT -> {
                     listener.autoPlay = true
                 }
                 Player.STATE_PAUSE -> {
@@ -121,6 +120,7 @@ class PlayerPool(
                     player.seekTo(0L)
                 }
             }
+            Log.e(TAG, "exchange: player = $target")
             listener.bindPlayer = target
             target.addEventListener(listener)
         }

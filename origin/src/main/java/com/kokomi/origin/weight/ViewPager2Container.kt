@@ -89,7 +89,7 @@ class ViewPager2Container @JvmOverloads constructor(
         }
         val currentItem = mViewPager2?.currentItem
         val itemCount = mViewPager2?.adapter!!.itemCount
-        if (disY > disX) {
+        if (1.5 * disY > disX) {
             if (currentItem == 0 && endY - startY > 0) {
                 parent.requestDisallowInterceptTouchEvent(false)
             } else {
@@ -98,7 +98,7 @@ class ViewPager2Container @JvmOverloads constructor(
                             || endY - startY >= 0
                 )
             }
-        } else if (disX > disY) {
+        } else if (disX > 1.5 * disY) {
             parent.requestDisallowInterceptTouchEvent(false)
         }
     }
