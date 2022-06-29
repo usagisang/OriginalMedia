@@ -56,6 +56,7 @@ class NewsFlowFragment<VM : NewsFlowViewModel>(
                 adapter = flowAdapter
                 recyclerViewConfig(5) { loadMore() }
                 registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+                    private var last = -1
                     override fun onPageScrolled(
                         position: Int,
                         positionOffset: Float,
@@ -64,10 +65,16 @@ class NewsFlowFragment<VM : NewsFlowViewModel>(
 //                        Log.e(TAG, "onPageSelected: $positionOffset")
 //                        Log.e(TAG, "onPageSelected: $position")
                         lifecycleScope.launch {
-                            flowCurrentItem emit position
                             if (refresh) {
+                                flowCurrentItem emit position
                                 refresh = false
                                 pager2.isUserInputEnabled = true
+                                last = position
+                            } else {
+                                if (last != position) {
+                                    flowCurrentItem emit position
+                                    last = position
+                                }
                             }
                         }
                     }
