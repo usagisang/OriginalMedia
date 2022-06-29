@@ -100,14 +100,12 @@ class ExploreFragment : BaseFragment() {
         }
     }
 
-    private var playerShouldBeResumedIndex = -1
-
     internal fun onHide() {
-        playerShouldBeResumedIndex = exploreAdapter?.tryPause() ?: -1
+        exploreAdapter?.tryPause()
     }
 
     internal fun onShow() {
-        exploreAdapter?.tryResume(playerShouldBeResumedIndex)
+        exploreAdapter?.tryResume()
     }
 
     private fun TextView.isSelected(selected: Boolean) {

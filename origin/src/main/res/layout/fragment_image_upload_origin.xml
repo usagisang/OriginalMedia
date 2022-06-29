@@ -46,6 +46,15 @@
                 app:cardCornerRadius="16dp"
                 app:cardElevation="0dp">
 
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal|bottom"
+                    android:paddingBottom="24dp"
+                    android:text="点击此处添加图片"
+                    android:textColor="@color/soft_black"
+                    android:textSize="20sp" />
+
                 <ImageView
                     android:id="@+id/iv_image_news_image"
                     android:layout_width="match_parent"
