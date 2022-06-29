@@ -20,7 +20,7 @@ class PlayerPool(
 
     private val playerMap by lazy {
         val map = hashMapOf<Int, Player>()
-        for (i in -1 until size) {
+        for (i in -1 until size - 1) {
             val player = GLPlayerBuilder(appContext)
                 .setInfiniteLoop(true)
                 .setRenderFirstFrame(true)
@@ -41,7 +41,7 @@ class PlayerPool(
             setMediaItem(MediaItem.fromUrl(url))
             prepare()
         }
-        nextBufferKey = (nextBufferKey + 1) % size
+        nextBufferKey = (nextBufferKey + 1) % (size - 1)
     }
 
     private var autoPlay = true

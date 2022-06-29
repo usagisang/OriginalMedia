@@ -58,7 +58,12 @@ class NewsFlowFragment<VM : NewsFlowViewModel>(
                 registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
                     override fun onPageSelected(position: Int) {
                         lifecycleScope.launch {
+                            Log.i(TAG, "onPageSelected: $position")
                             flowCurrentItem emit Pair(position, !flowCurrentItem.value.second)
+                            if(refresh) {
+                                refresh = false
+                                pager2.isUserInputEnabled = true
+                            }
                         }
                     }
                 })
@@ -71,7 +76,6 @@ class NewsFlowFragment<VM : NewsFlowViewModel>(
                 news.collect {
                     flowAdapter.notifyDataSetChanged()
                     if (refresh) {
-                        refresh = false
                         Log.i(TAG, "update - refresh")
                         pager2.setCurrentItem(0, false)
                     }
@@ -115,10 +119,11 @@ class NewsFlowFragment<VM : NewsFlowViewModel>(
     private var refresh = false
 
     internal fun refresh() {
+        pager2.isUserInputEnabled = false
         swipe.isRefreshing = true
-        refresh = true
         lifecycleScope.launch {
             viewModel.refresh {
+                refresh = true
                 Log.i(TAG, "refresh - result = $it")
                 swipe.isRefreshing = false
             }
