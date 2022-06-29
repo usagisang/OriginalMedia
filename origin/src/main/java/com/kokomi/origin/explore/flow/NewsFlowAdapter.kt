@@ -192,6 +192,7 @@ internal class NewsFlowAdapter(
     ) : ViewHolder(root) {
         private val title = root.find<TextView>(R.id.tv_video_news_title)
         private val playerView = root.find<PlayerView>(R.id.pv_video_news_player)
+        private val start = root.find<ImageView>(R.id.iv_video_news_start)
         private val publishTime = root.find<TextView>(R.id.tv_video_news_publish_time)
         private val slider = root.find<PlayerSwipeSlider>(R.id.slider_video_news_progress)
         private val progress = root.find<TextView>(R.id.tv_video_news_progress)
@@ -216,8 +217,13 @@ internal class NewsFlowAdapter(
             playerView.bindLifecycle(lifecycle)
             playerView.setOnClickListener {
                 playerView.bindPlayer?.let { player ->
-                    if (player.playerState == Player.STATE_PLAYING) player.pause()
-                    else if (player.playerState == Player.STATE_PAUSE) player.play()
+                    if (player.playerState == Player.STATE_PLAYING) {
+                        player.pause()
+                        start.visibility = View.VISIBLE
+                    } else if (player.playerState == Player.STATE_PAUSE) {
+                        player.play()
+                        start.visibility = View.GONE
+                    }
                 }
             }
             lifecycleScope.launch {
@@ -241,8 +247,6 @@ internal class NewsFlowAdapter(
         }
 
         override fun onDetached() {
-//            playerPool.pauseMain()
-//            playerView.onPause()
         }
 
         override fun onAttached() {

@@ -63,6 +63,7 @@ class VideoUploadFragment : BaseFragment() {
         }
 
     private lateinit var playerView: PlayerView
+    private lateinit var start: ImageView
     private lateinit var title: EditText
     private lateinit var recording: ImageView
     private lateinit var recordingText: TextView
@@ -83,6 +84,7 @@ class VideoUploadFragment : BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         playerView = view find R.id.pv_video_upload_player
+        start = view find R.id.iv_video_upload_start
         title = view find R.id.edt_video_news_title
         recording = view find R.id.iv_video_upload_recording
         recordingText = view find R.id.tv_video_upload_recording_text
@@ -146,8 +148,13 @@ class VideoUploadFragment : BaseFragment() {
         reChoose.setOnClickListener { reChoose() }
 
         playerView.setOnClickListener {
-            if (player.isPlaying()) player.pause()
-            else player.play()
+            if (player.playerState == Player.STATE_PLAYING) {
+                player.pause()
+                start.visibility = View.VISIBLE
+            } else if (player.playerState == Player.STATE_PAUSE) {
+                player.play()
+                start.visibility = View.GONE
+            }
         }
 
         recording.setOnClickListener {
@@ -161,7 +168,10 @@ class VideoUploadFragment : BaseFragment() {
 
     override fun onPause() {
         super.onPause()
-        player.pause()
+        if (playerView.visibility == View.VISIBLE) {
+            player.pause()
+            start.visibility = View.VISIBLE
+        }
     }
 
     override fun onDestroy() {
@@ -194,6 +204,7 @@ class VideoUploadFragment : BaseFragment() {
         playerView.onPause()
         curtain.visibility = View.GONE
         playerView.visibility = View.GONE
+        start.visibility = View.GONE
         recording.visibility = View.VISIBLE
         recordingText.visibility = View.VISIBLE
         add.visibility = View.VISIBLE

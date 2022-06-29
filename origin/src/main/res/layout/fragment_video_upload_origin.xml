@@ -84,6 +84,16 @@
         android:layout_height="match_parent"
         android:visibility="gone" />
 
+    <ImageView
+        android:id="@+id/iv_video_upload_start"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_centerInParent="true"
+        android:clickable="false"
+        android:focusable="false"
+        android:src="@drawable/ic_start"
+        android:visibility="gone" />
+
     <EditText
         android:id="@+id/edt_video_news_title"
         android:layout_width="match_parent"

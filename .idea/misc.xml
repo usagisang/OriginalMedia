@@ -7,6 +7,7 @@
         <entry key="..\:/AndroidProject/OriginalMedia/origin/src/main/res/drawable/ic_camera_gray.xml" value="0.134" />
         <entry key="..\:/AndroidProject/OriginalMedia/origin/src/main/res/drawable/ic_explore.xml" value="0.134" />
         <entry key="..\:/AndroidProject/OriginalMedia/origin/src/main/res/drawable/ic_explore_gray.xml" value="0.134" />
+        <entry key="..\:/AndroidProject/OriginalMedia/origin/src/main/res/drawable/ic_start.xml" value="0.134" />
         <entry key="..\:/AndroidProject/OriginalMedia/origin/src/main/res/drawable/ic_user_gray.xml" value="0.134" />
         <entry key="..\:/AndroidProject/OriginalMedia/origin/src/main/res/layout/activity_origin.xml" value="0.21666666666666667" />
         <entry key="..\:/AndroidProject/OriginalMedia/origin/src/main/res/layout/fragment_creation_origin.xml" value="0.21666666666666667" />
@@ -16,7 +17,7 @@
         <entry key="..\:/AndroidProject/OriginalMedia/origin/src/main/res/layout/fragment_user_origin.xml" value="0.21666666666666667" />
         <entry key="..\:/AndroidProject/OriginalMedia/origin/src/main/res/layout/fragment_video_upload_origin.xml" value="0.21666666666666667" />
         <entry key="..\:/AndroidProject/OriginalMedia/origin/src/main/res/layout/item_image_news_origin.xml" value="0.20555555555555555" />
-        <entry key="..\:/AndroidProject/OriginalMedia/origin/src/main/res/layout/item_video_news_origin.xml" value="0.125" />
+        <entry key="..\:/AndroidProject/OriginalMedia/origin/src/main/res/layout/item_video_news_origin.xml" value="0.20555555555555555" />
       </map>
     </option>
   </component>
