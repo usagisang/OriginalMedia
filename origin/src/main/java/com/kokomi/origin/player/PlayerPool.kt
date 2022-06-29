@@ -108,10 +108,7 @@ class PlayerPool(
             playerMap[index] = main!!
             Log.i(TAG, "exchange - target state = ${target.playerState}")
             when (target.playerState) {
-                Player.STATE_READY -> {
-                    target.play()
-                }
-                Player.STATE_LOADING, Player.STATE_INIT -> {
+                Player.STATE_READY, Player.STATE_LOADING, Player.STATE_INIT -> {
                     listener.autoPlay = true
                 }
                 Player.STATE_PAUSE -> {
@@ -119,7 +116,6 @@ class PlayerPool(
                     target.seekTo(0L)
                 }
                 else -> {
-                    player.play()
                     // 到这里必定可以调用 seekTo ，因此就不检查状态了
                     player.seekTo(0L)
                 }
