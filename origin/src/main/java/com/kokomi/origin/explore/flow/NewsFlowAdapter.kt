@@ -20,10 +20,7 @@ import com.kokomi.origin.util.*
 import com.kokomi.origin.weight.OriginScrollView
 import com.kokomi.origin.weight.PlayerSwipeSlider
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import top.gochiusa.glplayer.PlayerView
 import top.gochiusa.glplayer.base.Player
@@ -233,7 +230,6 @@ internal class NewsFlowAdapter(
             }
             lifecycleScope.launch {
                 flowCurrentItem.collect {
-                    delay(100L)
                     Log.e("PlayerPool", "flow : $it")
                     Log.e("PlayerPool", "flow : ${playerView.bindPlayer}")
                     start.visibility = View.GONE

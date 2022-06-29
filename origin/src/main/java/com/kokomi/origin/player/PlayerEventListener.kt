@@ -28,8 +28,9 @@ class PlayerEventListener : EventListenerAdapter {
                     bindPlayer?.pause()
                 }
             }
-            Player.STATE_LOADING, Player.STATE_BUFFERING -> {
-
+            Player.STATE_LOADING -> {
+            }
+            Player.STATE_BUFFERING -> {
             }
         }
     }

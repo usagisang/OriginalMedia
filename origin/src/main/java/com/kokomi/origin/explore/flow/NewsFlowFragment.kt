@@ -16,7 +16,6 @@ import com.kokomi.origin.base.BaseFragment
 import com.kokomi.origin.player.PlayerPool
 import com.kokomi.origin.util.find
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 
 class NewsFlowFragment<VM : NewsFlowViewModel>(
@@ -57,15 +56,24 @@ class NewsFlowFragment<VM : NewsFlowViewModel>(
                 adapter = flowAdapter
                 recyclerViewConfig(5) { loadMore() }
                 registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
-                    override fun onPageSelected(position: Int) {
+                    override fun onPageScrolled(
+                        position: Int,
+                        positionOffset: Float,
+                        positionOffsetPixels: Int
+                    ) {
+//                        Log.e(TAG, "onPageSelected: $positionOffset")
+//                        Log.e(TAG, "onPageSelected: $position")
                         lifecycleScope.launch {
-                            Log.e(TAG, "onPageSelected: $position")
                             flowCurrentItem emit position
                             if (refresh) {
                                 refresh = false
                                 pager2.isUserInputEnabled = true
                             }
                         }
+                    }
+
+                    override fun onPageSelected(position: Int) {
+
                     }
                 })
             }
