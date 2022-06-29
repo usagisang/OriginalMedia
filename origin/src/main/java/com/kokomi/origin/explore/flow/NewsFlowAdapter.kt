@@ -1,6 +1,7 @@
 package com.kokomi.origin.explore.flow
 
 import android.animation.ObjectAnimator
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -19,6 +20,9 @@ import com.kokomi.origin.util.*
 import com.kokomi.origin.weight.OriginScrollView
 import com.kokomi.origin.weight.PlayerSwipeSlider
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import top.gochiusa.glplayer.PlayerView
@@ -34,7 +38,7 @@ internal class NewsFlowAdapter(
     private val playerPool: PlayerPool,
     private val lifecycle: Lifecycle,
     private val lifecycleScope: CoroutineScope,
-    private val flowCurrentItem: StateFlow<Pair<Int, Boolean>>
+    private val flowCurrentItem: SharedFlow<Int>
 ) : RecyclerView.Adapter<NewsFlowAdapter.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -85,7 +89,7 @@ internal class NewsFlowAdapter(
     internal class ViewHolderImageImpl(
         private val playerPool: PlayerPool,
         lifecycleScope: CoroutineScope,
-        flowCurrentItem: StateFlow<Pair<Int, Boolean>>,
+        flowCurrentItem: SharedFlow<Int>,
         root: View
     ) : ViewHolder(root) {
         private val scroll = root.find<OriginScrollView>(R.id.sv_image_news_scroll)
@@ -110,7 +114,7 @@ internal class NewsFlowAdapter(
             }
             lifecycleScope.launch {
                 flowCurrentItem.collect {
-                    if (it.first == adapterPosition) {
+                    if (it == adapterPosition) {
                         playerPool exchange null
                     }
                 }
@@ -187,7 +191,7 @@ internal class NewsFlowAdapter(
         private val playerPool: PlayerPool,
         lifecycle: Lifecycle,
         lifecycleScope: CoroutineScope,
-        flowCurrentItem: StateFlow<Pair<Int, Boolean>>,
+        flowCurrentItem: SharedFlow<Int>,
         root: View
     ) : ViewHolder(root) {
         private val title = root.find<TextView>(R.id.tv_video_news_title)
@@ -217,6 +221,7 @@ internal class NewsFlowAdapter(
             playerView.bindLifecycle(lifecycle)
             playerView.setOnClickListener {
                 playerView.bindPlayer?.let { player ->
+                    Log.i("PlayerPool", "click = $player state = ${player.playerState}")
                     if (player.playerState == Player.STATE_PLAYING) {
                         player.pause()
                         start.visibility = View.VISIBLE
@@ -228,12 +233,15 @@ internal class NewsFlowAdapter(
             }
             lifecycleScope.launch {
                 flowCurrentItem.collect {
+                    delay(100L)
+                    Log.e("PlayerPool", "flow : $it")
+                    Log.e("PlayerPool", "flow : ${playerView.bindPlayer}")
                     start.visibility = View.GONE
-                    if (it.first == adapterPosition) {
+                    if (it == adapterPosition) {
                         playerPool exchange playerView.bindPlayer
                         playerView.onResume()
                     } else {
-                        playerPool.pauseMain(playerView.bindPlayer)
+                        playerPool.pause(playerView.bindPlayer)
                         playerView.onPause()
                     }
                 }
@@ -241,7 +249,9 @@ internal class NewsFlowAdapter(
         }
 
         override fun onBindViewHolder(new: News, position: Int) {
+            Log.i("PlayerPool", "onBindViewHolder: $position")
             playerPool.prepare(playerView, new.resource)
+            Log.e("PlayerPool", "onBindViewHolder: ${playerView.bindPlayer}")
             slider.bindPlayer(playerView.bindPlayer)
             title.text = new.title
             publishTime.text = getFormatDate(DATE_SUFFIX, new.uploadTime)

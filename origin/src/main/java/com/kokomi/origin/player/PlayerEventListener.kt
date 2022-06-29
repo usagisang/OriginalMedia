@@ -15,6 +15,7 @@ class PlayerEventListener : EventListenerAdapter {
     internal var autoPlay: Boolean = true
 
     override fun onPlaybackStateChanged(playbackState: Int) {
+        Log.i(TAG, "onPlaybackStateChanged: $bindPlayer")
         Log.i(TAG, "stateChanged: $autoPlay")
         Log.i(TAG, "stateChanged: $playbackState")
         when (playbackState) {
@@ -23,10 +24,9 @@ class PlayerEventListener : EventListenerAdapter {
                     // 消耗自动播放事件
                     autoPlay = false
                     bindPlayer?.play()
+                } else {
+                    bindPlayer?.pause()
                 }
-            }
-            Player.STATE_PAUSE -> {
-
             }
             Player.STATE_LOADING, Player.STATE_BUFFERING -> {
 

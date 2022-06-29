@@ -15,6 +15,7 @@ import com.kokomi.origin.R
 import com.kokomi.origin.base.BaseFragment
 import com.kokomi.origin.player.PlayerPool
 import com.kokomi.origin.util.find
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 
@@ -40,7 +41,7 @@ class NewsFlowFragment<VM : NewsFlowViewModel>(
 
     private lateinit var swipe: SwipeRefreshLayout
 
-    private val flowCurrentItem = MutableStateFlow(Pair(-1, false))
+    private val flowCurrentItem = MutableSharedFlow<Int>(1, 0)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         viewModel(vm) {
@@ -58,9 +59,9 @@ class NewsFlowFragment<VM : NewsFlowViewModel>(
                 registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
                     override fun onPageSelected(position: Int) {
                         lifecycleScope.launch {
-                            Log.i(TAG, "onPageSelected: $position")
-                            flowCurrentItem emit Pair(position, !flowCurrentItem.value.second)
-                            if(refresh) {
+                            Log.e(TAG, "onPageSelected: $position")
+                            flowCurrentItem emit position
+                            if (refresh) {
                                 refresh = false
                                 pager2.isUserInputEnabled = true
                             }
@@ -88,11 +89,13 @@ class NewsFlowFragment<VM : NewsFlowViewModel>(
 
     override fun onResume() {
         super.onResume()
+        Log.i(TAG, "onResume")
         playerPool.resumePool()
     }
 
     override fun onPause() {
         super.onPause()
+        Log.i(TAG, "onPause")
         playerPool.pausePool()
     }
 
