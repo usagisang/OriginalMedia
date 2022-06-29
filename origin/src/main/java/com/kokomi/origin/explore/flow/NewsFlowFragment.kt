@@ -54,7 +54,7 @@ class NewsFlowFragment<VM : NewsFlowViewModel>(
                     flowCurrentItem
                 )
                 adapter = flowAdapter
-                recyclerViewConfig(5) { loadMore() }
+                recyclerViewConfig(3) { loadMore() }
                 registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
                     private var last = -1
                     override fun onPageScrolled(
