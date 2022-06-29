@@ -16,8 +16,8 @@ internal class ExplorePagerAdapter(
     override fun createFragment(position: Int): Fragment {
         return when (position) {
             0 -> NewsFlowFragment.newInstance<ImageFlowViewModel>(0)
-            1 -> NewsFlowFragment.newInstance<MixFlowViewModel>(6)
-            2 -> NewsFlowFragment.newInstance<VideoFlowViewModel>(6)
+            1 -> NewsFlowFragment.newInstance<MixFlowViewModel>(8)
+            2 -> NewsFlowFragment.newInstance<VideoFlowViewModel>(8)
             else -> throw IllegalStateException()
         }.also { fragmentMap[position] = it }
     }
