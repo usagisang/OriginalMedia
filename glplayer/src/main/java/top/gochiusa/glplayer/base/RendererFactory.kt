@@ -1,6 +1,7 @@
 package top.gochiusa.glplayer.base
 
 import android.os.Handler
+import top.gochiusa.glplayer.listener.VideoFrameListener
 import top.gochiusa.glplayer.listener.VideoMetadataListener
 
 fun interface RendererFactory {
@@ -12,6 +13,7 @@ fun interface RendererFactory {
      */
     fun createRenders(
         eventHandler: Handler,
-        metadataListener: VideoMetadataListener
+        metadataListener: VideoMetadataListener,
+        videoFrameListener: VideoFrameListener
     ): Array<Renderer>
 }

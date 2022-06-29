@@ -107,15 +107,13 @@ class PlayerView
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
-        lifecycle?.let {
-            bindLifecycle(it)
-        }
+        lifecycle?.addObserver(this)
         rebindPlayerUncheck()
     }
 
     override fun onDetachedFromWindow() {
         internalPlayer?.clearVideoSurfaceView(surfaceView)
-        unbindLifecycle()
+        lifecycle?.removeObserver(this)
         super.onDetachedFromWindow()
     }
 
@@ -125,6 +123,10 @@ class PlayerView
 
     override fun onPause(owner: LifecycleOwner) {
         onPause()
+    }
+
+    override fun onDestroy(owner: LifecycleOwner) {
+        unbindLifecycle()
     }
 
     override fun onScreenStateChanged(screenState: Int) {

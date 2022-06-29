@@ -9,6 +9,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import top.gochiusa.glplayer.GLPlayer
+import top.gochiusa.glplayer.GLPlayerBuilder
 import top.gochiusa.glplayer.base.Player
 import top.gochiusa.glplayer.entity.MediaItem
 import top.gochiusa.glplayer.listener.EventListenerAdapter
@@ -21,7 +22,7 @@ class DefaultVideoViewModel(
     context: Context
 ): ViewModel(), EventListenerAdapter {
 
-    val glPlayer: Player = GLPlayer.Builder(context)
+    val glPlayer: Player = GLPlayerBuilder(context)
         .setRenderFirstFrame(true).setInfiniteLoop(true).build()
 
     private val repository: VideoRepository = VideoRepository()

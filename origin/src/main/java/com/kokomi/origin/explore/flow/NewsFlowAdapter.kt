@@ -1,6 +1,7 @@
 package com.kokomi.origin.explore.flow
 
 import android.animation.ObjectAnimator
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -18,9 +19,11 @@ import com.kokomi.origin.player.PlayerPool
 import com.kokomi.origin.util.*
 import com.kokomi.origin.weight.OriginScrollView
 import com.kokomi.origin.weight.PlayerSwipeSlider
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.launch
 import top.gochiusa.glplayer.PlayerView
-
-internal var flowCurrentItem = -1
+import top.gochiusa.glplayer.base.Player
 
 private const val OPEN_TEXT = "展开"
 private const val EMPTY_TEXT = ""
@@ -31,12 +34,16 @@ internal class NewsFlowAdapter(
     private val news: List<News>,
     private val playerPool: PlayerPool,
     private val lifecycle: Lifecycle,
-    private val loadMore: () -> Unit
+    private val lifecycleScope: CoroutineScope,
+    private val flowCurrentItem: SharedFlow<Int>
 ) : RecyclerView.Adapter<NewsFlowAdapter.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         return if (viewType == TYPE_IMAGE) {
             ViewHolderImageImpl(
+                playerPool,
+                lifecycleScope,
+                flowCurrentItem,
                 LayoutInflater.from(parent.context)
                     .inflate(R.layout.item_image_news_origin, parent, false)
             )
@@ -44,6 +51,8 @@ internal class NewsFlowAdapter(
             ViewHolderVideoImpl(
                 playerPool,
                 lifecycle,
+                lifecycleScope,
+                flowCurrentItem,
                 LayoutInflater.from(parent.context)
                     .inflate(R.layout.item_video_news_origin, parent, false)
             )
@@ -52,7 +61,6 @@ internal class NewsFlowAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.onBindViewHolder(news[position], position)
-        if (position == news.size - 3 || position == news.size - 1) loadMore()
     }
 
     override fun getItemViewType(position: Int) = news[position].type
@@ -75,7 +83,12 @@ internal class NewsFlowAdapter(
         internal abstract fun onAttached()
     }
 
-    internal class ViewHolderImageImpl(root: View) : ViewHolder(root) {
+    internal class ViewHolderImageImpl(
+        private val playerPool: PlayerPool,
+        lifecycleScope: CoroutineScope,
+        flowCurrentItem: SharedFlow<Int>,
+        root: View
+    ) : ViewHolder(root) {
         private val scroll = root.find<OriginScrollView>(R.id.sv_image_news_scroll)
         private val title = root.find<TextView>(R.id.tv_image_news_title)
         private val image = root.find<ImageView>(R.id.iv_image_news_image)
@@ -87,10 +100,21 @@ internal class NewsFlowAdapter(
 
         init {
             root.find<TextView>(R.id.tv_image_news_status_bar) {
-                height = +tabBarHeight + root.context.statusBarHeight
+                lifecycleScope.launch {
+                    tabBarHeight.collect { height = it + root.context.statusBarHeight }
+                }
             }
             root.find<TextView>(R.id.tv_image_news_navigation) {
-                height = navigationHeight
+                lifecycleScope.launch {
+                    navigationHeight.collect { height = it }
+                }
+            }
+            lifecycleScope.launch {
+                flowCurrentItem.collect {
+                    if (it == adapterPosition) {
+                        playerPool exchange null
+                    }
+                }
             }
         }
 
@@ -163,20 +187,27 @@ internal class NewsFlowAdapter(
     internal class ViewHolderVideoImpl(
         private val playerPool: PlayerPool,
         lifecycle: Lifecycle,
+        lifecycleScope: CoroutineScope,
+        flowCurrentItem: SharedFlow<Int>,
         root: View
     ) : ViewHolder(root) {
         private val title = root.find<TextView>(R.id.tv_video_news_title)
         private val playerView = root.find<PlayerView>(R.id.pv_video_news_player)
+        private val start = root.find<ImageView>(R.id.iv_video_news_start)
         private val publishTime = root.find<TextView>(R.id.tv_video_news_publish_time)
         private val slider = root.find<PlayerSwipeSlider>(R.id.slider_video_news_progress)
         private val progress = root.find<TextView>(R.id.tv_video_news_progress)
 
         init {
             root.find<TextView>(R.id.tv_video_news_status_bar) {
-                height = tabBarHeight + root.context.statusBarHeight
+                lifecycleScope.launch {
+                    tabBarHeight.collect { height = it + root.context.statusBarHeight }
+                }
             }
             root.find<TextView>(R.id.tv_video_news_navigation) {
-                height = navigationHeight
+                lifecycleScope.launch {
+                    navigationHeight.collect { height = it }
+                }
             }
             slider.setOnDragSliderListener { end, value, duration ->
                 if (duration != null) {
@@ -187,28 +218,45 @@ internal class NewsFlowAdapter(
             playerView.bindLifecycle(lifecycle)
             playerView.setOnClickListener {
                 playerView.bindPlayer?.let { player ->
-                    if (player.isPlaying()) player.pause()
-                    else player.play()
+                    Log.i("PlayerPool", "click = $player state = ${player.playerState}")
+                    if (player.playerState == Player.STATE_PLAYING) {
+                        player.pause()
+                        start.visibility = View.VISIBLE
+                    } else if (player.playerState == Player.STATE_PAUSE) {
+                        player.play()
+                        start.visibility = View.GONE
+                    }
+                }
+            }
+            lifecycleScope.launch {
+                flowCurrentItem.collect {
+                    Log.e("PlayerPool", "flow : $it")
+                    Log.e("PlayerPool", "flow : ${playerView.bindPlayer}")
+                    start.visibility = View.GONE
+                    if (it == adapterPosition) {
+                        playerPool exchange playerView.bindPlayer
+                        playerView.onResume()
+                    } else {
+                        playerPool.pause(playerView.bindPlayer)
+                        playerView.onPause()
+                    }
                 }
             }
         }
 
         override fun onBindViewHolder(new: News, position: Int) {
+            Log.i("PlayerPool", "onBindViewHolder: $position")
             playerPool.prepare(playerView, new.resource)
+            Log.e("PlayerPool", "onBindViewHolder: ${playerView.bindPlayer}")
             slider.bindPlayer(playerView.bindPlayer)
             title.text = new.title
             publishTime.text = getFormatDate(DATE_SUFFIX, new.uploadTime)
         }
 
         override fun onDetached() {
-            playerView.onPause()
         }
 
         override fun onAttached() {
-            playerView.onResume()
-            playerView.bindPlayer?.let { player ->
-                playerPool exchange player
-            }
         }
     }
 

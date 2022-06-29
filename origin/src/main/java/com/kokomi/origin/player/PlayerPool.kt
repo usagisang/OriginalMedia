@@ -1,119 +1,132 @@
 package com.kokomi.origin.player
 
+import android.os.Looper
+import android.util.Log
 import androidx.annotation.MainThread
 import com.kokomi.origin.appContext
-import top.gochiusa.glplayer.GLPlayer
+import top.gochiusa.glplayer.GLPlayerBuilder
 import top.gochiusa.glplayer.PlayerView
 import top.gochiusa.glplayer.base.Player
 import top.gochiusa.glplayer.entity.MediaItem
 
 @MainThread
-internal class PlayerPool(
-    private val playerPoolSize: Int = 5
+class PlayerPool(
+    private val size: Int
 ) {
 
-    private val playerMainIndex = playerPoolSize - 1
-
-    private var bufferPlayerQueueHead = 0
-
-    private val eventListener by lazy { PlayerEventListener() }
-
-    /**
-     * 最后一个是主播放器(MainPlayer)
-     * <p>
-     *
-     * 其它都是缓冲播放器(BufferPlayer)
-     * <p>
-     *
-     * 只有主播放器可以播放，缓冲播放器只可以缓冲
-     * <p>
-     *
-     * 主播放器权是可以交换的，但是必须在主线程内交换
-     * @see PlayerPool.exchange
-     * <p>
-     * */
-    private val players by lazy {
-        mutableListOf<Player>().apply {
-            for (i in 1..playerPoolSize) {
-                add(
-                    GLPlayer.Builder(appContext)
-                        .setInfiniteLoop(true)
-                        .setRenderFirstFrame(true)
-                        .build()
-                )
-            }
-        }
+    companion object {
+        private const val TAG = "PlayerPool"
+        private const val MAIN_PLAYER_KEY = -1
     }
 
+    private val playerMap by lazy {
+        val map = hashMapOf<Int, Player>()
+        for (i in -1 until size - 1) {
+            val player = GLPlayerBuilder(appContext)
+                .setInfiniteLoop(true)
+                .build()
+            map[i] = player
+        }
+        map
+    }
+
+    private var nextBufferKey = 0
+
+    private val listener by lazy { PlayerEventListener() }
+
     internal fun prepare(playerView: PlayerView, url: String) {
-        players[bufferPlayerQueueHead].run {
+        Log.i(TAG, "prepare - $nextBufferKey")
+        playerMap[nextBufferKey]?.run {
             playerView.setPlayer(this)
             setMediaItem(MediaItem.fromUrl(url))
             prepare()
         }
-        bufferPlayerQueueHead = (bufferPlayerQueueHead + 1) % (playerPoolSize - 1)
+        nextBufferKey = (nextBufferKey + 1) % (size - 1)
     }
 
-    /**
-     * 交换主播放器权
-     * */
-    internal infix fun exchange(targetPlayer: Player) {
-        val index = players.indexOf(targetPlayer)
-        if (index == -1) {
-            throw IllegalStateException("The Player does not belong to this pool.")
+    private var autoPlay = true
+    private var autoResume = true
+
+    internal fun pausePool() {
+        mainPlayer?.let { player ->
+            // 记录自动播放状态
+            autoPlay = listener.autoPlay
+            // 禁止自动播放
+            listener.autoPlay = false
+            // 检查是否可以暂停，记录以恢复状态
+            autoResume = player.canPause()
+            // 若可以暂停，则暂停
+            if (autoResume) player.pause()
+            Log.i(TAG, "pause - playerState = ${player.playerState} autoResume = $autoResume")
         }
-
-        val mainPlayer = players[playerMainIndex]
-
-        // 解除主播放器的事件监听器
-        if (eventListener.bindPlayer != null) {
-            mainPlayer.removeEventListener(eventListener)
-            // 若正在播放，则立即停止
-            if (mainPlayer.isPlaying()) mainPlayer.pause()
-            eventListener.bindPlayer = null
-        }
-
-        // 交换主播放器权
-        players[playerMainIndex] = targetPlayer
-        players[index] = mainPlayer
-
-        // 开始新主播放器的播放
-        eventListener.bindPlayer = targetPlayer
-        eventListener.autoPlay = true
-        eventListener.autoSeekToStart = true
-        targetPlayer.addEventListener(eventListener)
     }
 
-    /**
-     * 恢复绑定播放器的事件监听器
-     * */
     internal fun resumePool() {
-        val player = mainPlayer
-        // 重新绑定
-        eventListener.bindPlayer = player
-        player.addEventListener(eventListener)
-    }
-
-    /**
-     * 解绑事件监听器并暂停播放
-     *
-     * @return 若主播放器此时正在播放，返回 true ，否则返回 false
-     * */
-    internal fun pausePool(): Boolean {
-        val player = mainPlayer
-        // 解绑
-        player.removeEventListener(eventListener)
-        eventListener.bindPlayer = null
-        eventListener.autoSeekToStart = false
-        // 若可以暂停，则暂停
-        if (player.canPause(player.playerState)) {
-            player.pause()
+        Log.i(TAG, "resume - autoResume = $autoResume")
+        mainPlayer?.let { player ->
+//             恢复状态，根据 autoResume 来恢复
+            if (autoResume) {
+                if (player.playerState == Player.STATE_LOADING
+                    || player.playerState == Player.STATE_BUFFERING
+                ) {
+                    listener.autoPlay = autoPlay
+                } else {
+                    player.play()
+                }
+            }
         }
-        eventListener.autoPlay = player.playerState != STATE_PAUSE
-        return player.isPlaying()
     }
 
-    private val mainPlayer: Player
-        get() = players[playerMainIndex]
+    internal fun pause(player: Player?) {
+        player ?: return
+        // 暂停
+        if (player.canPause()) player.pause()
+    }
+
+    internal infix fun exchange(player: Player?) {
+        mainPlayer?.let { main ->
+            Log.i(TAG, "exchange - main state = ${main.playerState}")
+            if (listener.bindPlayer == null) return@let
+            // 禁止自动播放
+            listener.bindPlayer = null
+            listener.autoPlay = false
+            // 解绑
+            main.removeEventListener(listener)
+            // 暂停
+            if (main.canPause()) main.pause()
+        }
+        player?.let { target ->
+            var index: Int = Int.MIN_VALUE
+            playerMap.map {
+                if (it.value == target) {
+                    index = it.key
+                }
+            }
+            if (index == Int.MIN_VALUE) throw IllegalArgumentException()
+            Log.i(TAG, "exchange - target index = $index")
+            val main = playerMap.put(MAIN_PLAYER_KEY, target)
+            playerMap[index] = main!!
+            Log.i(TAG, "exchange - target state = ${target.playerState}")
+            when (target.playerState) {
+                Player.STATE_READY, Player.STATE_LOADING, Player.STATE_INIT -> {
+                    listener.autoPlay = true
+                }
+                Player.STATE_PAUSE -> {
+                    target.play()
+                    target.seekTo(0L)
+                }
+                else -> {
+                    // 到这里必定可以调用 seekTo ，因此就不检查状态了
+                    player.seekTo(0L)
+                }
+            }
+            Log.e(TAG, "exchange: player = $target")
+            listener.bindPlayer = target
+            target.addEventListener(listener)
+        }
+    }
+
+    private val mainPlayer: Player?
+        get() = playerMap[MAIN_PLAYER_KEY]
 
 }

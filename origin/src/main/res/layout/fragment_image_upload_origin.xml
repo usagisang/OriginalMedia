@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/soft_black">
@@ -47,6 +46,15 @@
                 app:cardCornerRadius="16dp"
                 app:cardElevation="0dp">
 
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal|bottom"
+                    android:paddingBottom="24dp"
+                    android:text="点击此处添加图片"
+                    android:textColor="@color/soft_black"
+                    android:textSize="20sp" />
+
                 <ImageView
                     android:id="@+id/iv_image_news_image"
                     android:layout_width="match_parent"
@@ -67,6 +75,7 @@
                 android:hint="点击此处输入正文..."
                 android:textColor="@color/soft_gray_white"
                 android:textColorHint="@color/soft_gray_white"
+                android:textCursorDrawable="@color/soft_white"
                 android:textSize="18sp"
                 android:theme="@style/EditTextNoLine" />
 

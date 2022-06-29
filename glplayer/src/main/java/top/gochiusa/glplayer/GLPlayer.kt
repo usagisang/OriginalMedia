@@ -4,21 +4,19 @@ import android.content.Context
 import android.os.*
 import android.view.Surface
 import android.view.SurfaceView
-import top.gochiusa.glplayer.base.*
-import top.gochiusa.glplayer.data.DefaultMediaSourceFactory
+import top.gochiusa.glplayer.base.MediaClock
+import top.gochiusa.glplayer.base.Player
+import top.gochiusa.glplayer.base.Renderer
+import top.gochiusa.glplayer.base.SurfaceProvider
 import top.gochiusa.glplayer.data.MediaSource
-import top.gochiusa.glplayer.data.MediaSourceFactory
 import top.gochiusa.glplayer.data.SeekMode
 import top.gochiusa.glplayer.entity.Format
 import top.gochiusa.glplayer.entity.MediaItem
 import top.gochiusa.glplayer.listener.EventListener
+import top.gochiusa.glplayer.listener.VideoFrameListener
 import top.gochiusa.glplayer.listener.VideoMetadataListener
 import top.gochiusa.glplayer.listener.VideoSurfaceListener
-import top.gochiusa.glplayer.mediacodec.CodecRendererFactory
-import top.gochiusa.glplayer.util.Assert
-import top.gochiusa.glplayer.util.Constants
-import top.gochiusa.glplayer.util.NetworkUnreachableException
-import top.gochiusa.glplayer.util.PlayerLog
+import top.gochiusa.glplayer.util.*
 import java.io.IOException
 import java.util.concurrent.CopyOnWriteArraySet
 
@@ -28,13 +26,13 @@ import java.util.concurrent.CopyOnWriteArraySet
  * <b>快速使用:</b>
  *
  * ```
- * val glPlayer: Player = GLPlayer.Builder(context).setPlayAfterLoading(true).build()
+ * val player: Player = GLPlayerBuilder(context).setPlayAfterLoading(true).build()
  *
- * findViewById<PlayerView>(R.id.player_view).setPlayer(glPlayer)
+ * findViewById<PlayerView>(R.id.player_view).setPlayer(player)
  *
- * glPlayer.setMediaItem(MediaItem.fromUrl(videoUrl))
+ * player.setMediaItem(MediaItem.fromUrl(videoUrl))
  *
- * glPlayer.prepare()
+ * player.prepare()
  *
  * ```
  * 如果应用退出到后台，则必须调用[Player.pause]或[PlayerView.onPause]两个函数之一，否则视频流渲染
@@ -44,9 +42,7 @@ import java.util.concurrent.CopyOnWriteArraySet
  * 能够免去手动调用[PlayerView.onPause]的繁琐
  */
 class GLPlayer
-private constructor(
-    builder: Builder
-) : Player, Handler.Callback {
+internal constructor(builder: GLPlayerBuilder) : Player, Handler.Callback {
 
     override val durationMs: Long
         get() = if (mediaSource.durationUs > 0) mediaSource.durationUs / 1000 else -1L
@@ -107,13 +103,15 @@ private constructor(
     private var lastState: Int = Player.STATE_INIT
 
     init {
+        PlayerLog.show = builder.context.isDebugVersion()
         playbackThread.start()
         eventHandler = Handler(playbackThread.looper, this)
         componentListener = ComponentListener()
 
         mediaSource = builder.sourceFactory.createMediaSource(applicationContext)
-        renderers = (builder.rendererFactory ?: CodecRendererFactory()).createRenders(
-            eventHandler, componentListener)
+        componentListener.let {
+            renderers = builder.rendererFactory.createRenders(eventHandler, it, it)
+        }
         requestHeaders = builder.requestHeader
 
         syncClock = renderers.firstOrNull {
@@ -388,25 +386,11 @@ private constructor(
                         obj = 0L
                     }, DELAY_FOR_DECODE_MS
                 )
-            }
-        }
-    }
-
-    // call in main thread
-    private fun changeStateUncheck(newValue: Int) {
-        if (playerState != Player.STATE_RELEASE && playerState != newValue) {
-            playerState = newValue
-            eventListenerSet.forEach {
-                it.onPlaybackStateChanged(newValue)
-            }
-        }
-    }
-
-    // call in main thread
-    private fun notifyError(errorCode: Int) {
-        if (playerState != Player.STATE_RELEASE) {
-            eventListenerSet.forEach {
-                it.onPlayerError(errorCode)
+            } else {
+                innerState = Player.STATE_READY
+                mainHandler.post {
+                    changeStateUncheck(Player.STATE_READY)
+                }
             }
         }
     }
@@ -414,7 +398,6 @@ private constructor(
     private fun renderInternal(loop: Boolean) {
         val loopStart = SystemClock.elapsedRealtime()
         loopSendData()
-        //PlayerLog.d(message = "loopSendData spend time ${SystemClock.elapsedRealtime() - loopStart}")
 
         val startTimeMs: Long = SystemClock.elapsedRealtime()
         renderers.forEach {
@@ -432,6 +415,11 @@ private constructor(
 
         // 如果已经到达末尾
         if (currentPositionMs >= durationMs) {
+            componentListener.run {
+                PlayerLog.i(message = "FrameCount: ${totalLose + totalRelease}, FrameLose: " +
+                        "$totalLose, ratio: ${totalLose.toFloat() / (totalLose + totalRelease)}")
+                resetFrameCount()
+            }
             if (infiniteLoop) {
                 eventHandler.sendMessage(Message.obtain().apply {
                     what = MSG_SEEK_TO
@@ -464,10 +452,8 @@ private constructor(
             return
         }
 
-        //PlayerLog.d(message = "delay time $delayTimeMs")
         if (loop) {
             eventHandler.sendEmptyMessageDelayed(MSG_RENDER, delayTimeMs)
-            //eventHandler.sendEmptyMessage(MSG_RENDER)
         }
     }
 
@@ -619,6 +605,25 @@ private constructor(
         }
     }
 
+    // call in main thread
+    private fun changeStateUncheck(newValue: Int) {
+        if (playerState != Player.STATE_RELEASE && playerState != newValue) {
+            playerState = newValue
+            eventListenerSet.forEach {
+                it.onPlaybackStateChanged(newValue)
+            }
+        }
+    }
+
+    // call in main thread
+    private fun notifyError(errorCode: Int) {
+        if (playerState != Player.STATE_RELEASE) {
+            eventListenerSet.forEach {
+                it.onPlayerError(errorCode)
+            }
+        }
+    }
+
     /**
      * 循环调用[MediaSource.sendData]，直到发送失败或[block]返回false
      */
@@ -654,10 +659,11 @@ private constructor(
      * 计算当前播放位置
      */
     private fun getCurrentPosition(delayTimeMs: Long): Long {
+        val durationUs = mediaSource.durationUs
         val realTime = ((SystemClock.elapsedRealtime() - startRenderTimeMs) * 1000
-                + delayTimeMs).coerceAtMost(mediaSource.durationUs)
+                + delayTimeMs).coerceAtMost(durationUs)
         val clock = syncClock ?: return realTime
-        val time: Long = clock.getPositionUs()
+        val time: Long = clock.getPositionUs(durationUs)
 
         return if (time == MediaClock.END_OF_RENDER || time < 0) {
             realTime
@@ -666,71 +672,8 @@ private constructor(
         }
     }
 
-
-    class Builder(internal val context: Context) {
-        internal var playAfterLoading: Boolean = false
-        internal var renderFirstFrame: Boolean = false
-        internal var rendererFactory: RendererFactory? = null
-        internal var requestHeader: Map<String, String>? = null
-        internal var sourceFactory: MediaSourceFactory = DefaultMediaSourceFactory()
-        internal var infiniteLoop: Boolean = false
-
-        /**
-         * 设置是否在媒体数据首次加载完成后自动播放，如果为true，则播放器将从[Player.STATE_LOADING]直接
-         * 转入[Player.STATE_PLAYING]状态
-         */
-        fun setPlayAfterLoading(enable: Boolean): Builder {
-            playAfterLoading = enable
-            return this
-        }
-
-        /**
-         * 设置如何构造[Renderer]的实现类
-         */
-        fun setRendererFactory(factory: RendererFactory): Builder {
-            rendererFactory = factory
-            return this
-        }
-
-        /**
-         * 设置请求网络媒体资源的请求头（HTTP/HTTPS协议下）
-         */
-        fun setRequestHeader(headers: Map<String, String>): Builder {
-            requestHeader = headers
-            return this
-        }
-
-        /**
-         * 设置如何构造[MediaSource]的实现类
-         */
-        fun setMediaSourceFactory(mediaSourceFactory: MediaSourceFactory): Builder {
-            sourceFactory = mediaSourceFactory
-            return this
-        }
-
-        /**
-         * 设置是否渲染视频的首帧画面，会尽最大努力尝试渲染，但不能保证成功
-         */
-        fun setRenderFirstFrame(enable: Boolean): Builder {
-            renderFirstFrame = enable
-            return this
-        }
-
-        /**
-         * 是否允许播放器无限循环播放媒体
-         */
-        fun setInfiniteLoop(enable: Boolean): Builder {
-            infiniteLoop = enable
-            return this
-        }
-
-        fun build(): Player {
-            return GLPlayer(this)
-        }
-    }
-
-
-    private inner class ComponentListener : VideoSurfaceListener, VideoMetadataListener {
+    private inner class ComponentListener
+        : VideoSurfaceListener, VideoMetadataListener, VideoFrameListener {
         var internalVideoMetadataListener: VideoMetadataListener? = null
             set(value) {
                 field = value
@@ -739,6 +682,9 @@ private constructor(
                 }
             }
         lateinit var cacheFormat: Format
+
+        var totalLose: Int = 0
+        var totalRelease: Int = 0
 
         override fun onVideoSurfaceCreated(surface: Surface) {
             setVideoOutputInternal(surface)
@@ -754,6 +700,18 @@ private constructor(
             cacheFormat = format
         }
 
+        override fun onFrameRelease() {
+            totalRelease ++
+        }
+
+        override fun onFrameLose() {
+            totalLose ++
+        }
+
+        fun resetFrameCount() {
+            totalRelease = 0
+            totalLose = 0
+        }
     }
 
     companion object {

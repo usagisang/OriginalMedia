@@ -15,9 +15,9 @@ internal class ExplorePagerAdapter(
 
     override fun createFragment(position: Int): Fragment {
         return when (position) {
-            0 -> NewsFlowFragment.newInstance<ImageFlowViewModel>()
-            1 -> NewsFlowFragment.newInstance<MixFlowViewModel>()
-            2 -> NewsFlowFragment.newInstance<VideoFlowViewModel>()
+            0 -> NewsFlowFragment.newInstance<ImageFlowViewModel>(0)
+            1 -> NewsFlowFragment.newInstance<MixFlowViewModel>(8)
+            2 -> NewsFlowFragment.newInstance<VideoFlowViewModel>(8)
             else -> throw IllegalStateException()
         }.also { fragmentMap[position] = it }
     }
@@ -31,20 +31,12 @@ internal class ExplorePagerAdapter(
         fragmentMap[holder.adapterPosition]!!.pausePlayerPool()
     }
 
-    /**
-     * @return 若存在主播放器正在播放而被暂停，则返回被暂停的播放器的索引，
-     * 若没有，则返回 -1
-     * */
-    internal fun tryPause(): Int {
-        fragmentMap.map {
-            if (it.value.pausePlayerPool())
-                return it.key
-        }
-        return -1
+    internal fun tryPause() {
+        fragmentMap.map { it.value.pausePlayerPool() }
     }
 
-    internal fun tryResume(position: Int) {
-        fragmentMap[position]?.resumePlayerPool()
+    internal fun tryResume() {
+        fragmentMap.map { it.value.resumePlayerPool() }
     }
 
     internal fun refresh(position: Int) {
