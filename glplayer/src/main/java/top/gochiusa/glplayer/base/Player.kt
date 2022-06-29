@@ -81,14 +81,18 @@ interface Player {
     fun isPlaying(): Boolean
 
     /**
-     * 检查状态[state]是否允许转入状态[Player.STATE_PAUSE]
+     * 检查状态[state]是否允许转入状态[Player.STATE_BUFFERING]
+     *
+     * [state]的默认值为当前状态
      */
-    fun canSeekTo(state: Int): Boolean
+    fun canSeekTo(state: Int = playerState): Boolean
 
     /**
      * 检查状态[state]是否允许转入状态[Player.STATE_PAUSE]
+     *
+     * [state]的默认值为当前状态
      */
-    fun canPause(state: Int): Boolean
+    fun canPause(state: Int = playerState): Boolean
 
     /**
      * 媒体的总时长，单位为毫秒，如果尚未加载媒体信息，返回负值
@@ -131,7 +135,7 @@ interface Player {
          * 转入[Player.STATE_PLAYING]，否则，转入[Player.STATE_READY]
          *
          * 此状态可以收到调用[pause]的事件，在准备完毕后状态转入[Player.STATE_PAUSE]，此时[playAfterLoading]
-         * 和[top.gochiusa.glplayer.GLPlayer.Builder.setRenderFirstFrame]失效
+         * 和[top.gochiusa.glplayer.GLPlayerBuilder.setRenderFirstFrame]失效
          */
         const val STATE_LOADING = 1
 
@@ -143,7 +147,7 @@ interface Player {
         /**
          * 播放器处于播放状态，此状态下会持续渲染媒体流
          *
-         * 在播放结束后如果未设置[top.gochiusa.glplayer.GLPlayer.Builder.setInfiniteLoop]，
+         * 在播放结束后如果未设置[top.gochiusa.glplayer.GLPlayerBuilder.setInfiniteLoop]，
          * 则会转入[Player.STATE_STOP]
          */
         const val STATE_PLAYING = 3

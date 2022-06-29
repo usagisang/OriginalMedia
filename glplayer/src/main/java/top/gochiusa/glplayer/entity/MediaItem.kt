@@ -22,7 +22,7 @@ class MediaItem {
     companion object {
 
         /**
-         * 通过Url创建MediaItem，仅支持http/https协议
+         * 通过Url创建MediaItem，支持http/https或者file://
          */
         fun fromUrl(url: String): MediaItem = MediaItem(url)
 
