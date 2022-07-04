@@ -47,13 +47,12 @@ android {
 dependencies {
     implementation(project(":dependencies"))
     implementation(project(":carver"))
-    implementation(project(":glplayer"))
     implementation(project(":uploader"))
     implementation(project(":video"))
     implementation(project(":origin"))
 
-    api(Deps.ImmersionBar.baseBag)
-    api(Deps.ImmersionBar.baseKTX)
+    implementation(Deps.ImmersionBar.baseBag)
+    implementation(Deps.ImmersionBar.baseKTX)
     implementation(Deps.ImmersionBar.fragmentDie)
     implementation(Deps.glide)
     implementation(Deps.retrofit)

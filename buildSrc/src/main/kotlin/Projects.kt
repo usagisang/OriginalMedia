@@ -59,7 +59,7 @@ object Deps {
 
     object Ktx {
         const val fragmentKtx = "androidx.fragment:fragment-ktx:1.4.1"
-        const val coreKtx = "androidx.core:core-ktx:1.7.0"
+        const val coreKtx = "androidx.core:core-ktx:1.8.0"
     }
 
     object Coroutines {
@@ -132,7 +132,7 @@ object Deps {
 
     const val appCompat = "androidx.appcompat:appcompat:1.4.1"
     const val constraintLayout = "androidx.constraintlayout:constraintlayout:2.1.4"
-    const val material = "com.google.android.material:material:1.6.0"
+    const val material = "com.google.android.material:material:1.6.1"
 
     const val okhttp = "com.squareup.okhttp3:okhttp:4.9.3"
     const val matisse = "com.zhihu.android:matisse:0.5.1"
@@ -149,6 +149,9 @@ object Deps {
 
     // RecyclerView - GravitySnapHelper
     const val gravitySnapHelper = "com.github.rubensousa:gravitysnaphelper:2.2.2"
+
+    // glplayer
+    const val glplayer = "com.github.usagisang:GLPlayer:0.1.0"
 
     const val viewPager2 = "androidx.viewpager2:viewpager2:1.0.0"
 

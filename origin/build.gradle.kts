@@ -41,7 +41,6 @@ android {
 dependencies {
     implementation(project(":dependencies"))
     implementation(project(":carver"))
-    implementation(project(":glplayer"))
     implementation(project(":uploader"))
     implementation(project(":okresult"))
 
@@ -53,6 +52,8 @@ dependencies {
     implementation(Deps.DataStore.preferences)
 
     implementation(Deps.swipeRefreshLayout)
+
+    implementation(Deps.glplayer)
 
     implementation(Deps.Compose.ui)
     implementation(Deps.Compose.material)

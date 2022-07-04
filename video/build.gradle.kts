@@ -40,7 +40,6 @@ android {
 
 dependencies {
     implementation(project(":dependencies"))
-    implementation(project(":glplayer"))
 
     implementation(Deps.retrofit)
     implementation(Deps.retrofitGsonConverter)
@@ -52,6 +51,8 @@ dependencies {
     implementation(Deps.Compose.runtime)
 
     implementation(Deps.Accompanist.pager)
+
+    implementation(Deps.glplayer)
 
     implementation(Deps.Paging.runtime)
     implementation(Deps.Paging.compose)
