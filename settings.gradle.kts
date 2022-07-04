@@ -16,7 +16,6 @@ dependencyResolutionManagement {
 rootProject.name = "OriginalMedia"
 include(":app")
 include(":dependencies")
-include(":glplayer")
 include(":carver")
 include(":video")
 include(":uploader")
